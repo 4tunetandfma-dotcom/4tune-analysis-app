@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b3954">
+    <title>4TUNE 動作分析</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+      :root {
+        color-scheme: light;
+        --navy: #0b3954;
+        --blue: #176b87;
+        --aqua: #4fb3bf;
+        --bg: #f3f7f9;
+        --card: #ffffff;
+        --text: #18323f;
+        --muted: #667b85;
+        --line: #dbe6eb;
+        --success: #18865a;
+        --danger: #c43d4b;
+        --shadow: 0 12px 32px rgba(11, 57, 84, 0.1);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        background: linear-gradient(180deg, #eaf3f6 0, var(--bg) 220px);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+      }
+
+      button { font: inherit; }
+
+      .app {
+        width: min(100%, 640px);
+        margin: 0 auto;
+        padding: max(20px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 4px 4px 22px;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 48px;
+        height: 48px;
+        place-items: center;
+        border-radius: 15px;
+        background: var(--navy);
+        color: #fff;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        box-shadow: var(--shadow);
+      }
+
+      .brand h1 { margin: 0; font-size: 20px; }
+      .brand p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+
+      .card {
+        padding: 20px;
+        border: 1px solid rgba(219, 230, 235, 0.9);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: var(--shadow);
+      }
+
+      .hero {
+        margin-bottom: 14px;
+        background: linear-gradient(145deg, var(--navy), var(--blue));
+        color: #fff;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: #bce9ef;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .hero h2 { margin: 0; font-size: 25px; line-height: 1.35; }
+      .hero p { margin: 10px 0 0; color: #d9edf2; line-height: 1.7; font-size: 14px; }
+
+      .status-list { display: grid; gap: 10px; }
+
+      .status-row {
+        display: grid;
+        grid-template-columns: 34px 1fr auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 54px;
+        padding: 10px 12px;
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        background: #fff;
+      }
+
+      .status-icon {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border-radius: 11px;
+        background: #eaf4f7;
+        color: var(--blue);
+        font-weight: 800;
+      }
+
+      .status-title { display: block; font-size: 13px; font-weight: 700; }
+      .status-detail { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; }
+
+      .badge {
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #eef2f4;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .badge.success { background: #e4f5ee; color: var(--success); }
+      .badge.error { background: #fdecef; color: var(--danger); }
+
+      .profile {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .profile.visible { display: flex; }
+
+      .profile img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #e7eef1;
+        object-fit: cover;
+      }
+
+      .profile strong { display: block; }
+      .profile span { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; }
+
+      .actions { display: grid; gap: 10px; margin-top: 16px; }
+
+      .primary {
+        width: 100%;
+        min-height: 48px;
+        border: 0;
+        border-radius: 14px;
+        background: var(--blue);
+        color: #fff;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .primary:disabled { cursor: not-allowed; opacity: 0.55; }
+
+      .error-panel {
+        display: none;
+        margin-top: 14px;
+        padding: 12px;
+        border-radius: 12px;
+        background: #fdecef;
+        color: #8e2834;
+        font-size: 13px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+      }
+
+      .error-panel.visible { display: block; }
+
+      .footer {
+        margin: 18px 4px 0;
+        color: var(--muted);
+        text-align: center;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="brand">
+        <div class="brand-mark">4T</div>
+        <div>
+          <h1>4TUNE 動作分析</h1>
+          <p>走りを「感覚」から「データ」へ</p>
+        </div>
+      </header>
+
+      <section class="card hero">
+        <p class="eyebrow">CONNECTION TEST</p>
+        <h2 id="mainTitle">アプリを準備しています</h2>
+        <p id="mainMessage">LINEと分析システムへの接続を順番に確認します</p>
+      </section>
+
+      <section class="card">
+        <div class="status-list">
+          <div class="status-row">
+            <span class="status-icon">1</span>
+            <span>
+              <span class="status-title">GitHub Pages</span>
+              <span class="status-detail">画面の読み込み</span>
+            </span>
+            <span id="githubBadge" class="badge success">正常</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-icon">2</span>
+            <span>
+              <span class="status-title">LIFF</span>
+              <span id="liffDetail" class="status-detail">初期化中</span>
+            </span>
+            <span id="liffBadge" class="badge">確認中</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-icon">3</span>
+            <span>
+              <span class="status-title">LINEプロフィール</span>
+              <span id="profileDetail" class="status-detail">待機中</span>
+            </span>
+            <span id="profileBadge" class="badge">待機</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-icon">4</span>
+            <span>
+              <span class="status-title">GAS API</span>
+              <span id="gasDetail" class="status-detail">待機中</span>
+            </span>
+            <span id="gasBadge" class="badge">待機</span>
+          </div>
+        </div>
+
+        <div id="profilePanel" class="profile">
+          <img id="profileImage" alt="LINEプロフィール画像">
+          <div>
+            <strong id="profileName"></strong>
+            <span>LINEログイン確認済み</span>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="retryButton" class="primary" type="button" disabled>もう一度確認する</button>
+        </div>
+
+        <div id="errorPanel" class="error-panel" role="alert"></div>
+      </section>
+
+      <p class="footer">初回接続確認用画面</p>
+    </main>
+
+    <script>
+      const CONFIG = Object.freeze({
+        LIFF_ID: "2011019778-43fXNNSl",
+        GAS_URL: "https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
+      });
+
+      const byId = (id) => document.getElementById(id);
+
+      function setStatus(prefix, state, detail) {
+        const badge = byId(`${prefix}Badge`);
+        const detailElement = byId(`${prefix}Detail`);
+        badge.className = `badge ${state === "success" ? "success" : state === "error" ? "error" : ""}`;
+        badge.textContent = state === "success" ? "正常" : state === "error" ? "エラー" : "確認中";
+        if (detailElement) detailElement.textContent = detail;
+      }
+
+      function showError(error) {
+        console.error(error);
+        const message = error instanceof Error ? error.message : String(error || "不明なエラーです");
+        byId("mainTitle").textContent = "接続を確認できませんでした";
+        byId("mainMessage").textContent = "下の内容を確認して、もう一度お試しください";
+        byId("errorPanel").textContent = message;
+        byId("errorPanel").classList.add("visible");
+        byId("retryButton").disabled = false;
+      }
+
+      async function fetchGasHealth() {
+        setStatus("gas", "loading", "APIへ接続中");
+        const url = new URL(CONFIG.GAS_URL);
+        url.searchParams.set("action", "health");
+        url.searchParams.set("t", String(Date.now()));
+
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          redirect: "follow",
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error(`GAS APIエラー: HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+          throw new Error(data.message || "GAS APIがエラーを返しました");
+        }
+
+        setStatus("gas", "success", data.timestamp || "接続成功");
+        return data;
+      }
+
+      async function startApp() {
+        byId("retryButton").disabled = true;
+        byId("errorPanel").classList.remove("visible");
+
+        try {
+          setStatus("liff", "loading", "LIFFを初期化中");
+          await liff.init({ liffId: CONFIG.LIFF_ID });
+          setStatus("liff", "success", liff.isInClient() ? "LINE内で起動" : "外部ブラウザで起動");
+
+          if (!liff.isLoggedIn()) {
+            liff.login({ redirectUri: window.location.href });
+            return;
+          }
+
+          setStatus("profile", "loading", "プロフィールを取得中");
+          const [profile] = await Promise.all([
+            liff.getProfile(),
+            fetchGasHealth(),
+          ]);
+
+          byId("profileName").textContent = profile.displayName || "LINEユーザー";
+          if (profile.pictureUrl) {
+            byId("profileImage").src = profile.pictureUrl;
+          } else {
+            byId("profileImage").removeAttribute("src");
+          }
+          byId("profilePanel").classList.add("visible");
+          setStatus("profile", "success", "プロフィール取得成功");
+
+          byId("mainTitle").textContent = "接続確認が完了しました";
+          byId("mainMessage").textContent = "LIFFアプリの基本設定は正常です。次から本画面を構築します";
+        } catch (error) {
+          if (byId("liffBadge").textContent !== "正常") {
+            setStatus("liff", "error", "初期化に失敗");
+          }
+          showError(error);
+        }
+      }
+
+      byId("retryButton").addEventListener("click", () => window.location.reload());
+      window.addEventListener("DOMContentLoaded", startApp);
+    </script>
+  </body>
+</html>

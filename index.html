@@ -197,7 +197,7 @@
         const athletes=STATE.data.athletes||[];if(!athletes.length){alert("先に選手を登録してください");return;}
         $("#screen").innerHTML=`<form id="applicationForm" class="stack" novalidate>
           <section class="card"><div class="section-title"><div><h2>新規申し込み</h2><p>動画確認後に振込をご案内します</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button></div><div class="field"><label class="required">申し込み区分</label><div class="choice-row" style="grid-template-columns:1fr 1fr"><label class="choice"><input type="radio" name="applicationType" value="個人" checked><span>個人</span></label><label class="choice"><input type="radio" name="applicationType" value="団体"><span>団体</span></label></div></div></section>
-          <section class="card"><div class="section-title"><div><h3>分析内容</h3><p>現在受付中のコース</p></div></div><div class="product-grid">${STATE.products.map((product,index)=>`<label class="product-option"><input type="radio" name="productId" value="${escapeHtml(product.productId)}" ${index===0?"checked":""}><span class="product-box"><span class="product-top"><span><b>${escapeHtml(product.phase)}｜${escapeHtml(product.name)}コース</b><small>${product.plan==="プロ"?"全コマ分析＋PDFコメント":"5局面分析"}</small></span><span><span class="price">${formatYen(product.price)}</span>${product.campaignEnabled&&product.normalPrice>product.price?`<span class="old-price">${formatYen(product.normalPrice)}</span>`:""}</span></span>${product.groupDiscountEnabled?`<small>${product.groupMinimum}名以上で1人${formatYen(product.groupDiscount)}引き</small>`:""}</span></label>`).join("")}</div></section>
+          <section class="card"><div class="section-title"><div><h3>分析内容</h3><p>現在受付中のコース</p></div></div><div class="product-grid">${STATE.products.map((product,index)=>`<label class="product-option"><input type="radio" name="productId" value="${escapeHtml(product.productId)}" ${index===0?"checked":""}><span class="product-box"><span class="product-top"><span><b>${escapeHtml(product.phase)}｜${escapeHtml(product.name)}コース</b><small>${String(product.plan).toLowerCase()==="pro"?"全コマ分析＋PDFコメント":"5局面分析"}</small></span><span><span class="price">${formatYen(product.price)}</span>${product.campaignEnabled&&product.normalPrice>product.price?`<span class="old-price">${formatYen(product.normalPrice)}</span>`:""}</span></span>${product.groupDiscountEnabled?`<small>${product.groupMinimum}名以上で1人${formatYen(product.groupDiscount)}引き</small>`:""}</span></label>`).join("")}</div></section>
           <section class="card"><div class="section-title"><div><h3>対象選手</h3><p id="athleteSelectionNote">個人は1名選択</p></div></div><div class="select-list">${athletes.map((athlete,index)=>`<label class="athlete-option"><input type="checkbox" name="athleteId" value="${escapeHtml(athlete.athleteId)}" ${index===0?"checked":""}><span class="athlete-box"><span><b>${escapeHtml(athlete.name)}</b><small>${escapeHtml(athlete.affiliation)}</small></span><span class="pill">選択</span></span></label>`).join("")}</div></section>
           <section class="card"><div class="section-title"><div><h3>撮影情報</h3><p>選手ごとに入力</p></div></div><div id="shootingList" class="stack"></div></section>
           <section class="card stack"><div class="section-title"><div><h3>料金確認</h3><p>申し込み時点の金額を保存します</p></div></div><div id="priceSummary"></div><div class="notice">この段階では振込不要です。動画を確認後、LINEで振込をご案内します。</div><div id="formError" class="error"></div><button id="applicationSubmit" class="primary" type="submit">この内容で申し込む</button></section>
@@ -226,13 +226,6 @@
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
       function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
       window.addEventListener("DOMContentLoaded",startApp);
-    </script>
-  </body>
-</html>
-index.html
-HTML
-動作分析アプリ_管理データテンプレート.xlsx
-スプレッドシート
     </script>
   </body>
 </html>

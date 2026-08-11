@@ -2002,7 +2002,7 @@ function drawAnalysisAuxiliary_(
     allowTrajectory &&
     ANALYSIS_VIEW_STATE.showToeTrajectory
   ) {
-    drawToeTrajectory_(context, data, convertPoint);
+    drawToeTrajectory_(context, data, frameIndex, convertPoint);
   }
 
   if (ANALYSIS_VIEW_STATE.showCenterOfMass) {
@@ -2014,20 +2014,35 @@ function drawAnalysisAuxiliary_(
   }
 }
 
-function drawToeTrajectory_(context, data, convertPoint) {
+function drawToeTrajectory_(context, data, frameIndex, convertPoint) {
   const firstFoot = String(data.firstFoot || "右");
   const pointIndex = firstFoot === "左" ? 14 : 8;
   const color = firstFoot === "左" ? "rgba(229,57,53,.38)" : "rgba(21,101,192,.38)";
+  const currentPoints = data.frames?.[frameIndex]?.points;
+  const currentHipCenter = getGreaterTrochanterCenter_(currentPoints);
+  if (!currentHipCenter) return;
+
   let started = false;
 
   context.beginPath();
   (data.frames || []).forEach((frame) => {
     const point = frame.points?.[pointIndex];
-    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+    const frameHipCenter = getGreaterTrochanterCenter_(frame.points);
+    if (
+      !point ||
+      !Number.isFinite(point.x) ||
+      !Number.isFinite(point.y) ||
+      !frameHipCenter
+    ) {
       started = false;
       return;
     }
-    const converted = convertPoint(point);
+
+    const hipRelativePoint = {
+      x: currentHipCenter.x + point.x - frameHipCenter.x,
+      y: currentHipCenter.y + point.y - frameHipCenter.y,
+    };
+    const converted = convertPoint(hipRelativePoint);
     if (started) context.lineTo(converted.x, converted.y);
     else {
       context.moveTo(converted.x, converted.y);

@@ -145,6 +145,34 @@
   accent-color: var(--blue);
 }
 
+.analysis-toggle-list {
+  display: grid;
+  gap: 8px;
+}
+
+.analysis-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.analysis-toggle input {
+  width: 20px;
+  min-height: 20px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--blue);
+}
+
 .analysis-metrics-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -275,6 +303,9 @@
   scale: 100,
   activeTab: "controls",
   selectedJoint: 0,
+  showCenterOfMass: true,
+  showToeTrajectory: true,
+  showJointHighlight: true,
 };
 
 const ANALYSIS_CONNECTIONS = {
@@ -678,6 +709,9 @@ function renderAnalysisDetail(analysis) {
   ANALYSIS_VIEW_STATE.scale = 100;
   ANALYSIS_VIEW_STATE.activeTab = "controls";
   ANALYSIS_VIEW_STATE.selectedJoint = 0;
+  ANALYSIS_VIEW_STATE.showCenterOfMass = true;
+  ANALYSIS_VIEW_STATE.showToeTrajectory = true;
+  ANALYSIS_VIEW_STATE.showJointHighlight = true;
 
   const isLight =
     String(analysis.plan || "")
@@ -857,6 +891,23 @@ function renderAnalysisDetail(analysis) {
                 </div>
               `
           }
+
+          <div class="analysis-toggle-list">
+            <label class="analysis-toggle">
+              <span>身体重心点</span>
+              <input id="analysisCenterToggle" type="checkbox" checked>
+            </label>
+
+            <label class="analysis-toggle">
+              <span>つま先軌道</span>
+              <input id="analysisToeToggle" type="checkbox" checked>
+            </label>
+
+            <label class="analysis-toggle">
+              <span>選択関節の強調</span>
+              <input id="analysisJointToggle" type="checkbox" checked>
+            </label>
+          </div>
         </div>
 
         <div
@@ -1106,9 +1157,24 @@ function bindAnalysisViewerEvents() {
             ) || 0;
 
         drawAnalysisGraphs();
+        drawCurrentAnalysisView();
       },
     );
   }
+
+  bindAnalysisToggle_("analysisCenterToggle", "showCenterOfMass");
+  bindAnalysisToggle_("analysisToeToggle", "showToeTrajectory");
+  bindAnalysisToggle_("analysisJointToggle", "showJointHighlight");
+}
+
+function bindAnalysisToggle_(elementId, stateKey) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  element.addEventListener("change", () => {
+    ANALYSIS_VIEW_STATE[stateKey] = element.checked;
+    drawCurrentAnalysisView();
+  });
 }
 
 function selectAnalysisTab(tabName) {
@@ -1490,7 +1556,7 @@ function drawProAnalysis(
     height - 35,
   );
 
-  drawStickFrame(
+  const convertPoint = drawStickFrame(
     context,
     frame.points,
     {
@@ -1503,6 +1569,16 @@ function drawProAnalysis(
         100,
     },
   );
+
+  if (convertPoint) {
+    drawAnalysisAuxiliary_(
+      context,
+      data,
+      ANALYSIS_VIEW_STATE.currentFrame,
+      convertPoint,
+      true,
+    );
+  }
 
   const overlay =
     $("#analysisOverlay");
@@ -1578,7 +1654,7 @@ function drawLightAnalysis(
         index *
           (itemWidth + gap);
 
-      drawStickFrame(
+      const convertPoint = drawStickFrame(
         context,
         frame.points,
         {
@@ -1589,6 +1665,16 @@ function drawLightAnalysis(
           scale: 1,
         },
       );
+
+      if (convertPoint) {
+        drawAnalysisAuxiliary_(
+          context,
+          data,
+          item.frame - 1,
+          convertPoint,
+          false,
+        );
+      }
 
       context.fillStyle =
         "#18323f";
@@ -1630,7 +1716,7 @@ function drawStickFrame(
     );
 
   if (!validPoints.length) {
-    return;
+    return null;
   }
 
   const minX = Math.min(
@@ -1749,6 +1835,88 @@ function drawStickFrame(
       context.fill();
     },
   );
+
+  return convertPoint;
+}
+
+function drawAnalysisAuxiliary_(
+  context,
+  data,
+  frameIndex,
+  convertPoint,
+  allowTrajectory,
+) {
+  if (
+    allowTrajectory &&
+    ANALYSIS_VIEW_STATE.showToeTrajectory
+  ) {
+    drawToeTrajectory_(context, data, convertPoint);
+  }
+
+  if (ANALYSIS_VIEW_STATE.showCenterOfMass) {
+    drawCenterOfMassPoint_(context, data, frameIndex, convertPoint);
+  }
+
+  if (ANALYSIS_VIEW_STATE.showJointHighlight) {
+    drawSelectedJointHighlight_(context, data, frameIndex, convertPoint);
+  }
+}
+
+function drawToeTrajectory_(context, data, convertPoint) {
+  const firstFoot = String(data.firstFoot || "右");
+  const pointIndex = firstFoot === "左" ? 14 : 8;
+  const color = firstFoot === "左" ? "rgba(229,57,53,.38)" : "rgba(21,101,192,.38)";
+  let started = false;
+
+  context.beginPath();
+  (data.frames || []).forEach((frame) => {
+    const point = frame.points?.[pointIndex];
+    if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+      started = false;
+      return;
+    }
+    const converted = convertPoint(point);
+    if (started) context.lineTo(converted.x, converted.y);
+    else {
+      context.moveTo(converted.x, converted.y);
+      started = true;
+    }
+  });
+
+  context.strokeStyle = color;
+  context.lineWidth = 1.5;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.stroke();
+}
+
+function drawCenterOfMassPoint_(context, data, frameIndex, convertPoint) {
+  const point = data.centerOfMass?.[frameIndex];
+  if (!point || !Number.isFinite(Number(point.x)) || !Number.isFinite(Number(point.y))) return;
+
+  const converted = convertPoint({ x: Number(point.x), y: Number(point.y) });
+  context.beginPath();
+  context.arc(converted.x, converted.y, 5, 0, Math.PI * 2);
+  context.fillStyle = "#f6c344";
+  context.fill();
+  context.strokeStyle = "#7a5a00";
+  context.lineWidth = 1.5;
+  context.stroke();
+}
+
+function drawSelectedJointHighlight_(context, data, frameIndex, convertPoint) {
+  const jointPointIndexes = [2, 3, 6, 7, 13, 12, 11, 19, 18, 17];
+  const pointIndex = jointPointIndexes[ANALYSIS_VIEW_STATE.selectedJoint];
+  const point = data.frames?.[frameIndex]?.points?.[pointIndex];
+  if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+
+  const converted = convertPoint(point);
+  const color = getJointGraphColor(ANALYSIS_VIEW_STATE.selectedJoint);
+  context.beginPath();
+  context.arc(converted.x, converted.y, 8, 0, Math.PI * 2);
+  context.strokeStyle = color;
+  context.lineWidth = 2.5;
+  context.stroke();
 }
 
 function drawStickConnections(

@@ -3,39 +3,39 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0b3954">
+    <meta name="theme-color" content="#174f43">
     <title>4TUNE 動作分析</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
       :root {
-        --navy:#0b3954; --blue:#176b87; --aqua:#4fb3bf; --bg:#f3f7f9;
-        --card:#fff; --text:#18323f; --muted:#667b85; --line:#dbe6eb;
+        --navy:#174f43; --blue:#246b58; --aqua:#62a58f; --bg:#f3f8f5;
+        --card:#fff; --text:#183b33; --muted:#637b74; --line:#d8e6e1;
         --success:#18865a; --danger:#c43d4b; --warning:#b76a00;
-        --shadow:0 12px 32px rgba(11,57,84,.10);
+        --shadow:0 12px 32px rgba(23,79,67,.10);
       }
-      *{box-sizing:border-box} body{margin:0;min-height:100vh;min-height:100dvh;background:linear-gradient(180deg,#eaf3f6 0,var(--bg) 260px);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
+      *{box-sizing:border-box} body{margin:0;min-height:100vh;min-height:100dvh;background:linear-gradient(180deg,#fff 0,#fff 112px,var(--bg) 300px);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
       button,input,select,textarea{font:inherit} button{cursor:pointer}
       .app{width:min(100%,680px);margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom))}
-      .brand{display:flex;align-items:center;gap:10px;margin:0 4px 10px}.brand-logo-group{display:grid;gap:1px}.brand-logo-window{position:relative;overflow:hidden;width:184px;height:73px}.brand-logo-image{position:absolute;top:-50px;left:0;width:184px;height:auto}.brand-tagline{margin:0 0 0 3px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.02em}
+      .brand{display:flex;align-items:center;gap:10px;margin:0 4px 10px;background:#fff}.brand-logo-group{display:grid;gap:1px}.brand-logo-window{position:relative;overflow:hidden;width:184px;height:73px;background:#fff}.brand-logo-image{position:absolute;top:-50px;left:0;width:184px;height:auto}.brand-tagline{margin:0 0 0 3px;color:#246b58;font-size:9px;font-weight:800;letter-spacing:.02em}
       .admin-header-button{width:auto;min-height:36px;margin-left:auto;padding:0 11px;border:0;border-radius:11px;background:linear-gradient(145deg,#e8751a,#a94b08);color:#fff;font-size:11px;font-weight:900;box-shadow:0 6px 15px rgba(169,75,8,.2)}
       .card{padding:18px;border:1px solid rgba(219,230,235,.95);border-radius:21px;background:rgba(255,255,255,.97);box-shadow:var(--shadow)}
       .stack{display:grid;gap:14px}.hidden{display:none!important}
-      .hero{background:linear-gradient(145deg,var(--navy),var(--blue));color:#fff}.hero small{color:#bce9ef;font-weight:800;letter-spacing:.08em}.hero h2{margin:7px 0 0;font-size:24px;line-height:1.35}.hero p{margin:9px 0 0;color:#d9edf2;font-size:13px;line-height:1.7}
+      .hero{background:linear-gradient(145deg,var(--navy),var(--blue));color:#fff}.hero small{color:#c9eadf;font-weight:800;letter-spacing:.08em}.hero h2{margin:7px 0 0;font-size:24px;line-height:1.35}.hero p{margin:9px 0 0;color:#e1f1ec;font-size:13px;line-height:1.7}
       .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-title h2,.section-title h3{margin:0;font-size:18px}.section-title p{margin:4px 0 0;color:var(--muted);font-size:12px}
       .field{display:grid;gap:6px}.field label{font-size:12px;font-weight:800}.required::after{content:" 必須";color:var(--danger);font-size:10px}
       input,select,textarea{width:100%;min-height:46px;border:1px solid #cad9df;border-radius:12px;background:#fff;color:var(--text);padding:10px 12px;outline:none}textarea{min-height:86px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:var(--aqua);box-shadow:0 0 0 3px rgba(79,179,191,.16)}
       .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:11px}.muted{color:var(--muted);font-size:11px;line-height:1.6}
-      .choice-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{position:relative}.choice input{position:absolute;opacity:0;pointer-events:none}.choice span{display:grid;min-height:44px;place-items:center;border:1px solid var(--line);border-radius:12px;background:#f8fafb;font-size:12px;font-weight:800}.choice input:checked+span{border-color:var(--blue);background:#e8f3f6;color:var(--blue)}
+      .choice-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.choice{position:relative}.choice input{position:absolute;opacity:0;pointer-events:none}.choice span{display:grid;min-height:44px;place-items:center;border:1px solid var(--line);border-radius:12px;background:#f8faf9;font-size:12px;font-weight:800}.choice input:checked+span{border-color:var(--blue);background:#e8f3ee;color:var(--blue)}
       .athlete-card{position:relative;padding:15px;border:1px solid var(--line);border-radius:16px;background:#fbfdfe}.athlete-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.athlete-head strong{font-size:14px}.remove{border:0;background:transparent;color:var(--danger);font-size:12px;font-weight:800}
       .primary,.secondary{width:100%;min-height:48px;border-radius:14px;font-weight:850}.primary{border:0;background:var(--blue);color:#fff}.secondary{border:1px solid #bfd2da;background:#fff;color:var(--blue)}.primary:disabled,.secondary:disabled{cursor:not-allowed;opacity:.5}
-      .notice{padding:12px;border-radius:12px;background:#eef6f8;color:#365e6c;font-size:12px;line-height:1.65}.error{display:none;padding:12px;border-radius:12px;background:#fdecef;color:#8e2834;font-size:12px;line-height:1.65;white-space:pre-wrap}.error.visible{display:block}
+      .notice{padding:12px;border-radius:12px;background:#edf6f2;color:#365f54;font-size:12px;line-height:1.65}.error{display:none;padding:12px;border-radius:12px;background:#fdecef;color:#8e2834;font-size:12px;line-height:1.65;white-space:pre-wrap}.error.visible{display:block}
       .profile-line{display:flex;align-items:center;gap:11px}.avatar{width:48px;height:48px;border-radius:50%;background:#e6eef1;object-fit:cover}.profile-line strong{display:block}.profile-line span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
-      .task-card{padding:15px;border-radius:16px;background:linear-gradient(135deg,#fff7e8,#fff);border:1px solid #f0d7ae}.task-card strong{font-size:13px}.task-card p{margin:5px 0 0;color:#79511a;font-size:11px}
+      .task-card{padding:15px;border-radius:16px;background:linear-gradient(135deg,#eaf5f0,#fff);border:1px solid #cfe3da}.task-card strong{color:var(--navy);font-size:13px}.task-card p{margin:5px 0 0;color:#527369;font-size:11px}
       .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.menu-button{min-height:92px;padding:13px;border:1px solid var(--line);border-radius:16px;background:#fff;text-align:left}.menu-button b{display:block;color:var(--navy);font-size:14px}.menu-button span{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}.menu-button.primary-menu{border:0;background:linear-gradient(145deg,var(--blue),var(--navy));color:#fff}.menu-button.primary-menu b,.menu-button.primary-menu span{color:#fff}
       .athlete-summary{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.athlete-summary:first-child{border-top:0}.athlete-summary b{font-size:14px}.athlete-summary span{display:block;margin-top:4px;color:var(--muted);font-size:11px}.pill{align-self:flex-start;padding:5px 8px;border-radius:99px;background:#e5f4ef;color:var(--success);font-size:10px;font-weight:800}
-      .product-grid,.select-list{display:grid;gap:10px}.product-option,.athlete-option{position:relative}.product-option input,.athlete-option input{position:absolute;opacity:0;pointer-events:none}.product-box,.athlete-box{display:block;padding:14px;border:1px solid var(--line);border-radius:15px;background:#fff}.product-option input:checked+.product-box,.athlete-option input:checked+.athlete-box{border-color:var(--blue);background:#eaf5f7;box-shadow:0 0 0 2px rgba(23,107,135,.08)}.product-top,.athlete-box{display:flex;justify-content:space-between;gap:12px}.product-box b,.athlete-box b{font-size:14px}.product-box small,.athlete-box small{display:block;margin-top:5px;color:var(--muted)}.price{color:var(--blue);font-size:17px;font-weight:900}.old-price{display:block;color:var(--muted);font-size:10px;text-decoration:line-through;text-align:right}
+      .product-grid,.select-list{display:grid;gap:10px}.product-option,.athlete-option{position:relative}.product-option input,.athlete-option input{position:absolute;opacity:0;pointer-events:none}.product-box,.athlete-box{display:block;padding:14px;border:1px solid var(--line);border-radius:15px;background:#fff}.product-option input:checked+.product-box,.athlete-option input:checked+.athlete-box{border-color:var(--blue);background:#eaf5f0;box-shadow:0 0 0 2px rgba(36,107,88,.08)}.product-top,.athlete-box{display:flex;justify-content:space-between;gap:12px}.product-box b,.athlete-box b{font-size:14px}.product-box small,.athlete-box small{display:block;margin-top:5px;color:var(--muted)}.price{color:var(--blue);font-size:17px;font-weight:900}.old-price{display:block;color:var(--muted);font-size:10px;text-decoration:line-through;text-align:right}
       .shooting-card{padding:14px;border:1px solid var(--line);border-radius:15px;background:#fbfdfe}.shooting-card h4{margin:0 0 12px;font-size:14px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}.summary-row:first-child{border-top:0}.summary-row.total{margin-top:4px;padding-top:13px;font-size:16px;font-weight:900}.discount{color:var(--success)}
-      .progress-track{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:2px 0 4px}.progress-step{display:grid;gap:6px;min-width:0;text-align:center}.progress-dot{position:relative;height:7px;border-radius:99px;background:#dbe6eb}.progress-step.done .progress-dot{background:var(--success)}.progress-step.current .progress-dot{background:var(--blue);box-shadow:0 0 0 3px rgba(23,107,135,.13)}.progress-label{overflow:hidden;color:var(--muted);font-size:9px;font-weight:800;white-space:nowrap}.progress-step.done .progress-label,.progress-step.current .progress-label{color:var(--navy)}.progress-next{padding:12px;border:1px solid #cfe1e7;border-radius:13px;background:#eef6f8}.progress-next small{display:block;margin-bottom:3px;color:var(--blue);font-size:10px;font-weight:900}.progress-next b{font-size:13px;line-height:1.5}.athlete-status-list{display:grid;gap:8px}
+      .progress-track{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:2px 0 4px}.progress-step{display:grid;gap:6px;min-width:0;text-align:center}.progress-dot{position:relative;height:7px;border-radius:99px;background:#d8e6e1}.progress-step.done .progress-dot{background:var(--success)}.progress-step.current .progress-dot{background:var(--blue);box-shadow:0 0 0 3px rgba(36,107,88,.13)}.progress-label{overflow:hidden;color:var(--muted);font-size:9px;font-weight:800;white-space:nowrap}.progress-step.done .progress-label,.progress-step.current .progress-label{color:var(--navy)}.progress-next{padding:12px;border:1px solid #cfe3da;border-radius:13px;background:#edf6f2}.progress-next small{display:block;margin-bottom:3px;color:var(--blue);font-size:10px;font-weight:900}.progress-next b{font-size:13px;line-height:1.5}.athlete-status-list{display:grid;gap:8px}
       .admin-screen{--admin:#e8751a;--admin-dark:#a94b08;--admin-soft:#fff2e7}.admin-screen .admin-hero{background:linear-gradient(145deg,var(--admin-dark),var(--admin));color:#fff}.admin-screen .admin-hero p,.admin-screen .admin-hero small{color:#ffe2ca}.admin-menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.admin-menu-button{min-height:82px;padding:12px;border:1px solid #f0c6a5;border-radius:15px;background:#fff8f2;color:var(--admin-dark);text-align:left;font-weight:900}.admin-menu-button span{display:block;margin-top:5px;color:#9a6845;font-size:10px}.admin-menu-button.active{border-color:var(--admin);background:linear-gradient(145deg,var(--admin),var(--admin-dark));color:#fff}.admin-menu-button.active span{color:#ffe2ca}.admin-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.admin-summary{padding:13px;border:1px solid #f0d4bf;border-radius:14px;background:#fff}.admin-summary small{display:block;color:#9a6845;font-size:10px;font-weight:800}.admin-summary strong{display:block;margin-top:4px;color:var(--admin-dark);font-size:23px}.admin-application{padding:14px;border:1px solid #f0d4bf;border-radius:16px;background:#fff}.admin-status-row{display:flex;flex-wrap:wrap;gap:6px}.admin-status-chip{padding:5px 8px;border-radius:99px;background:var(--admin-soft);color:var(--admin-dark);font-size:10px;font-weight:800}.admin-status-chip.payment{background:#fff0d5;color:#8a5700}.admin-status-chip.analysis{background:#ffe5d1;color:#a94b08}.admin-section-title{margin:0;color:var(--admin-dark);font-size:17px}
       .admin-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;border-radius:13px;background:#fff8f2}.admin-edit-grid .field label{color:#9a6845;font-size:10px}.admin-edit-grid select{min-height:40px;padding:7px 9px;border-color:#edc5a5;font-size:11px}.admin-save-button{grid-column:1/-1;min-height:40px;border:0;border-radius:11px;background:var(--admin);color:#fff;font-size:12px;font-weight:900}
       .home-screen{gap:8px}.home-screen .home-hero{padding:11px 15px;border-radius:16px}.home-screen .home-hero small{font-size:9px}.home-screen .home-hero h2{margin-top:3px;font-size:19px}.home-screen .home-hero p{margin-top:3px;font-size:11px;line-height:1.4}.home-screen .home-profile{padding:9px 13px;border-radius:15px}.home-screen .home-profile .avatar{width:36px;height:36px}.home-screen .task-card{padding:9px 12px;border-radius:13px}.home-screen .task-card strong{font-size:12px}.home-screen .task-card p{margin-top:2px;font-size:10px;line-height:1.35}.home-screen .task-card .secondary{min-height:32px!important;margin-top:6px!important;font-size:10px}.home-screen .home-menu-card{padding:10px 12px;border-radius:16px}.home-screen .home-menu-card .section-title{margin-bottom:7px}.home-screen .home-menu-card .section-title h3{font-size:14px}.home-screen .home-menu-card .section-title p{display:none}.home-screen .menu-grid{gap:6px}.home-screen .menu-button{min-height:61px;padding:8px 10px;border-radius:12px}.home-screen .menu-button b{font-size:12px}.home-screen .menu-button span{margin-top:3px;font-size:9px;line-height:1.3}.home-screen .home-athletes{max-height:112px;overflow:auto;padding:9px 12px;border-radius:16px}.home-screen .home-athletes .section-title{margin-bottom:3px}.home-screen .home-athletes .section-title h3{font-size:14px}.home-screen .athlete-summary{padding:6px 0}.home-screen .athlete-summary b{font-size:12px}.home-screen .athlete-summary span{margin-top:2px;font-size:9px}
@@ -215,7 +215,7 @@
 }
 
 .analysis-metric.speed small {
-  color: #bce9ef;
+  color: #c9eadf;
 }
 
 .analysis-metric.speed strong {
@@ -2778,7 +2778,7 @@ function drawAnalysisGraphs() {
     centerValues,
     frameIndex,
     {
-      color: "#176b87",
+      color: "#246b58",
       zeroLine: false,
     },
   );
@@ -3014,7 +3014,7 @@ function drawAnalysisLineGraph(
   );
 
   context.strokeStyle =
-    options.color || "#176b87";
+    options.color || "#246b58";
 
   context.lineWidth = 2.2;
   context.lineJoin = "round";

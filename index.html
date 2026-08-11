@@ -225,7 +225,147 @@
       async function openApplications(){lock("申し込み状況を読み込み中...");try{const result=await apiPost("getApplications");renderApplications(result.applications||[]);}catch(error){console.error(error);alert(error.message||"申し込み状況を読み込めませんでした");}finally{unlock();}}
       function renderApplications(applications){$("#screen").innerHTML=`<div class="stack"><section class="card"><div class="section-title"><div><h2>申し込み状況</h2><p>動画・入金・分析の進行状況</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button></div></section>${applications.length?applications.map((application)=>`<section class="card stack"><div class="section-title"><div><h3>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}コース</h3><p>${escapeHtml(application.appliedAt)}・${escapeHtml(application.applicationId)}</p></div><span class="pill">${escapeHtml(application.progressStatus)}</span></div><div class="summary-row"><span>申し込み</span><b>${escapeHtml(application.applicationType)}・${application.count}名</b></div><div class="summary-row"><span>入金状態</span><b>${escapeHtml(application.paymentStatus)}</b></div><div class="summary-row total"><span>予定金額</span><b>${formatYen(application.total)}</b></div>${application.athletes.map((athlete)=>`<div class="shooting-card"><div class="athlete-head"><strong>${escapeHtml(athlete.name)}</strong><span class="pill">${escapeHtml(athlete.status)}</span></div>${athlete.status==="動画提出待ち"?`<button class="secondary" type="button" data-upload-url="${escapeHtml(athlete.uploadUrl)}">動画提出フォームを開く</button>`:""}</div>`).join("")}</section>`).join(""):'<section class="card"><p class="muted">申し込み履歴はありません。</p></section>'}</div>`;$$('[data-upload-url]').forEach((button)=>button.addEventListener("click",()=>openUploadForm(button.dataset.uploadUrl)));}
       async function openAnalysisResults(){lock("分析結果を読み込み中...");try{const result=await apiPost("getAnalysisResults");renderAnalysisResults(result.results||[]);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
-      function renderAnalysisResults(results){$("#screen").innerHTML=`<div class="stack"><section class="card"><div class="section-title"><div><h2>分析結果</h2><p>公開済みの結果を表示</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button></div></section>${results.length?results.map((result)=>`<section class="card stack"><div class="section-title"><div><h3>${escapeHtml(result.athleteName)}</h3><p>${escapeHtml(result.phase)}｜${escapeHtml(result.plan)}コース${result.version?`・ver.${escapeHtml(result.version)}`:""}</p></div><span class="pill">公開済み</span></div><div class="summary-row"><span>公開日時</span><b>${escapeHtml(result.publishedAt||"-")}</b></div><div class="summary-row"><span>申込ID</span><b>${escapeHtml(result.applicationId)}</b></div>${result.hasAnalysisData?'<div class="notice">スティック・表・グラフの表示は、次の工程で分析シートの配置に接続します。</div>':''}${result.hasPdf?`<button class="primary" type="button" data-pdf-analysis-id="${escapeHtml(result.analysisId)}">PDFレポートを保存</button>`:'<p class="muted">PDFレポートはありません。</p>'}</section>`).join(""):'<section class="card"><p class="muted">現在、公開済みの分析結果はありません。</p></section>'}</div>`;$$('[data-pdf-analysis-id]').forEach((button)=>button.addEventListener("click",()=>downloadAnalysisPdf(button.dataset.pdfAnalysisId,button)));}
+function renderAnalysisResults(results) {
+  $("#screen").innerHTML = `
+    <div class="stack">
+      <section class="card">
+        <div class="section-title">
+          <div>
+            <h2>分析結果</h2>
+            <p>公開済みの結果を表示</p>
+          </div>
+
+          <button
+            class="secondary"
+            style="width:auto;min-height:38px;padding:0 12px"
+            type="button"
+            onclick="renderHome()"
+          >
+            戻る
+          </button>
+        </div>
+      </section>
+
+      ${
+        results.length
+          ? results
+              .map(
+                (result) => `
+                  <section class="card stack">
+                    <div class="section-title">
+                      <div>
+                        <h3>
+                          ${escapeHtml(result.athleteName)}
+                        </h3>
+
+                        <p>
+                          ${escapeHtml(result.phase)}
+                          ｜
+                          ${escapeHtml(result.plan)}コース
+                          ${
+                            result.version
+                              ? `・ver.${escapeHtml(result.version)}`
+                              : ""
+                          }
+                        </p>
+                      </div>
+
+                      <span class="pill">
+                        公開済み
+                      </span>
+                    </div>
+
+                    <div class="summary-row">
+                      <span>公開日時</span>
+                      <b>
+                        ${escapeHtml(result.publishedAt || "-")}
+                      </b>
+                    </div>
+
+                    <div class="summary-row">
+                      <span>申込ID</span>
+                      <b>
+                        ${escapeHtml(result.applicationId)}
+                      </b>
+                    </div>
+
+                    ${
+                      result.hasAnalysisData
+                        ? `
+                          <button
+                            class="primary"
+                            type="button"
+                            data-open-analysis-id="${escapeHtml(
+                              result.analysisId,
+                            )}"
+                          >
+                            分析結果を見る
+                          </button>
+                        `
+                        : `
+                          <p class="muted">
+                            分析データはまだ登録されていません
+                          </p>
+                        `
+                    }
+
+                    ${
+                      result.hasPdf
+                        ? `
+                          <button
+                            class="secondary"
+                            type="button"
+                            data-pdf-analysis-id="${escapeHtml(
+                              result.analysisId,
+                            )}"
+                          >
+                            PDFレポートを保存
+                          </button>
+                        `
+                        : `
+                          <p class="muted">
+                            PDFレポートはありません
+                          </p>
+                        `
+                    }
+                  </section>
+                `,
+              )
+              .join("")
+          : `
+              <section class="card">
+                <p class="muted">
+                  現在、公開済みの分析結果はありません
+                </p>
+              </section>
+            `
+      }
+    </div>
+  `;
+
+  $$("[data-open-analysis-id]").forEach(
+    (button) =>
+      button.addEventListener(
+        "click",
+        () =>
+          openAnalysisDetail(
+            button.dataset.openAnalysisId,
+          ),
+      ),
+  );
+
+  $$("[data-pdf-analysis-id]").forEach(
+    (button) =>
+      button.addEventListener(
+        "click",
+        () =>
+          downloadAnalysisPdf(
+            button.dataset.pdfAnalysisId,
+            button,
+          ),
+      ),
+  );
+}
       async function downloadAnalysisPdf(analysisId,button){const original=button.textContent;button.disabled=true;button.textContent="PDFを準備中...";lock("PDFを準備中...");try{const result=await apiPost("getAnalysisPdf",{analysisId});const bytes=Uint8Array.from(atob(result.base64),char=>char.charCodeAt(0));const url=URL.createObjectURL(new Blob([bytes],{type:result.mimeType||"application/pdf"}));const link=document.createElement("a");link.href=url;link.download=result.fileName||"analysis-report.pdf";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}catch(error){console.error(error);alert(error.message||"PDFを開けませんでした");}finally{unlock();button.disabled=false;button.textContent=original;}}
       async function openComparison(){lock("比較できる分析を読み込み中...");try{const result=await apiPost("getAnalysisResults");STATE.analysisResults=result.results||[];renderComparisonSelection();}catch(error){console.error(error);alert(error.message||"比較データを読み込めませんでした");}finally{unlock();}}
       function comparisonOption(result){return `${escapeHtml(result.athleteName)}｜${escapeHtml(result.phase)}｜${escapeHtml(result.plan)}｜${escapeHtml(result.publishedAt||"公開日未設定")}`;}

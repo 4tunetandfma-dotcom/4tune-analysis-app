@@ -502,7 +502,7 @@ const ANALYSIS_CONNECTIONS = {
           <div class="stack">
             <section class="card hero"><small>WELCOME</small><h2>${escapeHtml(customer.applicantName)}さん</h2><p>分析の申し込みから結果比較まで、このアプリで管理します。</p></section>
             <section class="card"><div class="profile-line"><img class="avatar" src="${escapeHtml(STATE.profile?.pictureUrl||"")}" alt=""><div><strong>${escapeHtml(customer.applicantName)}</strong><span>${escapeHtml(customer.applicantType||"")}として登録済み</span></div></div></section>
-            <section class="task-card"><strong>現在、対応が必要な申し込みはありません</strong><p>申し込み状況に変化がある場合は、ここに優先表示します。</p></section>
+            <section id="homeTaskCard" class="task-card"><strong>申し込み状況を確認しています</strong><p>少しお待ちください。</p></section>
             <section class="card"><div class="section-title"><div><h3>メニュー</h3><p>各機能は順番に接続します</p></div></div><div class="menu-grid">
               <button class="menu-button primary-menu" type="button" onclick="openApplication()"><b>新しく申し込む</b><span>最高速・スタート分析</span></button>
               <button class="menu-button" type="button" onclick="openApplications()"><b>申し込み状況</b><span>動画・入金・分析状況</span></button>
@@ -513,6 +513,56 @@ const ANALYSIS_CONNECTIONS = {
             </div></section>
             <section class="card"><div class="section-title"><div><h3>登録選手</h3><p>${athletes.length}名</p></div></div><div>${athletes.length?athletes.map((athlete)=>`<div class="athlete-summary"><div><b>${escapeHtml(athlete.name)}</b><span>${escapeHtml(athlete.affiliation)}・${athlete.age==null?"年齢未設定":athlete.age+"歳"}・${escapeHtml(athlete.height)}cm</span></div><span class="pill">登録済み</span></div>`).join(""):'<p class="muted">登録選手はいません。指導者招待または選手管理から追加します。</p>'}</div></section>
           </div>`;
+        loadHomeTaskSummary();
+      }
+
+      async function loadHomeTaskSummary() {
+        const card = $("#homeTaskCard");
+        if (!card) return;
+
+        try {
+          const result = await apiPost("getApplications");
+          const applications = result.applications || [];
+          const actionable = applications
+            .map((application) => ({
+              application,
+              progressIndex: getApplicationProgressIndex(application),
+            }))
+            .filter((item) => item.progressIndex < 5)
+            .sort((a, b) => {
+              const priority = (item) => {
+                const statuses = (item.application.athletes || [])
+                  .map((athlete) => athlete.status || "")
+                  .join(" ");
+                if (/動画提出待ち|未提出|動画待ち/.test(statuses)) return 0;
+                if (item.progressIndex === 3) return 1;
+                return 2;
+              };
+              return priority(a) - priority(b);
+            })[0];
+
+          if (!actionable) {
+            card.innerHTML = `
+              <strong>現在、対応が必要な申し込みはありません</strong>
+              <p>新しい案内がある場合は、ここに優先表示します。</p>
+            `;
+            return;
+          }
+
+          const application = actionable.application;
+          card.innerHTML = `
+            <strong>${escapeHtml(getApplicationNextAction(application, actionable.progressIndex))}</strong>
+            <p>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}コース・${escapeHtml(application.applicationId)}</p>
+            <button class="secondary" style="margin-top:10px;min-height:40px" type="button">申し込み状況を確認</button>
+          `;
+          $("button", card)?.addEventListener("click", openApplications);
+        } catch (error) {
+          console.error("ホームの進捗確認に失敗しました", error);
+          card.innerHTML = `
+            <strong>申し込み状況を取得できませんでした</strong>
+            <p>「申し込み状況」から、もう一度確認してください。</p>
+          `;
+        }
       }
       async function openApplication(){
         lock("商品情報を読み込み中...");

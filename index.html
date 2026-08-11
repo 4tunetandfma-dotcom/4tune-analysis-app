@@ -2616,19 +2616,19 @@ function formatAnalysisValue(
       }
 
       function renderAdminAnalyses_(analyses) {
-        return `<h3 class="admin-section-title">分析結果</h3><p class="muted">分析データの検出・確認・公開状況</p>${analyses.length ? analyses.map((analysis) => `
+        return `<h3 class="admin-section-title">分析結果（全${analyses.length}件）</h3><p class="muted">完了・未公開・未登録を含むすべての分析対象</p>${analyses.length ? analyses.map((analysis) => `
           <div class="admin-application stack">
-            <div class="section-title"><div><h3>${escapeHtml(analysis.athleteName || "選手名未設定")}</h3><p>${escapeHtml(analysis.analysisId)}・${escapeHtml(analysis.applicationId)}</p></div><span class="pill">${escapeHtml(analysis.publishStatus)}</span></div>
-            <div class="admin-status-row"><span class="admin-status-chip">${escapeHtml(analysis.phase)}｜${escapeHtml(analysis.plan)}</span><span class="admin-status-chip">検出：${escapeHtml(analysis.detectionStatus)}</span><span class="admin-status-chip">確認：${escapeHtml(analysis.confirmationStatus)}</span></div>
+            <div class="section-title"><div><h3>${escapeHtml(analysis.athleteName || "選手名未設定")}</h3><p>${escapeHtml(analysis.analysisId || "分析未登録")}・${escapeHtml(analysis.applicationId)}</p></div><span class="pill">${escapeHtml(analysis.managementStatus || analysis.publishStatus)}</span></div>
+            <div class="admin-status-row"><span class="admin-status-chip">申込：${escapeHtml(analysis.applicationProgressStatus || "-")}</span><span class="admin-status-chip">${escapeHtml(analysis.phase)}｜${escapeHtml(analysis.plan)}</span><span class="admin-status-chip">公開：${escapeHtml(analysis.publishStatus)}</span><span class="admin-status-chip">検出：${escapeHtml(analysis.detectionStatus)}</span><span class="admin-status-chip">確認：${escapeHtml(analysis.confirmationStatus)}</span></div>
             <div class="summary-row"><span>分析スプレッドシート</span><b>${analysis.hasSpreadsheet ? "登録済み" : "未登録"}</b></div>
             <div class="summary-row"><span>PDF</span><b>${analysis.hasPdf ? "登録済み" : "未登録"}</b></div>
             <div class="summary-row"><span>公開日時</span><b>${escapeHtml(analysis.publishedAt || "-")}</b></div>
-            <div class="admin-edit-grid">
+            ${analysis.analysisId ? `<div class="admin-edit-grid">
               <div class="field"><label>データ検出</label><select data-analysis-detection>${adminStatusOptions_(["未検出","検出済み","エラー"], analysis.detectionStatus)}</select></div>
               <div class="field"><label>データ確認</label><select data-analysis-confirmation>${adminStatusOptions_(["未確認","確認中","確認済み","要修正"], analysis.confirmationStatus)}</select></div>
               <div class="field" style="grid-column:1/-1"><label>公開状態</label><select data-analysis-publish>${adminStatusOptions_(["未公開","公開中","公開停止"], analysis.publishStatus)}</select></div>
               <button class="admin-save-button" type="button" data-admin-analysis-save="${escapeHtml(analysis.analysisId)}">分析状態を保存</button>
-            </div>
+            </div>` : `<div class="notice">分析管理への登録待ちです。登録機能は次の工程で追加します。</div>`}
           </div>`).join("") : '<p class="muted">分析結果はありません。</p>'}`;
       }
 

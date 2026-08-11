@@ -240,6 +240,36 @@
   gap: 9px;
 }
 
+.analysis-graph-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.analysis-graph-order-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.analysis-graph-order-button {
+  display: grid;
+  width: 28px;
+  min-height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f5f8fa;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.analysis-graph-order-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .analysis-graph-header h4 {
   margin: 0;
   color: var(--navy);
@@ -306,6 +336,7 @@
   showCenterOfMass: true,
   showToeTrajectory: true,
   showJointHighlight: true,
+  graphOrder: ["center", "angle", "velocity"],
 };
 
 const ANALYSIS_CONNECTIONS = {
@@ -712,6 +743,7 @@ function renderAnalysisDetail(analysis) {
   ANALYSIS_VIEW_STATE.showCenterOfMass = true;
   ANALYSIS_VIEW_STATE.showToeTrajectory = true;
   ANALYSIS_VIEW_STATE.showJointHighlight = true;
+  ANALYSIS_VIEW_STATE.graphOrder = ["center", "angle", "velocity"];
 
   const isLight =
     String(analysis.plan || "")
@@ -938,9 +970,16 @@ function renderAnalysisDetail(analysis) {
     </select>
   </div>
 
-  <div class="analysis-graph-card">
+  <div id="analysisGraphCards" class="stack">
+  <div class="analysis-graph-card" data-analysis-graph="center">
     <div class="analysis-graph-header">
-      <h4>身体重心</h4>
+      <div class="analysis-graph-title-row">
+        <div class="analysis-graph-order-buttons">
+          <button type="button" class="analysis-graph-order-button" data-graph-move="up" aria-label="身体重心を上へ">↑</button>
+          <button type="button" class="analysis-graph-order-button" data-graph-move="down" aria-label="身体重心を下へ">↓</button>
+        </div>
+        <h4>身体重心</h4>
+      </div>
 
       <span
         id="centerOfMassGraphValue"
@@ -958,9 +997,15 @@ function renderAnalysisDetail(analysis) {
     </div>
   </div>
 
-  <div class="analysis-graph-card">
+  <div class="analysis-graph-card" data-analysis-graph="angle">
     <div class="analysis-graph-header">
-      <h4>関節角度</h4>
+      <div class="analysis-graph-title-row">
+        <div class="analysis-graph-order-buttons">
+          <button type="button" class="analysis-graph-order-button" data-graph-move="up" aria-label="関節角度を上へ">↑</button>
+          <button type="button" class="analysis-graph-order-button" data-graph-move="down" aria-label="関節角度を下へ">↓</button>
+        </div>
+        <h4>関節角度</h4>
+      </div>
 
       <span
         id="jointAngleGraphValue"
@@ -978,9 +1023,15 @@ function renderAnalysisDetail(analysis) {
     </div>
   </div>
 
-  <div class="analysis-graph-card">
+  <div class="analysis-graph-card" data-analysis-graph="velocity">
     <div class="analysis-graph-header">
-      <h4>関節の収縮速度</h4>
+      <div class="analysis-graph-title-row">
+        <div class="analysis-graph-order-buttons">
+          <button type="button" class="analysis-graph-order-button" data-graph-move="up" aria-label="関節の収縮速度を上へ">↑</button>
+          <button type="button" class="analysis-graph-order-button" data-graph-move="down" aria-label="関節の収縮速度を下へ">↓</button>
+        </div>
+        <h4>関節の収縮速度</h4>
+      </div>
 
       <span
         id="jointVelocityGraphValue"
@@ -996,6 +1047,7 @@ function renderAnalysisDetail(analysis) {
         class="analysis-graph-canvas"
       ></canvas>
     </div>
+  </div>
   </div>
 </div>
       </section>
@@ -1165,6 +1217,63 @@ function bindAnalysisViewerEvents() {
   bindAnalysisToggle_("analysisCenterToggle", "showCenterOfMass");
   bindAnalysisToggle_("analysisToeToggle", "showToeTrajectory");
   bindAnalysisToggle_("analysisJointToggle", "showJointHighlight");
+
+  $$('[data-graph-move]').forEach((button) => {
+    button.addEventListener("click", () => {
+      const card = button.closest('[data-analysis-graph]');
+      if (!card) return;
+      moveAnalysisGraph_(
+        card.dataset.analysisGraph,
+        button.dataset.graphMove,
+      );
+    });
+  });
+
+  applyAnalysisGraphOrder_();
+}
+
+function moveAnalysisGraph_(graphKey, direction) {
+  const order = [...ANALYSIS_VIEW_STATE.graphOrder];
+  const currentIndex = order.indexOf(graphKey);
+  const nextIndex = direction === "up"
+    ? currentIndex - 1
+    : currentIndex + 1;
+
+  if (
+    currentIndex < 0 ||
+    nextIndex < 0 ||
+    nextIndex >= order.length
+  ) return;
+
+  [order[currentIndex], order[nextIndex]] =
+    [order[nextIndex], order[currentIndex]];
+
+  ANALYSIS_VIEW_STATE.graphOrder = order;
+  applyAnalysisGraphOrder_();
+  resizeAnalysisGraphCanvases();
+  drawAnalysisGraphs();
+}
+
+function applyAnalysisGraphOrder_() {
+  const container = document.getElementById("analysisGraphCards");
+  if (!container) return;
+
+  ANALYSIS_VIEW_STATE.graphOrder.forEach((graphKey) => {
+    const card = container.querySelector(
+      `[data-analysis-graph="${graphKey}"]`,
+    );
+    if (card) container.appendChild(card);
+  });
+
+  const cards = Array.from(
+    container.querySelectorAll('[data-analysis-graph]'),
+  );
+  cards.forEach((card, index) => {
+    const up = card.querySelector('[data-graph-move="up"]');
+    const down = card.querySelector('[data-graph-move="down"]');
+    if (up) up.disabled = index === 0;
+    if (down) down.disabled = index === cards.length - 1;
+  });
 }
 
 function bindAnalysisToggle_(elementId, stateKey) {
@@ -1567,6 +1676,7 @@ function drawProAnalysis(
       scale:
         ANALYSIS_VIEW_STATE.scale /
         100,
+      referenceFrames: frames.map((item) => item.points),
     },
   );
 
@@ -1663,6 +1773,7 @@ function drawLightAnalysis(
           width: itemWidth - 4,
           height: height - 78,
           scale: 1,
+          referenceFrames: frames.map((item) => item.points),
         },
       );
 
@@ -1719,35 +1830,22 @@ function drawStickFrame(
     return null;
   }
 
-  const minX = Math.min(
-    ...validPoints.map(
-      (point) => point.x,
-    ),
+  const hipCenter = getGreaterTrochanterCenter_(points);
+  if (!hipCenter) return null;
+
+  const referenceBounds = getHipRelativeBounds_(
+    area.referenceFrames || [points],
   );
 
-  const maxX = Math.max(
-    ...validPoints.map(
-      (point) => point.x,
-    ),
+  const rangeX = Math.max(
+    0.001,
+    referenceBounds.maxX - referenceBounds.minX,
   );
 
-  const minY = Math.min(
-    ...validPoints.map(
-      (point) => point.y,
-    ),
+  const rangeY = Math.max(
+    0.001,
+    referenceBounds.maxY - referenceBounds.minY,
   );
-
-  const maxY = Math.max(
-    ...validPoints.map(
-      (point) => point.y,
-    ),
-  );
-
-  const rangeX =
-    Math.max(0.001, maxX - minX);
-
-  const rangeY =
-    Math.max(0.001, maxY - minY);
 
   const baseScale =
     Math.min(
@@ -1761,11 +1859,13 @@ function drawStickFrame(
 
   const centerX =
     area.left +
-    area.width / 2;
+    area.width / 2 -
+    (referenceBounds.minX + referenceBounds.maxX) / 2 * scale;
 
-  const groundY =
+  const centerY =
     area.top +
-    area.height;
+    area.height / 2 +
+    (referenceBounds.minY + referenceBounds.maxY) / 2 * scale;
 
   const convertPoint =
     (point) => ({
@@ -1773,13 +1873,13 @@ function drawStickFrame(
         centerX +
         (
           point.x -
-          (minX + maxX) / 2
+          hipCenter.x
         ) *
           scale,
 
       y:
-        groundY -
-        (point.y - minY) * scale,
+        centerY -
+        (point.y - hipCenter.y) * scale,
     });
 
   drawStickConnections(
@@ -1837,6 +1937,58 @@ function drawStickFrame(
   );
 
   return convertPoint;
+}
+
+function getGreaterTrochanterCenter_(points) {
+  const right = points?.[13];
+  const left = points?.[19];
+  const isValid = (point) =>
+    point &&
+    Number.isFinite(point.x) &&
+    Number.isFinite(point.y);
+
+  if (isValid(right) && isValid(left)) {
+    return {
+      x: (right.x + left.x) / 2,
+      y: (right.y + left.y) / 2,
+    };
+  }
+  if (isValid(right)) return { x: right.x, y: right.y };
+  if (isValid(left)) return { x: left.x, y: left.y };
+  return null;
+}
+
+function getHipRelativeBounds_(referenceFrames) {
+  const relativePoints = [];
+
+  (referenceFrames || []).forEach((framePoints) => {
+    const hipCenter = getGreaterTrochanterCenter_(framePoints);
+    if (!hipCenter) return;
+
+    (framePoints || []).forEach((point) => {
+      if (
+        !point ||
+        !Number.isFinite(point.x) ||
+        !Number.isFinite(point.y)
+      ) return;
+
+      relativePoints.push({
+        x: point.x - hipCenter.x,
+        y: point.y - hipCenter.y,
+      });
+    });
+  });
+
+  if (!relativePoints.length) {
+    return { minX: -1, maxX: 1, minY: -1, maxY: 1 };
+  }
+
+  return {
+    minX: Math.min(...relativePoints.map((point) => point.x)),
+    maxX: Math.max(...relativePoints.map((point) => point.x)),
+    minY: Math.min(...relativePoints.map((point) => point.y)),
+    maxY: Math.max(...relativePoints.map((point) => point.y)),
+  };
 }
 
 function drawAnalysisAuxiliary_(

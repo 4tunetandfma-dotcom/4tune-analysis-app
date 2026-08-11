@@ -35,6 +35,7 @@
       .athlete-summary{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-top:1px solid var(--line)}.athlete-summary:first-child{border-top:0}.athlete-summary b{font-size:14px}.athlete-summary span{display:block;margin-top:4px;color:var(--muted);font-size:11px}.pill{align-self:flex-start;padding:5px 8px;border-radius:99px;background:#e5f4ef;color:var(--success);font-size:10px;font-weight:800}
       .product-grid,.select-list{display:grid;gap:10px}.product-option,.athlete-option{position:relative}.product-option input,.athlete-option input{position:absolute;opacity:0;pointer-events:none}.product-box,.athlete-box{display:block;padding:14px;border:1px solid var(--line);border-radius:15px;background:#fff}.product-option input:checked+.product-box,.athlete-option input:checked+.athlete-box{border-color:var(--blue);background:#eaf5f7;box-shadow:0 0 0 2px rgba(23,107,135,.08)}.product-top,.athlete-box{display:flex;justify-content:space-between;gap:12px}.product-box b,.athlete-box b{font-size:14px}.product-box small,.athlete-box small{display:block;margin-top:5px;color:var(--muted)}.price{color:var(--blue);font-size:17px;font-weight:900}.old-price{display:block;color:var(--muted);font-size:10px;text-decoration:line-through;text-align:right}
       .shooting-card{padding:14px;border:1px solid var(--line);border-radius:15px;background:#fbfdfe}.shooting-card h4{margin:0 0 12px;font-size:14px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}.summary-row:first-child{border-top:0}.summary-row.total{margin-top:4px;padding-top:13px;font-size:16px;font-weight:900}.discount{color:var(--success)}
+      .progress-track{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:2px 0 4px}.progress-step{display:grid;gap:6px;min-width:0;text-align:center}.progress-dot{position:relative;height:7px;border-radius:99px;background:#dbe6eb}.progress-step.done .progress-dot{background:var(--success)}.progress-step.current .progress-dot{background:var(--blue);box-shadow:0 0 0 3px rgba(23,107,135,.13)}.progress-label{overflow:hidden;color:var(--muted);font-size:9px;font-weight:800;white-space:nowrap}.progress-step.done .progress-label,.progress-step.current .progress-label{color:var(--navy)}.progress-next{padding:12px;border:1px solid #cfe1e7;border-radius:13px;background:#eef6f8}.progress-next small{display:block;margin-bottom:3px;color:var(--blue);font-size:10px;font-weight:900}.progress-next b{font-size:13px;line-height:1.5}.athlete-status-list{display:grid;gap:8px}
       .loading{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(243,247,249,.94);backdrop-filter:blur(5px)}.loading.hidden{display:none}.loading-box{text-align:center}.spinner{width:46px;height:46px;margin:0 auto 13px;border:4px solid #d5e6eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}.loading p{margin:0;color:var(--navy);font-weight:800}@keyframes spin{to{transform:rotate(360deg)}}
       @media(max-width:430px){.grid-2{grid-template-columns:1fr}.choice-row{grid-template-columns:1fr 1fr 1fr}.card{padding:16px}}
       .analysis-viewer {
@@ -549,7 +550,108 @@ const ANALYSIS_CONNECTIONS = {
       function renderApplicationComplete(application){$("#screen").innerHTML=`<div class="stack"><section class="card hero"><small>APPLICATION ACCEPTED</small><h2>申し込みを受け付けました</h2><p>続けて、選手ごとに分析動画を提出してください。</p></section><section class="card stack"><div><b>申込ID</b><p style="margin:5px 0 0;color:var(--blue);font-weight:900">${escapeHtml(application.applicationId)}</p></div><div class="summary-row"><span>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}</span><b>${application.count}名</b></div>${application.groupDiscountApplied?`<div class="summary-row discount"><span>団体割</span><b>−${formatYen(application.groupDiscountTotal)}</b></div>`:""}<div class="summary-row total"><span>予定金額</span><b>${formatYen(application.total)}</b></div><div class="notice">まだ振り込まないでください。動画確認後に振込先と確定金額をご案内します。</div></section><section class="card stack"><div class="section-title"><div><h3>動画を提出</h3><p>Googleアカウントへのログインが必要です</p></div></div>${application.athletes.map((athlete)=>`<button class="primary" type="button" data-upload-url="${escapeHtml(athlete.uploadUrl)}">${escapeHtml(athlete.name)}の動画を提出</button>`).join("")}<button class="secondary" type="button" onclick="reloadHome()">ホームへ戻る</button></section></div>`;$$('[data-upload-url]').forEach((button)=>button.addEventListener("click",()=>openUploadForm(button.dataset.uploadUrl)));}
       function openUploadForm(url){if(window.liff?.openWindow)liff.openWindow({url,external:true});else window.open(url,"_blank","noopener");}
       async function openApplications(){lock("申し込み状況を読み込み中...");try{const result=await apiPost("getApplications");renderApplications(result.applications||[]);}catch(error){console.error(error);alert(error.message||"申し込み状況を読み込めませんでした");}finally{unlock();}}
-      function renderApplications(applications){$("#screen").innerHTML=`<div class="stack"><section class="card"><div class="section-title"><div><h2>申し込み状況</h2><p>動画・入金・分析の進行状況</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button></div></section>${applications.length?applications.map((application)=>`<section class="card stack"><div class="section-title"><div><h3>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}コース</h3><p>${escapeHtml(application.appliedAt)}・${escapeHtml(application.applicationId)}</p></div><span class="pill">${escapeHtml(application.progressStatus)}</span></div><div class="summary-row"><span>申し込み</span><b>${escapeHtml(application.applicationType)}・${application.count}名</b></div><div class="summary-row"><span>入金状態</span><b>${escapeHtml(application.paymentStatus)}</b></div><div class="summary-row total"><span>予定金額</span><b>${formatYen(application.total)}</b></div>${application.athletes.map((athlete)=>`<div class="shooting-card"><div class="athlete-head"><strong>${escapeHtml(athlete.name)}</strong><span class="pill">${escapeHtml(athlete.status)}</span></div>${athlete.status==="動画提出待ち"?`<button class="secondary" type="button" data-upload-url="${escapeHtml(athlete.uploadUrl)}">動画提出フォームを開く</button>`:""}</div>`).join("")}</section>`).join(""):'<section class="card"><p class="muted">申し込み履歴はありません。</p></section>'}</div>`;$$('[data-upload-url]').forEach((button)=>button.addEventListener("click",()=>openUploadForm(button.dataset.uploadUrl)));}
+      const APPLICATION_PROGRESS_STEPS = [
+        "申込受付", "動画提出", "内容確認", "入金", "分析中", "完了",
+      ];
+
+      function getApplicationProgressIndex(application) {
+        const athleteStatuses = (application.athletes || [])
+          .map((athlete) => athlete.status || "")
+          .join(" ");
+        const statusText = [
+          application.progressStatus,
+          application.paymentStatus,
+          athleteStatuses,
+        ].join(" ");
+
+        if (/公開|完了|返却済/.test(statusText)) return 5;
+        if (/分析中|解析中|作成中/.test(statusText)) return 4;
+        if (/入金済|支払済|決済済/.test(statusText)) return 4;
+        if (/動画提出待ち|未提出|動画待ち/.test(statusText)) return 1;
+        if (/入金待ち|振込待ち|支払待ち|決済待ち|入金案内/.test(statusText)) return 3;
+        if (/確認中|確認待ち|動画受領|提出済/.test(statusText)) return 2;
+        return 0;
+      }
+
+      function getApplicationNextAction(application, progressIndex) {
+        const waitingAthletes = (application.athletes || [])
+          .filter((athlete) => /動画提出待ち|未提出|動画待ち/.test(athlete.status || ""));
+
+        if (waitingAthletes.length) {
+          return `${waitingAthletes.map((athlete) => athlete.name).join("、")}さんの動画を提出してください`;
+        }
+        if (progressIndex === 0) return "受付内容の確認をお待ちください";
+        if (progressIndex === 1) return "動画提出フォームから動画を提出してください";
+        if (progressIndex === 2) return "動画の確認完了までお待ちください";
+        if (progressIndex === 3) return "LINEで届く入金案内をご確認ください";
+        if (progressIndex === 4) return "分析結果の公開までお待ちください";
+        return "分析結果画面から結果を確認できます";
+      }
+
+      function renderApplicationProgress(application) {
+        const currentIndex = getApplicationProgressIndex(application);
+        return `
+          <div class="progress-track" aria-label="分析進捗">
+            ${APPLICATION_PROGRESS_STEPS.map((label, index) => `
+              <div class="progress-step ${index < currentIndex ? "done" : ""} ${index === currentIndex ? "current" : ""}">
+                <div class="progress-dot"></div>
+                <div class="progress-label">${label}</div>
+              </div>
+            `).join("")}
+          </div>
+          <div class="progress-next">
+            <small>次に行うこと</small>
+            <b>${escapeHtml(getApplicationNextAction(application, currentIndex))}</b>
+          </div>
+        `;
+      }
+
+      function renderApplications(applications) {
+        $("#screen").innerHTML = `
+          <div class="stack">
+            <section class="card">
+              <div class="section-title">
+                <div><h2>申し込み状況</h2><p>動画・入金・分析の進行状況</p></div>
+                <button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button>
+              </div>
+            </section>
+            ${applications.length ? applications.map((application) => `
+              <section class="card stack">
+                <div class="section-title">
+                  <div>
+                    <h3>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}コース</h3>
+                    <p>${escapeHtml(application.appliedAt)}・${escapeHtml(application.applicationId)}</p>
+                  </div>
+                  <span class="pill">${escapeHtml(application.progressStatus || "申込受付")}</span>
+                </div>
+                ${renderApplicationProgress(application)}
+                <div>
+                  <div class="summary-row"><span>申し込み</span><b>${escapeHtml(application.applicationType)}・${application.count}名</b></div>
+                  <div class="summary-row"><span>入金状態</span><b>${escapeHtml(application.paymentStatus || "未入金")}</b></div>
+                  <div class="summary-row total"><span>予定金額</span><b>${formatYen(application.total)}</b></div>
+                </div>
+                <div class="athlete-status-list">
+                  ${(application.athletes || []).map((athlete) => `
+                    <div class="shooting-card">
+                      <div class="athlete-head">
+                        <strong>${escapeHtml(athlete.name)}</strong>
+                        <span class="pill">${escapeHtml(athlete.status)}</span>
+                      </div>
+                      ${/動画提出待ち|未提出|動画待ち/.test(athlete.status || "") ? `
+                        <button class="secondary" type="button" data-upload-url="${escapeHtml(athlete.uploadUrl)}">動画提出フォームを開く</button>
+                      ` : ""}
+                    </div>
+                  `).join("")}
+                </div>
+              </section>
+            `).join("") : '<section class="card"><p class="muted">申し込み履歴はありません。</p></section>'}
+          </div>
+        `;
+
+        $$('[data-upload-url]').forEach((button) =>
+          button.addEventListener("click", () => openUploadForm(button.dataset.uploadUrl)),
+        );
+      }
       async function openAnalysisResults(){lock("分析結果を読み込み中...");try{const result=await apiPost("getAnalysisResults");renderAnalysisResults(result.results||[]);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
 function renderAnalysisResults(results) {
   $("#screen").innerHTML = `

@@ -36,7 +36,7 @@
       .product-grid,.select-list{display:grid;gap:10px}.product-option,.athlete-option{position:relative}.product-option input,.athlete-option input{position:absolute;opacity:0;pointer-events:none}.product-box,.athlete-box{display:block;padding:14px;border:1px solid var(--line);border-radius:15px;background:#fff}.product-option input:checked+.product-box,.athlete-option input:checked+.athlete-box{border-color:var(--blue);background:#eaf5f7;box-shadow:0 0 0 2px rgba(23,107,135,.08)}.product-top,.athlete-box{display:flex;justify-content:space-between;gap:12px}.product-box b,.athlete-box b{font-size:14px}.product-box small,.athlete-box small{display:block;margin-top:5px;color:var(--muted)}.price{color:var(--blue);font-size:17px;font-weight:900}.old-price{display:block;color:var(--muted);font-size:10px;text-decoration:line-through;text-align:right}
       .shooting-card{padding:14px;border:1px solid var(--line);border-radius:15px;background:#fbfdfe}.shooting-card h4{margin:0 0 12px;font-size:14px}.summary-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}.summary-row:first-child{border-top:0}.summary-row.total{margin-top:4px;padding-top:13px;font-size:16px;font-weight:900}.discount{color:var(--success)}
       .progress-track{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:2px 0 4px}.progress-step{display:grid;gap:6px;min-width:0;text-align:center}.progress-dot{position:relative;height:7px;border-radius:99px;background:#dbe6eb}.progress-step.done .progress-dot{background:var(--success)}.progress-step.current .progress-dot{background:var(--blue);box-shadow:0 0 0 3px rgba(23,107,135,.13)}.progress-label{overflow:hidden;color:var(--muted);font-size:9px;font-weight:800;white-space:nowrap}.progress-step.done .progress-label,.progress-step.current .progress-label{color:var(--navy)}.progress-next{padding:12px;border:1px solid #cfe1e7;border-radius:13px;background:#eef6f8}.progress-next small{display:block;margin-bottom:3px;color:var(--blue);font-size:10px;font-weight:900}.progress-next b{font-size:13px;line-height:1.5}.athlete-status-list{display:grid;gap:8px}
-      .admin-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.admin-summary{padding:13px;border:1px solid var(--line);border-radius:14px;background:#fff}.admin-summary small{display:block;color:var(--muted);font-size:10px;font-weight:800}.admin-summary strong{display:block;margin-top:4px;color:var(--navy);font-size:23px}.admin-application{padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}.admin-status-row{display:flex;flex-wrap:wrap;gap:6px}.admin-status-chip{padding:5px 8px;border-radius:99px;background:#edf3f5;color:#365e6c;font-size:10px;font-weight:800}.admin-status-chip.payment{background:#fff3de;color:#8a5700}.admin-status-chip.analysis{background:#e8f3f6;color:var(--blue)}
+      .admin-screen{--admin:#e8751a;--admin-dark:#a94b08;--admin-soft:#fff2e7}.admin-screen .admin-hero{background:linear-gradient(145deg,var(--admin-dark),var(--admin));color:#fff}.admin-screen .admin-hero p,.admin-screen .admin-hero small{color:#ffe2ca}.admin-menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.admin-menu-button{min-height:82px;padding:12px;border:1px solid #f0c6a5;border-radius:15px;background:#fff8f2;color:var(--admin-dark);text-align:left;font-weight:900}.admin-menu-button span{display:block;margin-top:5px;color:#9a6845;font-size:10px}.admin-menu-button.active{border-color:var(--admin);background:linear-gradient(145deg,var(--admin),var(--admin-dark));color:#fff}.admin-menu-button.active span{color:#ffe2ca}.admin-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.admin-summary{padding:13px;border:1px solid #f0d4bf;border-radius:14px;background:#fff}.admin-summary small{display:block;color:#9a6845;font-size:10px;font-weight:800}.admin-summary strong{display:block;margin-top:4px;color:var(--admin-dark);font-size:23px}.admin-application{padding:14px;border:1px solid #f0d4bf;border-radius:16px;background:#fff}.admin-status-row{display:flex;flex-wrap:wrap;gap:6px}.admin-status-chip{padding:5px 8px;border-radius:99px;background:var(--admin-soft);color:var(--admin-dark);font-size:10px;font-weight:800}.admin-status-chip.payment{background:#fff0d5;color:#8a5700}.admin-status-chip.analysis{background:#ffe5d1;color:#a94b08}.admin-section-title{margin:0;color:var(--admin-dark);font-size:17px}
       .loading{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(243,247,249,.94);backdrop-filter:blur(5px)}.loading.hidden{display:none}.loading-box{text-align:center}.spinner{width:46px;height:46px;margin:0 auto 13px;border:4px solid #d5e6eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}.loading p{margin:0;color:var(--navy);font-weight:800}@keyframes spin{to{transform:rotate(360deg)}}
       @media(max-width:430px){.grid-2{grid-template-columns:1fr}.choice-row{grid-template-columns:1fr 1fr 1fr}.card{padding:16px}}
       .analysis-viewer {
@@ -379,7 +379,7 @@ const ANALYSIS_CONNECTIONS = {
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec"
       });
-      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],submitting:false};
+      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],adminDashboard:null,adminSection:"applications",submitting:false};
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
       const escapeHtml=(value)=>String(value??"").replace(/[&<>'"]/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
@@ -2452,7 +2452,9 @@ function formatAnalysisValue(
         lock("管理データを読み込み中...");
         try {
           const result = await apiPost("getAdminDashboard");
-          renderAdminDashboard(result);
+          STATE.adminDashboard = result;
+          STATE.adminSection = "applications";
+          renderAdminDashboard();
         } catch (error) {
           console.error(error);
           alert(error.message || "管理データを読み込めませんでした");
@@ -2461,12 +2463,12 @@ function formatAnalysisValue(
         }
       }
 
-      function renderAdminDashboard(data) {
+      function renderAdminDashboard() {
+        const data = STATE.adminDashboard || {};
         const summary = data.summary || {};
-        const applications = data.applications || [];
         $("#screen").innerHTML = `
-          <div class="stack">
-            <section class="card hero">
+          <div class="stack admin-screen">
+            <section class="card admin-hero">
               <div class="section-title">
                 <div>
                   <small>ADMIN DASHBOARD</small>
@@ -2485,14 +2487,40 @@ function formatAnalysisValue(
             </section>
 
             <section class="card stack">
-              <div class="section-title">
-                <div><h3>申込一覧</h3><p>新しい申込から表示</p></div>
-                <button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="openAdminDashboard()">更新</button>
+              <div class="section-title"><div><h3>管理メニュー</h3><p>確認する情報を選択</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="openAdminDashboard()">更新</button></div>
+              <div class="admin-menu-grid">
+                ${adminMenuButton_("applications", "申し込み状況", "申込・入金・動画")}
+                ${adminMenuButton_("analyses", "分析結果", "検出・確認・公開")}
+                ${adminMenuButton_("registrants", "登録者情報", "申込者・選手")}
+                ${adminMenuButton_("products", "商品情報", "料金・受付状態")}
               </div>
-              ${applications.length ? applications.map(renderAdminApplication_).join("") : '<p class="muted">申し込みはありません。</p>'}
+            </section>
+
+            <section id="adminSectionContent" class="card stack">
+              ${renderAdminSection_()}
             </section>
           </div>
         `;
+
+        $$('[data-admin-section]').forEach((button) => {
+          button.addEventListener("click", () => {
+            STATE.adminSection = button.dataset.adminSection;
+            renderAdminDashboard();
+          });
+        });
+      }
+
+      function adminMenuButton_(key, label, description) {
+        return `<button class="admin-menu-button ${STATE.adminSection === key ? "active" : ""}" type="button" data-admin-section="${key}">${label}<span>${description}</span></button>`;
+      }
+
+      function renderAdminSection_() {
+        const data = STATE.adminDashboard || {};
+        if (STATE.adminSection === "analyses") return renderAdminAnalyses_(data.analyses || []);
+        if (STATE.adminSection === "registrants") return renderAdminRegistrants_(data.registrants || []);
+        if (STATE.adminSection === "products") return renderAdminProducts_(data.products || []);
+        const applications = data.applications || [];
+        return `<h3 class="admin-section-title">申し込み状況</h3><p class="muted">新しい申込から表示</p>${applications.length ? applications.map(renderAdminApplication_).join("") : '<p class="muted">申し込みはありません。</p>'}`;
       }
 
       function adminSummaryCard_(label, value) {
@@ -2531,6 +2559,39 @@ function formatAnalysisValue(
             </div>
           </div>
         `;
+      }
+
+      function renderAdminAnalyses_(analyses) {
+        return `<h3 class="admin-section-title">分析結果</h3><p class="muted">分析データの検出・確認・公開状況</p>${analyses.length ? analyses.map((analysis) => `
+          <div class="admin-application stack">
+            <div class="section-title"><div><h3>${escapeHtml(analysis.athleteName || "選手名未設定")}</h3><p>${escapeHtml(analysis.analysisId)}・${escapeHtml(analysis.applicationId)}</p></div><span class="pill">${escapeHtml(analysis.publishStatus)}</span></div>
+            <div class="admin-status-row"><span class="admin-status-chip">${escapeHtml(analysis.phase)}｜${escapeHtml(analysis.plan)}</span><span class="admin-status-chip">検出：${escapeHtml(analysis.detectionStatus)}</span><span class="admin-status-chip">確認：${escapeHtml(analysis.confirmationStatus)}</span></div>
+            <div class="summary-row"><span>分析スプレッドシート</span><b>${analysis.hasSpreadsheet ? "登録済み" : "未登録"}</b></div>
+            <div class="summary-row"><span>PDF</span><b>${analysis.hasPdf ? "登録済み" : "未登録"}</b></div>
+            <div class="summary-row"><span>公開日時</span><b>${escapeHtml(analysis.publishedAt || "-")}</b></div>
+          </div>`).join("") : '<p class="muted">分析結果はありません。</p>'}`;
+      }
+
+      function renderAdminRegistrants_(registrants) {
+        return `<h3 class="admin-section-title">登録者情報</h3><p class="muted">申込者と登録選手</p>${registrants.length ? registrants.map((registrant) => `
+          <div class="admin-application stack">
+            <div class="section-title"><div><h3>${escapeHtml(registrant.applicantName)}</h3><p>${escapeHtml(registrant.customerId)}・${escapeHtml(registrant.applicantType)}</p></div><span class="pill">${escapeHtml(registrant.status)}</span></div>
+            ${registrant.guardianName ? `<div class="summary-row"><span>保護者名</span><b>${escapeHtml(registrant.guardianName)}</b></div>` : ""}
+            ${registrant.role ? `<div class="summary-row"><span>役職</span><b>${escapeHtml(registrant.role)}</b></div>` : ""}
+            <div class="athlete-status-list">${(registrant.athletes || []).map((athlete) => `<div class="shooting-card"><div class="athlete-head"><strong>${escapeHtml(athlete.name)}</strong><span class="pill">${escapeHtml(athlete.status)}</span></div><p class="muted" style="margin:0">${escapeHtml(athlete.affiliation)}・${escapeHtml(athlete.height)}cm${athlete.weight ? `・${escapeHtml(athlete.weight)}kg` : ""}</p></div>`).join("") || '<p class="muted">登録選手はいません。</p>'}</div>
+          </div>`).join("") : '<p class="muted">登録者はいません。</p>'}`;
+      }
+
+      function renderAdminProducts_(products) {
+        return `<h3 class="admin-section-title">商品情報</h3><p class="muted">価格・割引・受付状態</p>${products.length ? products.map((product) => `
+          <div class="admin-application stack">
+            <div class="section-title"><div><h3>${escapeHtml(product.name)}｜${escapeHtml(product.phase)}</h3><p>${escapeHtml(product.productId)}・${escapeHtml(product.category)}</p></div><span class="pill">${escapeHtml(product.receptionStatus)}</span></div>
+            <div class="admin-status-row"><span class="admin-status-chip">${escapeHtml(product.plan)}</span><span class="admin-status-chip">表示：${escapeHtml(product.displayStatus)}</span>${product.campaignEnabled ? '<span class="admin-status-chip">キャンペーン中</span>' : ""}</div>
+            <div class="summary-row"><span>通常価格</span><b>${formatYen(product.normalPrice)}</b></div>
+            <div class="summary-row"><span>現在価格</span><b>${formatYen(product.campaignEnabled ? product.campaignPrice : product.normalPrice)}</b></div>
+            <div class="summary-row"><span>団体割</span><b>${product.groupDiscountEnabled ? `${product.groupMinimum}名以上・${formatYen(product.groupDiscount)}引き` : "なし"}</b></div>
+            <div class="summary-row"><span>学割</span><b>${product.studentDiscountEnabled ? `${formatYen(product.studentDiscount)}引き` : "なし"}</b></div>
+          </div>`).join("") : '<p class="muted">商品情報はありません。</p>'}`;
       }
 
       async function reloadHome(){lock("ホームを更新中...");try{STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}

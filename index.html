@@ -275,31 +275,34 @@ body.analysis-detail-mode .brand {
   font-size: 28px;
 }
 
-.analysis-section-tabs {
-  display: flex;
-  gap: 7px;
-  overflow-x: auto;
-  padding: 2px 1px 7px;
-  scrollbar-width: thin;
-}
-
-.analysis-section-button {
-  flex: 0 0 auto;
-  min-height: 38px;
-  padding: 0 12px;
+.analysis-section-selector {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: grid;
+  gap: 5px;
+  padding: 7px;
   border: 1px solid var(--line);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 900;
-  white-space: nowrap;
+  border-radius: 11px;
+  background: rgba(243,248,245,.96);
+  box-shadow: 0 4px 10px rgba(23,79,67,.06);
 }
 
-.analysis-section-button.active {
-  border-color: var(--blue);
-  background: var(--blue);
-  color: #fff;
+.analysis-section-selector label {
+  color: var(--navy);
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.analysis-section-select {
+  min-height: 36px;
+  padding: 6px 10px;
+  border-color: #bfd2da;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .analysis-section-content {
@@ -498,6 +501,13 @@ const ANALYSIS_VIEW_STATE = {
   graphOrder: ["center", "angle", "velocity"],
   activeMetricSection: "",
 };
+
+const ANALYSIS_WATERMARK_IMAGE = new Image();
+ANALYSIS_WATERMARK_IMAGE.decoding = "async";
+ANALYSIS_WATERMARK_IMAGE.src = "4tune_logo_fix-04.png";
+ANALYSIS_WATERMARK_IMAGE.addEventListener("load", () => {
+  if (ANALYSIS_VIEW_STATE.data) drawCurrentAnalysisView();
+});
 
 const ANALYSIS_CONNECTIONS = {
   right: [
@@ -1410,18 +1420,18 @@ function renderAnalysisSections(sections, fallbackMetrics) {
   const activeSection = sections.find((section) => section.key === activeKey) || sections[0];
 
   return `
-    <div class="analysis-section-tabs" role="tablist" aria-label="分析項目">
-      ${sections.map((section) => `
-        <button
-          class="analysis-section-button ${section.key === activeSection.key ? "active" : ""}"
-          type="button"
-          role="tab"
-          aria-selected="${section.key === activeSection.key}"
-          data-analysis-section="${escapeHtml(section.key)}"
-        >
-          ${escapeHtml(section.title)}
-        </button>
-      `).join("")}
+    <div class="analysis-section-selector">
+      <label for="analysisSectionSelect">表示する項目</label>
+      <select id="analysisSectionSelect" class="analysis-section-select">
+        ${sections.map((section) => `
+          <option
+            value="${escapeHtml(section.key)}"
+            ${section.key === activeSection.key ? "selected" : ""}
+          >
+            ${escapeHtml(section.title)}
+          </option>
+        `).join("")}
+      </select>
     </div>
 
     <div id="analysisSectionContent" class="analysis-section-content">
@@ -1473,11 +1483,8 @@ function selectAnalysisMetricSection(sectionKey) {
 
   ANALYSIS_VIEW_STATE.activeMetricSection = section.key;
 
-  $$('[data-analysis-section]').forEach((button) => {
-    const active = button.dataset.analysisSection === section.key;
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-selected", String(active));
-  });
+  const select = $("#analysisSectionSelect");
+  if (select && select.value !== section.key) select.value = section.key;
 
   const content = $("#analysisSectionContent");
   if (content) content.innerHTML = renderAnalysisSectionContent(section);
@@ -1606,11 +1613,12 @@ function bindAnalysisViewerEvents() {
     });
   });
 
-  $$('[data-analysis-section]').forEach((button) => {
-    button.addEventListener("click", () => {
-      selectAnalysisMetricSection(button.dataset.analysisSection);
+  const sectionSelect = $("#analysisSectionSelect");
+  if (sectionSelect) {
+    sectionSelect.addEventListener("change", () => {
+      selectAnalysisMetricSection(sectionSelect.value);
     });
-  });
+  }
 
   applyAnalysisGraphOrder_();
 }
@@ -1991,6 +1999,12 @@ function drawCurrentAnalysisView() {
     height,
   );
 
+  drawAnalysisWatermark_(
+    context,
+    width,
+    height,
+  );
+
   const isLight =
     String(data.plan || "")
       .toLowerCase() === "light";
@@ -2017,6 +2031,37 @@ function drawCurrentAnalysisView() {
   ) {
     drawAnalysisGraphs();
   }
+}
+
+function drawAnalysisWatermark_(context, width, height) {
+  if (!ANALYSIS_WATERMARK_IMAGE.complete || !ANALYSIS_WATERMARK_IMAGE.naturalWidth) {
+    return;
+  }
+
+  const maxWidth = width * 0.48;
+  const maxHeight = height * 0.62;
+  const imageRatio =
+    ANALYSIS_WATERMARK_IMAGE.naturalWidth /
+    ANALYSIS_WATERMARK_IMAGE.naturalHeight;
+
+  let drawWidth = maxWidth;
+  let drawHeight = drawWidth / imageRatio;
+
+  if (drawHeight > maxHeight) {
+    drawHeight = maxHeight;
+    drawWidth = drawHeight * imageRatio;
+  }
+
+  context.save();
+  context.globalAlpha = 0.075;
+  context.drawImage(
+    ANALYSIS_WATERMARK_IMAGE,
+    (width - drawWidth) / 2,
+    (height - drawHeight) / 2,
+    drawWidth,
+    drawHeight,
+  );
+  context.restore();
 }
 
 function drawProAnalysis(

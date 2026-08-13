@@ -223,6 +223,109 @@
   font-size: 28px;
 }
 
+.analysis-section-tabs {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding: 2px 1px 7px;
+  scrollbar-width: thin;
+}
+
+.analysis-section-button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.analysis-section-button.active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+.analysis-section-content {
+  display: grid;
+  gap: 10px;
+}
+
+.analysis-result-list {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.analysis-result-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.analysis-result-row:first-child {
+  border-top: 0;
+}
+
+.analysis-result-label {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+
+.analysis-result-value {
+  color: var(--navy);
+  font-size: 16px;
+  font-weight: 900;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.analysis-comparison-head,
+.analysis-comparison-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px 64px;
+  gap: 8px;
+  align-items: center;
+}
+
+.analysis-comparison-head {
+  padding: 8px 12px;
+  background: #edf6f2;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.analysis-comparison-row {
+  min-height: 48px;
+  padding: 9px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.analysis-section-comment {
+  padding: 12px 13px;
+  border-left: 4px solid var(--aqua);
+  border-radius: 10px;
+  background: #edf6f2;
+  color: #365f54;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
 .light-frame-label {
   fill: #18323f;
   font-size: 11px;
@@ -328,7 +431,7 @@
     </main>
 
     <script>
-      const ANALYSIS_VIEW_STATE = {
+const ANALYSIS_VIEW_STATE = {
   data: null,
   currentFrame: 0,
   playing: false,
@@ -341,6 +444,7 @@
   showToeTrajectory: true,
   showJointHighlight: true,
   graphOrder: ["center", "angle", "velocity"],
+  activeMetricSection: "",
 };
 
 const ANALYSIS_CONNECTIONS = {
@@ -381,7 +485,7 @@ const ANALYSIS_CONNECTIONS = {
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec"
       });
-      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],adminDashboard:null,adminSection:"applications",submitting:false};
+      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],analysisData:{},adminDashboard:null,adminSection:"applications",submitting:false};
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
       const escapeHtml=(value)=>String(value??"").replace(/[&<>'"]/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
@@ -851,6 +955,12 @@ function renderAnalysisResults(results) {
 async function openAnalysisDetail(
   analysisId,
 ) {
+  const cached = STATE.analysisData[analysisId];
+  if (cached) {
+    renderAnalysisDetail(cached);
+    return;
+  }
+
   lock("分析データを読み込み中...");
 
   try {
@@ -871,9 +981,13 @@ async function openAnalysisDetail(
       );
     }
 
-    renderAnalysisDetail(
-      result.analysis,
-    );
+    // 座標データは大きいため、端末内には直近2件だけ保持します。
+    const cachedIds = Object.keys(STATE.analysisData);
+    if (cachedIds.length >= 2) {
+      delete STATE.analysisData[cachedIds[0]];
+    }
+    STATE.analysisData[analysisId] = result.analysis;
+    renderAnalysisDetail(result.analysis);
   } catch (error) {
     console.error(error);
 
@@ -900,6 +1014,8 @@ function renderAnalysisDetail(analysis) {
   ANALYSIS_VIEW_STATE.showToeTrajectory = true;
   ANALYSIS_VIEW_STATE.showJointHighlight = true;
   ANALYSIS_VIEW_STATE.graphOrder = ["center", "angle", "velocity"];
+  ANALYSIS_VIEW_STATE.activeMetricSection =
+    analysis.displaySections?.[0]?.key || "";
 
   const isLight =
     String(analysis.plan || "")
@@ -1102,7 +1218,8 @@ function renderAnalysisDetail(analysis) {
           id="analysisTabMetrics"
           class="analysis-tab-panel"
         >
-          ${renderAnalysisMetrics(
+          ${renderAnalysisSections(
+            analysis.displaySections || [],
             analysis.metrics || {},
           )}
         </div>
@@ -1262,6 +1379,88 @@ function renderAnalysisMetrics(metrics) {
   `;
 }
 
+function renderAnalysisSections(sections, fallbackMetrics) {
+  if (!Array.isArray(sections) || !sections.length) {
+    return renderAnalysisMetrics(fallbackMetrics || {});
+  }
+
+  const activeKey = ANALYSIS_VIEW_STATE.activeMetricSection || sections[0].key;
+  const activeSection = sections.find((section) => section.key === activeKey) || sections[0];
+
+  return `
+    <div class="analysis-section-tabs" role="tablist" aria-label="分析項目">
+      ${sections.map((section) => `
+        <button
+          class="analysis-section-button ${section.key === activeSection.key ? "active" : ""}"
+          type="button"
+          role="tab"
+          aria-selected="${section.key === activeSection.key}"
+          data-analysis-section="${escapeHtml(section.key)}"
+        >
+          ${escapeHtml(section.title)}
+        </button>
+      `).join("")}
+    </div>
+
+    <div id="analysisSectionContent" class="analysis-section-content">
+      ${renderAnalysisSectionContent(activeSection)}
+    </div>
+  `;
+}
+
+function renderAnalysisSectionContent(section) {
+  const items = Array.isArray(section?.items) ? section.items : [];
+  const rows = section?.comparison
+    ? `
+        <div class="analysis-result-list">
+          <div class="analysis-comparison-head">
+            <span></span><span>右</span><span>左</span>
+          </div>
+          ${items.map((item) => `
+            <div class="analysis-comparison-row">
+              <span class="analysis-result-label">${escapeHtml(item.label)}</span>
+              <span class="analysis-result-value">${escapeHtml(item.right || "-")}</span>
+              <span class="analysis-result-value">${escapeHtml(item.left || "-")}</span>
+            </div>
+          `).join("")}
+        </div>
+      `
+    : `
+        <div class="analysis-result-list">
+          ${items.map((item) => `
+            <div class="analysis-result-row">
+              <span class="analysis-result-label">${escapeHtml(item.label)}</span>
+              <span class="analysis-result-value">${escapeHtml(item.value || "-")}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+  return `
+    ${rows}
+    ${section?.comment ? `
+      <div class="analysis-section-comment">${escapeHtml(section.comment)}</div>
+    ` : ""}
+  `;
+}
+
+function selectAnalysisMetricSection(sectionKey) {
+  const sections = ANALYSIS_VIEW_STATE.data?.displaySections || [];
+  const section = sections.find((item) => item.key === sectionKey);
+  if (!section) return;
+
+  ANALYSIS_VIEW_STATE.activeMetricSection = section.key;
+
+  $$('[data-analysis-section]').forEach((button) => {
+    const active = button.dataset.analysisSection === section.key;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+
+  const content = $("#analysisSectionContent");
+  if (content) content.innerHTML = renderAnalysisSectionContent(section);
+}
+
 function analysisMetricHtml(
   label,
   value,
@@ -1382,6 +1581,12 @@ function bindAnalysisViewerEvents() {
         card.dataset.analysisGraph,
         button.dataset.graphMove,
       );
+    });
+  });
+
+  $$('[data-analysis-section]').forEach((button) => {
+    button.addEventListener("click", () => {
+      selectAnalysisMetricSection(button.dataset.analysisSection);
     });
   });
 

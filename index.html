@@ -78,7 +78,7 @@ body.analysis-detail-mode .brand {
 .analysis-canvas {
   display: block;
   width: 100%;
-  height: 285px;
+  height: 215px;
   touch-action: none;
 }
 
@@ -181,7 +181,7 @@ body.analysis-detail-mode .brand {
 }
 
 @media(max-height:740px) {
-  .analysis-canvas { height: 250px; }
+  .analysis-canvas { height: 195px; }
 }
 
 .analysis-setting {
@@ -203,7 +203,7 @@ body.analysis-detail-mode .brand {
 
 .analysis-toggle-list {
   display: grid;
-  gap: 8px;
+  gap: 5px;
 }
 
 .analysis-toggle {
@@ -211,8 +211,8 @@ body.analysis-detail-mode .brand {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 44px;
-  padding: 9px 12px;
+  min-height: 37px;
+  padding: 6px 10px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fff;
@@ -322,8 +322,8 @@ body.analysis-detail-mode .brand {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  min-height: 48px;
-  padding: 9px 12px;
+  min-height: 41px;
+  padding: 6px 10px;
   border-top: 1px solid var(--line);
 }
 
@@ -365,13 +365,13 @@ body.analysis-detail-mode .brand {
 }
 
 .analysis-comparison-row {
-  min-height: 48px;
-  padding: 9px 12px;
+  min-height: 41px;
+  padding: 6px 10px;
   border-top: 1px solid var(--line);
 }
 
 .analysis-section-comment {
-  padding: 12px 13px;
+  padding: 10px 12px;
   border-left: 4px solid var(--aqua);
   border-radius: 10px;
   background: #edf6f2;
@@ -379,6 +379,15 @@ body.analysis-detail-mode .brand {
   font-size: 12px;
   line-height: 1.7;
   white-space: pre-wrap;
+}
+
+.analysis-comment-title {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--navy);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .04em;
 }
 
 .light-frame-label {
@@ -1471,7 +1480,7 @@ function renderAnalysisSectionContent(section) {
   return `
     ${rows}
     ${section?.comment ? `
-      <div class="analysis-section-comment">${escapeHtml(section.comment)}</div>
+      <div class="analysis-section-comment"><strong class="analysis-comment-title">コメント</strong>${escapeHtml(section.comment)}</div>
     ` : ""}
   `;
 }
@@ -2088,20 +2097,14 @@ function drawProAnalysis(
     return;
   }
 
-  drawGroundLine(
-    context,
-    width,
-    height - 35,
-  );
-
   const convertPoint = drawStickFrame(
     context,
     frame.points,
     {
       left: 24,
-      top: 22,
+      top: 10,
       width: width - 48,
-      height: height - 62,
+      height: height - 22,
       scale:
         ANALYSIS_VIEW_STATE.scale /
         100,
@@ -2173,12 +2176,6 @@ function drawLightAnalysis(
       )
     ) / lightFrames.length;
 
-  drawGroundLine(
-    context,
-    width,
-    height - 37,
-  );
-
   lightFrames.forEach(
     (item, index) => {
       const frame =
@@ -2198,9 +2195,9 @@ function drawLightAnalysis(
         frame.points,
         {
           left: left + 2,
-          top: 34,
+          top: 27,
           width: itemWidth - 4,
-          height: height - 78,
+          height: height - 34,
           scale: 1,
           referenceFrames: frames.map((item) => item.points),
         },
@@ -2523,7 +2520,7 @@ function drawStickConnections(
   convertPoint,
 ) {
   context.strokeStyle = color;
-  context.lineWidth = 3;
+  context.lineWidth = 2.3;
   context.lineCap = "round";
   context.lineJoin = "round";
 

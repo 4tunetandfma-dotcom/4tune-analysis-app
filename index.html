@@ -103,11 +103,11 @@ body.analysis-detail-mode .brand {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 6px 9px;
+  padding: 4px 7px;
   border-radius: 9px;
   background: rgba(11, 57, 84, 0.75);
   color: #fff;
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
   pointer-events: none;
 }
@@ -485,6 +485,97 @@ body.analysis-detail-mode .brand {
   font-size: 12px;
   font-weight: 900;
 }
+
+.race-graph-screen {
+  display: grid;
+  gap: 10px;
+}
+
+.race-graph-controls {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.race-graph-select-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.race-graph-select-grid .field:first-child {
+  grid-column: 1 / -1;
+}
+
+.race-graph-controls select {
+  min-height: 39px;
+  padding: 7px 9px;
+  font-size: 11px;
+}
+
+.race-graph-link-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.race-analysis-link {
+  width: auto;
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 10px;
+}
+
+.race-graph-card {
+  display: grid;
+  gap: 7px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+}
+
+.race-graph-card h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 13px;
+}
+
+.race-graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.race-graph-legend span::before {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  margin-right: 4px;
+  border-radius: 99px;
+  background: var(--blue);
+  content: "";
+  vertical-align: middle;
+}
+
+.race-graph-legend .comparison::before {
+  background: #e8751a;
+}
+
+.race-chart-canvas {
+  display: block;
+  width: 100%;
+  height: 190px;
+  border-radius: 10px;
+  background: #f7faf9;
+}
+
+@media(max-width:430px) {
+  .race-graph-select-grid { grid-template-columns: 1fr; }
+  .race-graph-select-grid .field:first-child { grid-column: auto; }
+}
     </style>
   </head>
   <body>
@@ -517,6 +608,13 @@ ANALYSIS_WATERMARK_IMAGE.src = "4tune_logo_fix-04.png";
 ANALYSIS_WATERMARK_IMAGE.addEventListener("load", () => {
   if (ANALYSIS_VIEW_STATE.data) drawCurrentAnalysisView();
 });
+
+const RACE_GRAPH_STATE = {
+  athletes: [],
+  athleteId: "",
+  mainRaceId: "",
+  comparisonRaceId: "",
+};
 
 const ANALYSIS_CONNECTIONS = {
   right: [
@@ -556,7 +654,7 @@ const ANALYSIS_CONNECTIONS = {
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec"
       });
-      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],analysisData:{},adminDashboard:null,adminSection:"applications",submitting:false};
+      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],analysisData:{},raceGraphData:null,adminDashboard:null,adminSection:"applications",submitting:false};
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
       const escapeHtml=(value)=>String(value??"").replace(/[&<>'"]/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
@@ -687,6 +785,7 @@ const ANALYSIS_CONNECTIONS = {
               <button class="menu-button primary-menu" type="button" onclick="openApplication()"><b>新しく申し込む</b><span>最高速・スタート分析</span></button>
               <button class="menu-button" type="button" onclick="openApplications()"><b>申し込み状況</b><span>動画・入金・分析状況</span></button>
               <button class="menu-button" type="button" onclick="openAnalysisResults()"><b>分析結果</b><span>スティック・グラフ・PDF</span></button>
+              <button class="menu-button" type="button" onclick="openRaceGraphs()"><b>レースグラフ</b><span>通過・区間・ピッチ・ストライド・速度</span></button>
               <button class="menu-button" type="button" onclick="openComparison()"><b>比較する</b><span>自分・フレンドと比較</span></button>
               <button class="menu-button" type="button" onclick="showComingSoon('共有')"><b>フレンド・指導者</b><span>招待と共有設定</span></button>
               <button class="menu-button" type="button" onclick="showComingSoon('選手管理')"><b>選手管理</b><span>選手の追加・編集</span></button>
@@ -882,6 +981,237 @@ const ANALYSIS_CONNECTIONS = {
           button.addEventListener("click", () => openUploadForm(button.dataset.uploadUrl)),
         );
       }
+async function openRaceGraphs() {
+  document.body.classList.remove("analysis-detail-mode");
+  lock("レースグラフを読み込み中...");
+
+  try {
+    if (!STATE.raceGraphData) {
+      const result = await apiPost("getRaceGraphData");
+      STATE.raceGraphData = result.athletes || [];
+    }
+
+    RACE_GRAPH_STATE.athletes = STATE.raceGraphData;
+    if (!RACE_GRAPH_STATE.athleteId) {
+      RACE_GRAPH_STATE.athleteId = RACE_GRAPH_STATE.athletes[0]?.athleteId || "";
+    }
+    initializeRaceSelection_();
+    renderRaceGraphScreen();
+  } catch (error) {
+    console.error(error);
+    alert(error.message || "レースグラフを読み込めませんでした");
+  } finally {
+    unlock();
+  }
+}
+
+function getSelectedRaceAthlete_() {
+  return RACE_GRAPH_STATE.athletes.find(
+    (athlete) => athlete.athleteId === RACE_GRAPH_STATE.athleteId,
+  ) || RACE_GRAPH_STATE.athletes[0] || null;
+}
+
+function initializeRaceSelection_() {
+  const athlete = getSelectedRaceAthlete_();
+  const races = athlete?.races || [];
+  if (!races.some((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId)) {
+    RACE_GRAPH_STATE.mainRaceId = races[0]?.raceId || "";
+  }
+  if (
+    !races.some((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId) ||
+    RACE_GRAPH_STATE.comparisonRaceId === RACE_GRAPH_STATE.mainRaceId
+  ) {
+    RACE_GRAPH_STATE.comparisonRaceId =
+      races.find((race) => race.raceId !== RACE_GRAPH_STATE.mainRaceId)?.raceId || "";
+  }
+}
+
+function renderRaceGraphScreen() {
+  const athletes = RACE_GRAPH_STATE.athletes || [];
+  const athlete = getSelectedRaceAthlete_();
+  const races = athlete?.races || [];
+  const mainRace = races.find((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId) || null;
+  const comparisonRace = races.find((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId) || null;
+
+  if (!athletes.length) {
+    $("#screen").innerHTML = `
+      <div class="stack">
+        <section class="card"><div class="section-title"><h2>レースグラフ</h2><button class="secondary" style="width:auto;min-height:34px;padding:0 10px" onclick="renderHome()">戻る</button></div></section>
+        <section class="card"><p class="muted">表示できるレースデータがありません。</p></section>
+      </div>`;
+    return;
+  }
+
+  const chartDefinitions = [
+    ["passingTime", "通過タイム", "秒"],
+    ["intervalTime", "区間タイム", "秒"],
+    ["stride", "ストライド", "m"],
+    ["pitch", "ピッチ", "歩/s"],
+    ["speed", "疾走速度", "m/s"],
+  ];
+
+  $("#screen").innerHTML = `
+    <div class="race-graph-screen">
+      <section class="card race-graph-controls">
+        <div class="section-title">
+          <div><h2>レースグラフ</h2><p>レース間の推移を比較</p></div>
+          <button class="secondary" style="width:auto;min-height:34px;padding:0 10px" type="button" onclick="renderHome()">戻る</button>
+        </div>
+        <div class="race-graph-select-grid">
+          <div class="field"><label>選手</label><select id="raceAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === athlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}</option>`).join("")}</select></div>
+          <div class="field"><label>メイン</label><select id="raceMainSelect">${races.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+          <div class="field"><label>比較</label><select id="raceComparisonSelect"><option value="">比較なし</option>${races.filter((race) => race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+        </div>
+        ${(mainRace?.linkedAnalysisId || comparisonRace?.linkedAnalysisId) ? `
+          <div class="race-graph-link-row">
+            ${mainRace?.linkedAnalysisId ? `<button class="secondary race-analysis-link" type="button" data-linked-analysis="${escapeHtml(mainRace.linkedAnalysisId)}">メインの動作分析を見る</button>` : ""}
+            ${comparisonRace?.linkedAnalysisId ? `<button class="secondary race-analysis-link" type="button" data-linked-analysis="${escapeHtml(comparisonRace.linkedAnalysisId)}">比較の動作分析を見る</button>` : ""}
+          </div>
+        ` : ""}
+      </section>
+
+      ${chartDefinitions.map(([key, title, unit]) => `
+        <section class="race-graph-card">
+          <h3>${escapeHtml(title)}</h3>
+          <div class="race-graph-legend">
+            <span>${escapeHtml(mainRace?.raceName || "メイン")}</span>
+            ${comparisonRace ? `<span class="comparison">${escapeHtml(comparisonRace.raceName)}</span>` : ""}
+          </div>
+          <canvas class="race-chart-canvas" data-race-chart="${key}" data-unit="${escapeHtml(unit)}"></canvas>
+        </section>
+      `).join("")}
+    </div>`;
+
+  $("#raceAthleteSelect").addEventListener("change", (event) => {
+    RACE_GRAPH_STATE.athleteId = event.target.value;
+    RACE_GRAPH_STATE.mainRaceId = "";
+    RACE_GRAPH_STATE.comparisonRaceId = "";
+    initializeRaceSelection_();
+    renderRaceGraphScreen();
+  });
+
+  $("#raceMainSelect").addEventListener("change", (event) => {
+    RACE_GRAPH_STATE.mainRaceId = event.target.value;
+    initializeRaceSelection_();
+    renderRaceGraphScreen();
+  });
+
+  $("#raceComparisonSelect").addEventListener("change", (event) => {
+    RACE_GRAPH_STATE.comparisonRaceId = event.target.value;
+    renderRaceGraphScreen();
+  });
+
+  $$('[data-linked-analysis]').forEach((button) => {
+    button.addEventListener("click", () => openAnalysisDetail(button.dataset.linkedAnalysis));
+  });
+
+  window.requestAnimationFrame(() => drawRaceGraphCanvases_(mainRace, comparisonRace));
+}
+
+function drawRaceGraphCanvases_(mainRace, comparisonRace) {
+  $$('[data-race-chart]').forEach((canvas) => {
+    drawRaceLineChart_(
+      canvas,
+      mainRace?.charts?.[canvas.dataset.raceChart] || [],
+      comparisonRace?.charts?.[canvas.dataset.raceChart] || [],
+      canvas.dataset.unit || "",
+    );
+  });
+}
+
+function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit) {
+  const rect = canvas.getBoundingClientRect();
+  const ratio = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = Math.max(1, Math.round(rect.width * ratio));
+  canvas.height = Math.max(1, Math.round(rect.height * ratio));
+  const context = canvas.getContext("2d");
+  context.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+  const width = rect.width;
+  const height = rect.height;
+  const padding = { left: 38, right: 12, top: 13, bottom: 30 };
+  context.clearRect(0, 0, width, height);
+  context.fillStyle = "#f7faf9";
+  context.fillRect(0, 0, width, height);
+
+  const labels = Array.from(new Set([
+    ...mainSeries.map((item) => item.label),
+    ...comparisonSeries.map((item) => item.label),
+  ]));
+  const allValues = [...mainSeries, ...comparisonSeries]
+    .map((item) => Number(item.value))
+    .filter(Number.isFinite);
+  if (!labels.length || !allValues.length) return;
+
+  let minValue = Math.min(...allValues);
+  let maxValue = Math.max(...allValues);
+  const span = Math.max(0.1, maxValue - minValue);
+  minValue = Math.max(0, minValue - span * 0.15);
+  maxValue += span * 0.15;
+  if (maxValue === minValue) maxValue = minValue + 1;
+
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const xAt = (index) => padding.left + (labels.length === 1 ? plotWidth / 2 : index * plotWidth / (labels.length - 1));
+  const yAt = (value) => padding.top + (maxValue - value) * plotHeight / (maxValue - minValue);
+
+  context.font = "9px sans-serif";
+  context.textBaseline = "middle";
+  for (let tick = 0; tick <= 4; tick += 1) {
+    const value = minValue + (maxValue - minValue) * tick / 4;
+    const y = yAt(value);
+    context.beginPath();
+    context.moveTo(padding.left, y);
+    context.lineTo(width - padding.right, y);
+    context.strokeStyle = "#dce8e4";
+    context.lineWidth = 1;
+    context.stroke();
+    context.fillStyle = "#637b74";
+    context.textAlign = "right";
+    context.fillText(`${value.toFixed(2)}${tick === 4 && unit ? ` ${unit}` : ""}`, padding.left - 5, y);
+  }
+
+  labels.forEach((label, index) => {
+    context.fillStyle = "#637b74";
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    context.fillText(label, xAt(index), height - padding.bottom + 8);
+  });
+
+  const drawSeries = (series, color) => {
+    const valueMap = new Map(series.map((item) => [item.label, Number(item.value)]));
+    context.beginPath();
+    let started = false;
+    labels.forEach((label, index) => {
+      const value = valueMap.get(label);
+      if (!Number.isFinite(value)) return;
+      const x = xAt(index);
+      const y = yAt(value);
+      if (started) context.lineTo(x, y);
+      else { context.moveTo(x, y); started = true; }
+    });
+    context.strokeStyle = color;
+    context.lineWidth = 2.2;
+    context.lineJoin = "round";
+    context.stroke();
+
+    labels.forEach((label, index) => {
+      const value = valueMap.get(label);
+      if (!Number.isFinite(value)) return;
+      context.beginPath();
+      context.arc(xAt(index), yAt(value), 3.2, 0, Math.PI * 2);
+      context.fillStyle = "#fff";
+      context.fill();
+      context.strokeStyle = color;
+      context.lineWidth = 2;
+      context.stroke();
+    });
+  };
+
+  drawSeries(mainSeries, "#246b58");
+  if (comparisonSeries.length) drawSeries(comparisonSeries, "#e8751a");
+}
+
       async function openAnalysisResults(){document.body.classList.remove("analysis-detail-mode");lock("分析結果を読み込み中...");try{const result=await apiPost("getAnalysisResults");renderAnalysisResults(result.results||[]);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
 function renderAnalysisResults(results) {
   $("#screen").innerHTML = `
@@ -2277,7 +2607,7 @@ function drawStickFrame(
     Math.min(
       area.width / rangeX,
       area.height / rangeY,
-    ) * 0.82;
+    ) * 0.72;
 
   const scale =
     baseScale *

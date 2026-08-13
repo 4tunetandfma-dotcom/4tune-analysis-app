@@ -42,15 +42,35 @@
       .loading{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:20px;background:rgba(243,247,249,.94);backdrop-filter:blur(5px)}.loading.hidden{display:none}.loading-box{text-align:center}.spinner{width:46px;height:46px;margin:0 auto 13px;border:4px solid #d5e6eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}.loading p{margin:0;color:var(--navy);font-weight:800}@keyframes spin{to{transform:rotate(360deg)}}
       @media(max-width:430px){.grid-2{grid-template-columns:1fr}.choice-row{grid-template-columns:1fr 1fr 1fr}.card{padding:16px}}
       .analysis-viewer {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  height: calc(100dvh - 12px);
+  min-height: 0;
+  padding: 8px;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+body.analysis-detail-mode .app {
+  padding: 6px 9px;
+}
+
+body.analysis-detail-mode .brand {
+  display: none;
+}
+
+.analysis-detail-shell {
+  min-height: 0;
 }
 
 .analysis-canvas-wrap {
   position: relative;
   overflow: hidden;
-  width: 100%;
-  border-radius: 18px;
+  width: calc(100% - 8px);
+  margin: 0 auto;
+  flex: 0 0 auto;
+  border-radius: 14px;
   background: #eef3f6;
   border: 1px solid var(--line);
 }
@@ -58,8 +78,25 @@
 .analysis-canvas {
   display: block;
   width: 100%;
-  height: 330px;
+  height: 285px;
   touch-action: none;
+}
+
+.analysis-back-button {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  z-index: 3;
+  width: auto;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid rgba(255,255,255,.75);
+  border-radius: 9px;
+  background: rgba(23,79,67,.82);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  box-shadow: 0 3px 10px rgba(23,79,67,.18);
 }
 
 .analysis-overlay {
@@ -78,17 +115,18 @@
 .analysis-controls {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  flex: 0 0 auto;
+  gap: 5px;
 }
 
 .analysis-control-button {
-  min-height: 42px;
-  padding: 0 8px;
+  min-height: 32px;
+  padding: 0 5px;
   border: 1px solid var(--line);
-  border-radius: 13px;
+  border-radius: 9px;
   background: #fff;
   color: var(--navy);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 900;
 }
 
@@ -101,19 +139,20 @@
 .analysis-tabs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  padding: 5px;
-  border-radius: 15px;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 11px;
   background: #e5edf1;
 }
 
 .analysis-tab-button {
-  min-height: 40px;
+  min-height: 31px;
   border: 0;
-  border-radius: 11px;
+  border-radius: 8px;
   background: transparent;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
 }
 
@@ -125,11 +164,24 @@
 
 .analysis-tab-panel {
   display: none;
+  min-height: 0;
 }
 
 .analysis-tab-panel.active {
   display: grid;
-  gap: 12px;
+  flex: 1 1 auto;
+  align-content: start;
+  gap: 8px;
+  min-height: 0;
+  padding: 2px 3px 6px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media(max-height:740px) {
+  .analysis-canvas { height: 250px; }
 }
 
 .analysis-setting {
@@ -604,6 +656,7 @@ const ANALYSIS_CONNECTIONS = {
       }
 
       function renderHome(){
+        document.body.classList.remove("analysis-detail-mode");
         const customer=STATE.data.customer||{};const athletes=STATE.data.athletes||[];
         $("#adminHeaderButton")?.classList.toggle("hidden", !STATE.data.isAdmin);
         $("#screen").innerHTML=`
@@ -810,7 +863,7 @@ const ANALYSIS_CONNECTIONS = {
           button.addEventListener("click", () => openUploadForm(button.dataset.uploadUrl)),
         );
       }
-      async function openAnalysisResults(){lock("分析結果を読み込み中...");try{const result=await apiPost("getAnalysisResults");renderAnalysisResults(result.results||[]);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
+      async function openAnalysisResults(){document.body.classList.remove("analysis-detail-mode");lock("分析結果を読み込み中...");try{const result=await apiPost("getAnalysisResults");renderAnalysisResults(result.results||[]);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
 function renderAnalysisResults(results) {
   $("#screen").innerHTML = `
     <div class="stack">
@@ -1002,6 +1055,7 @@ async function openAnalysisDetail(
       
 function renderAnalysisDetail(analysis) {
   stopAnalysisPlayback();
+  document.body.classList.add("analysis-detail-mode");
 
   ANALYSIS_VIEW_STATE.data = analysis;
   ANALYSIS_VIEW_STATE.currentFrame = 0;
@@ -1022,49 +1076,17 @@ function renderAnalysisDetail(analysis) {
       .toLowerCase() === "light";
 
   $("#screen").innerHTML = `
-    <div class="stack">
-      <section class="card">
-        <div class="section-title">
-          <div>
-            <h2>
-              ${
-                isLight
-                  ? "LIGHT ANALYSIS"
-                  : "PRO ANALYSIS"
-              }
-            </h2>
-
-            <p>
-              ${escapeHtml(analysis.phase)}
-              ｜
-              ${escapeHtml(analysis.plan)}
-              ${
-                analysis.version
-                  ? `・ver.${escapeHtml(
-                      analysis.version,
-                    )}`
-                  : ""
-              }
-            </p>
-          </div>
-
+    <div class="analysis-detail-shell">
+      <section class="card analysis-viewer">
+        <div class="analysis-canvas-wrap">
           <button
-            class="secondary"
-            style="
-              width:auto;
-              min-height:38px;
-              padding:0 12px;
-            "
+            class="analysis-back-button"
             type="button"
             onclick="leaveAnalysisDetail()"
           >
             戻る
           </button>
-        </div>
-      </section>
 
-      <section class="card analysis-viewer">
-        <div class="analysis-canvas-wrap">
           <canvas
             id="analysisCanvas"
             class="analysis-canvas"
@@ -1865,6 +1887,7 @@ function resetAnalysisView() {
 
 function leaveAnalysisDetail() {
   stopAnalysisPlayback();
+  document.body.classList.remove("analysis-detail-mode");
 
   window.removeEventListener(
     "resize",

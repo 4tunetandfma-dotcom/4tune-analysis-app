@@ -350,6 +350,139 @@ body.analysis-detail-mode .brand {
   white-space: nowrap;
 }
 
+/* 分析項目の説明画像 */
+.analysis-result-label-wrap {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 7px;
+}
+
+.analysis-help-button {
+  display: inline-grid;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  min-height: 22px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #8dbbab;
+  border-radius: 50%;
+  background: #edf6f2;
+  color: var(--blue);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.analysis-help-button:active {
+  transform: scale(.94);
+  background: #dceee7;
+}
+
+.analysis-metric-label {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.analysis-metric-label .analysis-help-button {
+  flex-basis: 20px;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  font-size: 13px;
+}
+
+.analysis-help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
+  background: rgba(8, 28, 24, .72);
+  backdrop-filter: blur(4px);
+}
+
+.analysis-help-modal.hidden {
+  display: none;
+}
+
+.analysis-help-dialog {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 620px);
+  max-height: calc(100dvh - 36px);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .28);
+}
+
+.analysis-help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 49px;
+  padding: 9px 10px 9px 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.analysis-help-title {
+  overflow: hidden;
+  margin: 0;
+  color: var(--navy);
+  font-size: 14px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analysis-help-close {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #edf3f1;
+  color: var(--navy);
+  font-size: 21px;
+  line-height: 1;
+}
+
+.analysis-help-image-wrap {
+  overflow: auto;
+  max-height: calc(100dvh - 105px);
+  background: #eef3f1;
+}
+
+.analysis-help-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fff;
+}
+
+.analysis-help-loading,
+.analysis-help-error {
+  padding: 35px 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+body.analysis-help-modal-open {
+  overflow: hidden;
+}
+
 .analysis-comparison-head,
 .analysis-comparison-row {
   display: grid;
@@ -655,7 +788,14 @@ const ANALYSIS_CONNECTIONS = {
 };
       const CONFIG=Object.freeze({
         LIFF_ID:"2011019778-43fXNNSl",
-        GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec"
+        GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
+
+        // ここだけ、実際のGitHubユーザー名とリポジトリ名へ変更してください。
+        // 画像はリポジトリ内の analysis-help-images フォルダへ格納します。
+        HELP_IMAGE_BASE_URL:"https://raw.githubusercontent.com/GITHUBユーザー名/リポジトリ名/main/analysis-help-images/",
+
+        // 同名画像を更新したときは、この値も変更すると古いキャッシュを回避できます。
+        HELP_IMAGE_VERSION:"20260816-1"
       });
       const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],analysisData:{},raceGraphData:null,adminDashboard:null,adminSection:"applications",submitting:false};
       const $=(selector,root=document)=>root.querySelector(selector);
@@ -1980,7 +2120,7 @@ function renderAnalysisSectionContent(section) {
           </div>
           ${items.map((item) => `
             <div class="analysis-comparison-row">
-              <span class="analysis-result-label">${escapeHtml(item.label)}</span>
+              ${renderAnalysisResultLabel(item.label)}
               <span class="analysis-result-value">${escapeHtml(item.right || "-")}</span>
               <span class="analysis-result-value">${escapeHtml(item.left || "-")}</span>
             </div>
@@ -1991,7 +2131,7 @@ function renderAnalysisSectionContent(section) {
         <div class="analysis-result-list">
           ${items.map((item) => `
             <div class="analysis-result-row">
-              <span class="analysis-result-label">${escapeHtml(item.label)}</span>
+              ${renderAnalysisResultLabel(item.label)}
               <span class="analysis-result-value">${escapeHtml(item.value || "-")}</span>
             </div>
           `).join("")}
@@ -2005,6 +2145,124 @@ function renderAnalysisSectionContent(section) {
     ` : ""}
   `;
 }
+
+function renderAnalysisResultLabel(label) {
+  const safeLabel = String(label || "");
+  const encodedLabel = encodeURIComponent(safeLabel);
+
+  return `
+    <span class="analysis-result-label-wrap">
+      <button
+        class="analysis-help-button"
+        type="button"
+        data-analysis-help-label="${escapeHtml(encodedLabel)}"
+        aria-label="${escapeHtml(safeLabel)}の説明を見る"
+        title="${escapeHtml(safeLabel)}の説明を見る"
+        onclick="openAnalysisHelpFromButton(this)"
+      >i</button>
+      <span class="analysis-result-label">${escapeHtml(safeLabel)}</span>
+    </span>
+  `;
+}
+
+// 画面上の項目名から、GitHubに格納した画像のファイル名を作ります。
+// 数値表示用の単位だけを外し、(推定値)など項目名の一部は残します。
+function analysisHelpFileName(label) {
+  let fileName = String(label || "")
+    .replace(/[\r\n\t]/g, "")
+    .replace(/\s+/g, "")
+    .replace(/[（(]\s*(?:°|度|%|％|m|cm|mm|s|秒|歩\/秒|歩／秒|m\/s|m／s|m\/秒|m／秒|km\/h|km／h|回\/秒|回／秒)\s*[）)]$/i, "")
+    .replace(/\//g, "／")
+    .replace(/\\/g, "￥")
+    .replace(/:/g, "：")
+    .replace(/\*/g, "＊")
+    .replace(/\?/g, "？")
+    .replace(/"/g, "”")
+    .replace(/</g, "＜")
+    .replace(/>/g, "＞")
+    .replace(/\|/g, "｜");
+
+  // 表示用情報シートと画像名で表記が異なる項目が出た場合はここへ追加します。
+  const aliases = {
+    "ピッチ／ストライド比": "ピッチストライド比",
+    "ピッチ・ストライド比": "ピッチストライド比"
+  };
+
+  return aliases[fileName] || fileName;
+}
+
+function getAnalysisHelpImageUrl(label) {
+  const fileName = `${analysisHelpFileName(label)}.png`;
+  const baseUrl = String(CONFIG.HELP_IMAGE_BASE_URL || "").replace(/\/+$/, "") + "/";
+  return `${baseUrl}${encodeURIComponent(fileName)}?v=${encodeURIComponent(CONFIG.HELP_IMAGE_VERSION || "1")}`;
+}
+
+function openAnalysisHelpFromButton(button) {
+  const encodedLabel = button?.dataset?.analysisHelpLabel || "";
+  let label = "";
+
+  try {
+    label = decodeURIComponent(encodedLabel);
+  } catch (error) {
+    label = encodedLabel;
+  }
+
+  openAnalysisHelp(label);
+}
+
+function openAnalysisHelp(label) {
+  const modal = $("#analysisHelpModal");
+  const title = $("#analysisHelpTitle");
+  const imageWrap = $("#analysisHelpImageWrap");
+  if (!modal || !title || !imageWrap) return;
+
+  const safeLabel = String(label || "項目の説明");
+  const imageUrl = getAnalysisHelpImageUrl(safeLabel);
+  title.textContent = safeLabel;
+  imageWrap.innerHTML = `<div class="analysis-help-loading">説明画像を読み込み中...</div>`;
+
+  const image = new Image();
+  image.className = "analysis-help-image";
+  image.alt = `${safeLabel}の説明`;
+  image.onload = () => {
+    imageWrap.innerHTML = "";
+    imageWrap.appendChild(image);
+  };
+  image.onerror = () => handleAnalysisHelpImageError(safeLabel);
+  image.src = imageUrl;
+
+  modal.classList.remove("hidden");
+  document.body.classList.add("analysis-help-modal-open");
+}
+
+function closeAnalysisHelp() {
+  const modal = $("#analysisHelpModal");
+  const imageWrap = $("#analysisHelpImageWrap");
+  if (modal) modal.classList.add("hidden");
+  if (imageWrap) imageWrap.innerHTML = "";
+  document.body.classList.remove("analysis-help-modal-open");
+}
+
+function handleAnalysisHelpBackdrop(event) {
+  if (event.target?.id === "analysisHelpModal") closeAnalysisHelp();
+}
+
+function handleAnalysisHelpImageError(label) {
+  const imageWrap = $("#analysisHelpImageWrap");
+  if (!imageWrap) return;
+
+  const expectedName = `${analysisHelpFileName(label)}.png`;
+  imageWrap.innerHTML = `
+    <div class="analysis-help-error">
+      説明画像を読み込めませんでした<br>
+      GitHubに「${escapeHtml(expectedName)}」があるか確認してください
+    </div>
+  `;
+}
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeAnalysisHelp();
+});
 
 function selectAnalysisMetricSection(sectionKey) {
   const sections = ANALYSIS_VIEW_STATE.data?.displaySections || [];
@@ -2033,8 +2291,16 @@ function analysisMetricHtml(
         emphasized ? "speed" : ""
       }"
     >
-      <small>
-        ${escapeHtml(label)}
+      <small class="analysis-metric-label">
+        <button
+          class="analysis-help-button"
+          type="button"
+          data-analysis-help-label="${escapeHtml(encodeURIComponent(label))}"
+          aria-label="${escapeHtml(label)}の説明を見る"
+          title="${escapeHtml(label)}の説明を見る"
+          onclick="openAnalysisHelpFromButton(this)"
+        >i</button>
+        <span>${escapeHtml(label)}</span>
       </small>
 
       <strong>
@@ -4071,5 +4337,26 @@ function setAnalysisGraphCurrentValues(
   }
 }
     </script>
+    <div
+      id="analysisHelpModal"
+      class="analysis-help-modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="analysisHelpTitle"
+      onclick="handleAnalysisHelpBackdrop(event)"
+    >
+      <div class="analysis-help-dialog">
+        <div class="analysis-help-header">
+          <h3 id="analysisHelpTitle" class="analysis-help-title">項目の説明</h3>
+          <button
+            class="analysis-help-close"
+            type="button"
+            aria-label="説明を閉じる"
+            onclick="closeAnalysisHelp()"
+          >×</button>
+        </div>
+        <div id="analysisHelpImageWrap" class="analysis-help-image-wrap"></div>
+      </div>
+    </div>
   </body>
 </html>

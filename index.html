@@ -752,6 +752,12 @@ const RACE_GRAPH_STATE = {
   comparisonRaceId: "",
 };
 
+const COMPARISON_VIEW_STATE = {
+  candidates: [], plan: "Pro", phase: "最高速", dataA: null, dataB: null,
+  layout: "overlay", activeTab: "metrics", selectedJoint: 0,
+  playing: false, animationId: null, startedAt: 0, elapsed: 0,
+};
+
 const ANALYSIS_CONNECTIONS = {
   right: [
     [0, 1],
@@ -936,7 +942,7 @@ const ANALYSIS_CONNECTIONS = {
               <button class="menu-button" type="button" onclick="openRaceGraphs()"><b>レースグラフ</b><span>通過・区間・ピッチ・ストライド・速度</span></button>
               <button class="menu-button" type="button" onclick="openRaceTicketDashboard()"><b>レース分析</b><span>チケット購入・残数・分析申込み</span></button>
               <button class="menu-button" type="button" onclick="openComparison()"><b>比較する</b><span>自分・フレンドと比較</span></button>
-              <button class="menu-button" type="button" onclick="openFriendDashboard()"><b>フレンド・指導者</b><span>招待と共有設定</span></button>
+              <button class="menu-button" type="button" onclick="openFriendDashboard()"><b>フレンド</b><span>ID・申請・比較設定</span></button>
               <button class="menu-button" type="button" onclick="openAthleteManagement()"><b>選手管理</b><span>追加・編集・分析履歴</span></button>
             </div></section>
             <section class="card home-athletes"><div class="section-title"><div><h3>登録選手</h3><p>${athletes.length}名</p></div></div><div>${athletes.length?athletes.map((athlete)=>`<div class="athlete-summary"><div><b>${escapeHtml(athlete.name)}</b><span>${escapeHtml(athlete.affiliation)}・${athlete.age==null?"年齢未設定":athlete.age+"歳"}・${escapeHtml(athlete.height)}cm</span></div><span class="pill">登録済み</span></div>`).join(""):'<p class="muted">登録選手はいません。指導者招待または選手管理から追加します。</p>'}</div></section>
@@ -3157,11 +3163,12 @@ function drawStickFrame(
         (point.y - hipCenter.y) * scale,
     });
 
+  const comparisonColor = area.stickColor || "";
   drawStickConnections(
     context,
     points,
     ANALYSIS_CONNECTIONS.center,
-    "#263238",
+    comparisonColor || "#263238",
     convertPoint,
   );
 
@@ -3169,7 +3176,7 @@ function drawStickFrame(
     context,
     points,
     ANALYSIS_CONNECTIONS.right,
-    "#1565c0",
+    comparisonColor || "#1565c0",
     convertPoint,
   );
 
@@ -3177,7 +3184,7 @@ function drawStickFrame(
     context,
     points,
     ANALYSIS_CONNECTIONS.left,
-    "#e53935",
+    comparisonColor || "#e53935",
     convertPoint,
   );
 
@@ -3204,8 +3211,7 @@ function drawStickFrame(
         Math.PI * 2,
       );
 
-      context.fillStyle =
-        getStickPointColor(index);
+      context.fillStyle = comparisonColor || getStickPointColor(index);
 
       context.fill();
     },
@@ -3562,12 +3568,31 @@ function formatAnalysisValue(
 
   return number.toFixed(digits);
 }
-      async function openComparison(){lock("比較できる分析を読み込み中...");try{const result=await apiPost("getAnalysisResults");STATE.analysisResults=result.results||[];renderComparisonSelection();}catch(error){console.error(error);alert(error.message||"比較データを読み込めませんでした");}finally{unlock();}}
-      function comparisonOption(result){return `${escapeHtml(result.athleteName)}｜${escapeHtml(result.phase)}｜${escapeHtml(result.plan)}｜${escapeHtml(result.publishedAt||"公開日未設定")}`;}
-      function renderComparisonSelection(){const results=STATE.analysisResults;$("#screen").innerHTML=`<div class="stack"><section class="card"><div class="section-title"><div><h2>分析結果を比較</h2><p>公開済みの分析から2件を選択</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button></div></section>${results.length>=2?`<form id="comparisonForm" class="stack"><section class="card stack"><div class="field"><label class="required">比較1</label><select id="comparisonA">${results.map((result,index)=>`<option value="${escapeHtml(result.analysisId)}" ${index===0?"selected":""}>${comparisonOption(result)}</option>`).join("")}</select></div><div class="field"><label class="required">比較2</label><select id="comparisonB">${results.map((result,index)=>`<option value="${escapeHtml(result.analysisId)}" ${index===1?"selected":""}>${comparisonOption(result)}</option>`).join("")}</select></div><div id="formError" class="error"></div><button class="primary" type="submit">この2件を比較する</button></section><section class="notice">現在は自分が管理する選手の分析同士を比較できます。フレンドの分析は、共有機能の実装後に選択できるようになります。</section></form>`:`<section class="card stack"><p class="muted">比較には公開済みの分析結果が2件以上必要です。</p><button class="secondary" type="button" onclick="openAnalysisResults()">分析結果を確認</button></section>`}</div>`;const form=$("#comparisonForm");if(form)form.addEventListener("submit",showComparison);}
-      function showComparison(event){event.preventDefault();const idA=$("#comparisonA").value,idB=$("#comparisonB").value,error=$("#formError");error.classList.remove("visible");if(idA===idB){error.textContent="異なる2件の分析を選択してください";error.classList.add("visible");return;}const a=STATE.analysisResults.find((item)=>item.analysisId===idA),b=STATE.analysisResults.find((item)=>item.analysisId===idB);if(!a||!b){error.textContent="分析結果を確認できませんでした";error.classList.add("visible");return;}renderComparison(a,b);}
-      function comparisonCard(result,label){return`<div class="shooting-card stack"><div><span class="pill">${label}</span><h3 style="margin:10px 0 4px">${escapeHtml(result.athleteName)}</h3><p class="muted" style="margin:0">${escapeHtml(result.phase)}｜${escapeHtml(result.plan)}コース</p></div><div class="summary-row"><span>公開日</span><b>${escapeHtml(result.publishedAt||"-")}</b></div><div class="summary-row"><span>バージョン</span><b>${escapeHtml(result.version||"-")}</b></div></div>`;}
-      function renderComparison(a,b){$("#screen").innerHTML=`<div class="stack"><section class="card"><div class="section-title"><div><h2>比較結果</h2><p>選択した2件の分析</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderComparisonSelection()">選び直す</button></div></section><section class="card"><div class="grid-2">${comparisonCard(a,"比較1")}${comparisonCard(b,"比較2")}</div></section><section class="notice">数値表・グラフ・スティックの同期比較は、分析スプレッドシートの読込機能と接続して追加します。</section><button class="secondary" type="button" onclick="renderHome()">ホームへ戻る</button></div>`;}
+      async function openComparison(){stopComparisonPlayback_();document.body.classList.remove("analysis-detail-mode");lock("比較できる分析を読み込み中...");try{const result=await apiPost("getComparisonCandidates");COMPARISON_VIEW_STATE.candidates=result.candidates||[];renderComparisonSelection();}catch(error){console.error(error);alert(error.message||"比較データを読み込めませんでした");}finally{unlock();}}
+      function comparisonOption(result){return `${result.isFriend?`【${escapeHtml(result.ownerName)}】`:""}${escapeHtml(result.athleteName)}｜${escapeHtml(result.publishedAt||"公開日未設定")}`;}
+      function comparisonFiltered_(){return COMPARISON_VIEW_STATE.candidates.filter((item)=>String(item.plan).toLowerCase()===COMPARISON_VIEW_STATE.plan.toLowerCase()&&String(item.phase)===COMPARISON_VIEW_STATE.phase);}
+      function setComparisonFilter_(type,value){COMPARISON_VIEW_STATE[type]=value;renderComparisonSelection();}
+      function comparisonBigTabs_(type,values){return `<div class="choice-row" style="grid-template-columns:repeat(${values.length},1fr);margin-top:8px">${values.map((value)=>`<button type="button" class="${COMPARISON_VIEW_STATE[type]===value?"primary":"secondary"}" onclick="setComparisonFilter_('${type}','${value}')">${value}</button>`).join("")}</div>`;}
+      function renderComparisonSelection(){const results=comparisonFiltered_();$("#screen").innerHTML=`<div class="stack"><section class="card stack"><div class="section-title"><div><h2>分析結果を比較</h2><p>同じプラン・局面の2件を比較</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button></div><div><b>プラン</b>${comparisonBigTabs_("plan",["Pro","Light"])}</div><div><b>分析局面</b>${comparisonBigTabs_("phase",["最高速","スタート"])}</div></section>${results.length>=2?`<form id="comparisonForm" class="stack"><section class="card stack"><div class="field"><label class="required">比較1</label><select id="comparisonA">${results.map((r,i)=>`<option value="${escapeHtml(r.analysisId)}" ${i===0?"selected":""}>${comparisonOption(r)}</option>`).join("")}</select></div><div class="field"><label class="required">比較2</label><select id="comparisonB">${results.map((r,i)=>`<option value="${escapeHtml(r.analysisId)}" ${i===1?"selected":""}>${comparisonOption(r)}</option>`).join("")}</select></div><div id="formError" class="error"></div><button class="primary" type="submit">この2件を比較する</button></section></form>`:`<section class="card"><p class="muted">${escapeHtml(COMPARISON_VIEW_STATE.plan)}・${escapeHtml(COMPARISON_VIEW_STATE.phase)}で比較できる分析が2件以上ありません。</p></section>`}</div>`;$("#comparisonForm")?.addEventListener("submit",showComparison);}
+      async function showComparison(event){event.preventDefault();const idA=$("#comparisonA").value,idB=$("#comparisonB").value,error=$("#formError");error.classList.remove("visible");if(idA===idB){error.textContent="異なる2件の分析を選択してください";error.classList.add("visible");return;}lock("比較データを読み込み中...");try{const [ra,rb]=await Promise.all([apiPost("getComparisonAnalysisData",{analysisId:idA}),apiPost("getComparisonAnalysisData",{analysisId:idB})]);COMPARISON_VIEW_STATE.dataA=ra.analysis;COMPARISON_VIEW_STATE.dataB=rb.analysis;COMPARISON_VIEW_STATE.layout="overlay";COMPARISON_VIEW_STATE.activeTab="metrics";COMPARISON_VIEW_STATE.elapsed=0;renderComparison();}catch(e){error.textContent=e.message||"比較データを読み込めませんでした";error.classList.add("visible");}finally{unlock();}}
+      function comparisonDate_(data){return String(data?.publishedAt||"日付なし").split(" ")[0];}
+      function renderComparison(){stopComparisonPlayback_();document.body.classList.add("analysis-detail-mode");const a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;$("#screen").innerHTML=`<div class="analysis-detail-shell"><section class="card analysis-viewer"><div class="section-title"><div><h2>比較結果</h2><p><span style="color:#1565c0">●</span> ${escapeHtml(comparisonDate_(a))}　<span style="color:#e8751a">●</span> ${escapeHtml(comparisonDate_(b))}</p></div><button class="secondary" style="width:auto" onclick="leaveComparison_()">選び直す</button></div><div class="analysis-canvas-wrap"><canvas id="comparisonCanvas" class="analysis-canvas"></canvas><div id="comparisonOverlay" class="analysis-overlay"></div></div><div class="analysis-controls"><button id="comparisonPlayButton" class="analysis-control-button primary-control" onclick="toggleComparisonPlayback_()">再生</button><button class="analysis-control-button" onclick="resetComparisonPlayback_()">リセット</button><button class="analysis-control-button" onclick="setComparisonLayout_('${COMPARISON_VIEW_STATE.layout==="overlay"?"side":"overlay"}')">${COMPARISON_VIEW_STATE.layout==="overlay"?"左右に並べる":"重ねて表示"}</button></div><div class="analysis-tabs"><button class="analysis-tab-button ${COMPARISON_VIEW_STATE.activeTab==="metrics"?"active":""}" onclick="setComparisonTab_('metrics')">分析結果</button><button class="analysis-tab-button ${COMPARISON_VIEW_STATE.activeTab==="graphs"?"active":""}" onclick="setComparisonTab_('graphs')">グラフ</button></div><div class="analysis-tab-panel ${COMPARISON_VIEW_STATE.activeTab==="metrics"?"active":""}">${renderComparisonMetrics_(a,b)}</div><div class="analysis-tab-panel ${COMPARISON_VIEW_STATE.activeTab==="graphs"?"active":""}">${renderComparisonGraphs_(a)}</div></section></div>`;resizeComparisonCanvas_();drawComparisonFrame_();if(COMPARISON_VIEW_STATE.activeTab==="graphs")requestAnimationFrame(drawComparisonGraphs_);window.addEventListener("resize",handleComparisonResize_);}
+      function setComparisonLayout_(layout){COMPARISON_VIEW_STATE.layout=layout;renderComparison();}
+      function setComparisonTab_(tab){COMPARISON_VIEW_STATE.activeTab=tab;renderComparison();}
+      function leaveComparison_(){stopComparisonPlayback_();window.removeEventListener("resize",handleComparisonResize_);document.body.classList.remove("analysis-detail-mode");renderComparisonSelection();}
+      function comparisonSections_(a,b){const mapA=new Map((a.displaySections||[]).map(s=>[s.key,s]));return (b.displaySections||[]).filter(s=>mapA.has(s.key)).map(s=>({a:mapA.get(s.key),b:s}));}
+      function renderComparisonMetrics_(a,b){return comparisonSections_(a,b).map((pair,index)=>`<details ${index===0?"open":""}><summary><b>${escapeHtml(pair.a.title)}</b></summary><div class="analysis-result-list"><div class="analysis-comparison-head"><span></span><span>${escapeHtml(comparisonDate_(a))}</span><span>${escapeHtml(comparisonDate_(b))}</span></div>${pair.a.items.map(item=>{const other=pair.b.items.find(x=>x.label===item.label)||{};const va=item.value||item.right||"-",vb=other.value||other.right||"-";return`<div class="analysis-comparison-row">${renderAnalysisResultLabel(item.label)}<span class="analysis-result-value">${escapeHtml(va)}</span><span class="analysis-result-value">${escapeHtml(vb)}</span></div>`;}).join("")}</div></details>`).join("");}
+      function renderComparisonGraphs_(a){return `<div class="analysis-setting"><label>表示する関節</label><select id="comparisonJointSelect" onchange="COMPARISON_VIEW_STATE.selectedJoint=Number(this.value);drawComparisonGraphs_()">${(a.jointAngles?.labels||[]).map((label,i)=>`<option value="${i}" ${i===COMPARISON_VIEW_STATE.selectedJoint?"selected":""}>${escapeHtml(label)}</option>`).join("")}</select></div><div class="stack"><div class="analysis-graph-card"><h4>身体重心</h4><canvas id="comparisonCenterGraph" class="analysis-graph-canvas"></canvas></div><div class="analysis-graph-card"><h4>関節角度</h4><canvas id="comparisonAngleGraph" class="analysis-graph-canvas"></canvas></div><div class="analysis-graph-card"><h4>関節の収縮速度</h4><canvas id="comparisonVelocityGraph" class="analysis-graph-canvas"></canvas></div></div>`;}
+      function comparisonDuration_(data){if(String(data?.plan).toLowerCase()==="light")return Math.max(1,(data.lightFrames||[]).length*.4);return Math.max(.1,(data.frames||[]).length/Math.max(1,Number(data.fps)||30));}
+      function comparisonFrameIndex_(data,elapsed){const frames=data?.frames||[];if(!frames.length)return 0;if(String(data.plan).toLowerCase()==="light"){const refs=data.lightFrames||[];const step=Math.min(refs.length-1,Math.floor(elapsed/.4));return Math.max(0,Number(refs[step]?.frame||1)-1);}return Math.min(frames.length-1,Math.floor(elapsed*Math.max(1,Number(data.fps)||30)));}
+      function resizeComparisonCanvas_(){const canvas=$("#comparisonCanvas");if(!canvas)return;const rect=canvas.getBoundingClientRect(),ratio=window.devicePixelRatio||1;canvas.width=Math.max(1,Math.round(rect.width*ratio));canvas.height=Math.max(1,Math.round(rect.height*ratio));canvas.getContext("2d").setTransform(ratio,0,0,ratio,0,0);}
+      function handleComparisonResize_(){resizeComparisonCanvas_();drawComparisonFrame_();if(COMPARISON_VIEW_STATE.activeTab==="graphs")drawComparisonGraphs_();}
+      function drawComparisonFrame_(){const canvas=$("#comparisonCanvas"),a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;if(!canvas||!a||!b)return;const ctx=canvas.getContext("2d"),w=canvas.getBoundingClientRect().width,h=canvas.getBoundingClientRect().height;ctx.clearRect(0,0,w,h);ctx.fillStyle="#eef3f6";ctx.fillRect(0,0,w,h);const ia=comparisonFrameIndex_(a,COMPARISON_VIEW_STATE.elapsed),ib=comparisonFrameIndex_(b,COMPARISON_VIEW_STATE.elapsed),side=COMPARISON_VIEW_STATE.layout==="side";const areaA={left:side?8:20,top:10,width:side?w/2-12:w-40,height:h-22,scale:side?.82:1,referenceFrames:a.frames.map(f=>f.points),stickColor:"#1565c0"};const areaB={left:side?w/2+4:20,top:10,width:side?w/2-12:w-40,height:h-22,scale:side?.82:1,referenceFrames:b.frames.map(f=>f.points),stickColor:"#e8751a"};ctx.save();ctx.globalAlpha=.88;drawStickFrame(ctx,a.frames[ia]?.points||[],areaA);ctx.restore();ctx.save();ctx.globalAlpha=.78;drawStickFrame(ctx,b.frames[ib]?.points||[],areaB);ctx.restore();const overlay=$("#comparisonOverlay");if(overlay)overlay.textContent=`${comparisonDate_(a)}：${ia+1}/${a.frames.length}　${comparisonDate_(b)}：${ib+1}/${b.frames.length}`;}
+      function toggleComparisonPlayback_(){if(COMPARISON_VIEW_STATE.playing){stopComparisonPlayback_();return;}COMPARISON_VIEW_STATE.playing=true;COMPARISON_VIEW_STATE.startedAt=performance.now()-COMPARISON_VIEW_STATE.elapsed*1000;const button=$("#comparisonPlayButton");if(button)button.textContent="停止";const tick=(now)=>{if(!COMPARISON_VIEW_STATE.playing)return;const duration=Math.max(comparisonDuration_(COMPARISON_VIEW_STATE.dataA),comparisonDuration_(COMPARISON_VIEW_STATE.dataB));COMPARISON_VIEW_STATE.elapsed=(now-COMPARISON_VIEW_STATE.startedAt)/1000;if(COMPARISON_VIEW_STATE.elapsed>=duration){COMPARISON_VIEW_STATE.elapsed=0;COMPARISON_VIEW_STATE.startedAt=now;}drawComparisonFrame_();COMPARISON_VIEW_STATE.animationId=requestAnimationFrame(tick);};COMPARISON_VIEW_STATE.animationId=requestAnimationFrame(tick);}
+      function stopComparisonPlayback_(){COMPARISON_VIEW_STATE.playing=false;if(COMPARISON_VIEW_STATE.animationId)cancelAnimationFrame(COMPARISON_VIEW_STATE.animationId);COMPARISON_VIEW_STATE.animationId=null;const button=$("#comparisonPlayButton");if(button)button.textContent="再生";}
+      function resetComparisonPlayback_(){stopComparisonPlayback_();COMPARISON_VIEW_STATE.elapsed=0;drawComparisonFrame_();}
+      function drawComparisonGraphs_(){const a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;if(!a||!b)return;const j=COMPARISON_VIEW_STATE.selectedJoint;drawComparisonLineGraph_("comparisonCenterGraph",(a.centerOfMass||[]).map(x=>Number(x.y)),(b.centerOfMass||[]).map(x=>Number(x.y)));drawComparisonLineGraph_("comparisonAngleGraph",getAnalysisGraphSeries(a.jointAngles,j),getAnalysisGraphSeries(b.jointAngles,j));drawComparisonLineGraph_("comparisonVelocityGraph",getAnalysisGraphSeries(a.angularVelocities,j),getAnalysisGraphSeries(b.angularVelocities,j),true);}
+      function drawComparisonLineGraph_(id,seriesA,seriesB,zeroLine=false){const canvas=document.getElementById(id);if(!canvas)return;const rect=canvas.getBoundingClientRect(),ratio=window.devicePixelRatio||1;canvas.width=Math.max(1,Math.round(rect.width*ratio));canvas.height=Math.max(1,Math.round(rect.height*ratio));const ctx=canvas.getContext("2d");ctx.setTransform(ratio,0,0,ratio,0,0);const w=rect.width,h=rect.height,p=24,nums=[...seriesA,...seriesB].filter(Number.isFinite);ctx.fillStyle="#f5f8fa";ctx.fillRect(0,0,w,h);if(!nums.length)return;let min=Math.min(...nums),max=Math.max(...nums);if(zeroLine){min=Math.min(min,0);max=Math.max(max,0);}if(min===max){min-=1;max+=1;}const draw=(values,color)=>{ctx.beginPath();let on=false;values.forEach((v,i)=>{if(!Number.isFinite(v)){on=false;return;}const x=p+(w-p*2)*(values.length<=1?0:i/(values.length-1)),y=p+(h-p*2)*(max-v)/(max-min);on?ctx.lineTo(x,y):ctx.moveTo(x,y);on=true;});ctx.strokeStyle=color;ctx.lineWidth=2.2;ctx.stroke();};if(zeroLine&&min<0&&max>0){const y=p+(h-p*2)*max/(max-min);ctx.strokeStyle="#b8c5cb";ctx.beginPath();ctx.moveTo(p,y);ctx.lineTo(w-p,y);ctx.stroke();}draw(seriesA,"#1565c0");draw(seriesB,"#e8751a");}
       async function openAdminDashboard() {
         lock("管理データを読み込み中...");
         try {

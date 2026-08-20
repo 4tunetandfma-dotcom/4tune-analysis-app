@@ -815,7 +815,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260820-COACH-02",
+        BUILD_VERSION:"20260820-COACH-03",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -955,7 +955,7 @@ const ANALYSIS_CONNECTIONS = {
         }
         $("#screen").innerHTML=`
           <div class="stack home-screen">
-            <section class="card hero home-hero"><div class="home-welcome-row"><div class="home-welcome-copy"><small>WELCOME</small><h2>${escapeHtml(customer.applicantName)}さん</h2><p>申し込みから結果の比較まで、アプリ1つで完了</p></div>${customer.applicantType === "指導者" ? `<button class="coach-switch-button" type="button" onclick="openTeamDashboard()">指導者画面</button>` : ""}</div></section>
+            <section class="card hero home-hero"><div class="home-welcome-row"><div class="home-welcome-copy"><small>WELCOME</small><h2>${escapeHtml(customer.applicantName)}さん</h2><p>申し込みから結果の比較まで、アプリ1つで完了</p></div><button class="coach-switch-button" type="button" onclick="openTeamDashboard('coach')">指導者画面</button></div></section>
             <section class="card home-profile"><div class="profile-line"><img class="avatar" src="${escapeHtml(STATE.profile?.pictureUrl||"")}" alt=""><div><strong>${escapeHtml(customer.applicantName)}</strong><span>${escapeHtml(customer.applicantType||"")}として登録済み</span></div></div></section>
             <section id="homeTaskCard" class="task-card"><strong>申し込み状況を確認しています</strong><p>少しお待ちください。</p></section>
             <section class="card home-menu-card"><div class="section-title"><div><h3>メニュー</h3><p>各機能は順番に接続します</p></div></div><div class="menu-grid">
@@ -966,8 +966,8 @@ const ANALYSIS_CONNECTIONS = {
               <button class="menu-button" type="button" onclick="openRaceTicketDashboard()"><b>レース分析</b><span>チケット購入・残数・分析申込み</span></button>
               <button class="menu-button" type="button" onclick="openComparison()"><b>比較する</b><span>自分・フレンドと比較</span></button>
               <button class="menu-button" type="button" onclick="openFriendDashboard()"><b>フレンド</b><span>ID・申請・比較設定</span></button>
-              ${customer.applicantType !== "指導者" ? `<button class="menu-button" type="button" onclick="openTeamDashboard()"><b>チーム参加</b><span>チームIDで指導者と接続</span></button>` : ""}
-              ${customer.applicantType !== "指導者" ? `<button class="menu-button" type="button" onclick="openAthleteManagement()"><b>選手管理</b><span>追加・編集・分析履歴</span></button>` : ""}
+              ${athletes.length ? `<button class="menu-button" type="button" onclick="openTeamDashboard('join')"><b>チーム参加</b><span>チームIDで指導者と接続</span></button>` : ""}
+              <button class="menu-button" type="button" onclick="openAthleteManagement()"><b>選手管理</b><span>追加・編集・分析履歴</span></button>
             </div></section>
             <section class="card home-athletes"><div class="section-title"><div><h3>登録選手</h3><p>${athletes.length}名</p></div></div><div>${athletes.length?athletes.map((athlete)=>`<div class="athlete-summary"><div><b>${escapeHtml(athlete.name)}</b><span>${escapeHtml(athlete.affiliation)}・${athlete.age==null?"年齢未設定":athlete.age+"歳"}・${escapeHtml(athlete.height)}cm</span></div><span class="pill">登録済み</span></div>`).join(""):'<p class="muted">登録選手はいません。指導者招待または選手管理から追加します。</p>'}</div><p class="muted" style="margin:5px 0 0;text-align:right">Build ${escapeHtml(CONFIG.BUILD_VERSION)}</p></section>
           </div>`;
@@ -1177,7 +1177,7 @@ const ANALYSIS_CONNECTIONS = {
         $("#friendRequestForm").addEventListener("submit",sendFriendRequest);
       }
 
-      async function openTeamDashboard(){document.body.classList.remove("analysis-detail-mode");lock("チーム情報を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard");renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
+      async function openTeamDashboard(mode="coach"){document.body.classList.remove("analysis-detail-mode");lock(mode==="join"?"参加チームを読み込み中...":"指導者画面を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard",{mode});renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
 
       function renderTeamDashboard(){const data=STATE.teamDashboard||{};if(!data.isCoach){renderTeamJoinPage_(data);return;}const members=data.members||[],team=data.team||{};$("#screen").innerHTML=`<div class="stack coach-screen"><section class="card coach-hero"><div class="section-title"><div><small>COACH DASHBOARD</small><h2>指導者画面</h2><p>${escapeHtml(team.name||"")}・所属選手 ${members.length}名</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderHome()">通常画面</button></div></section><section class="card stack"><div class="team-id-box"><small>選手・保護者に共有するチームID</small><strong>${escapeHtml(team.teamId||"")}</strong></div><button class="secondary" onclick="copyTeamId_()">チームIDをコピー</button><button class="primary" onclick="renderTeamAthleteCreate_()">＋ 選手を登録</button></section><section class="card stack"><div class="section-title"><div><h3>選手管理</h3><p>登録・編集・チームから削除</p></div></div>${members.length?members.map(renderTeamMember_).join(""):'<p class="muted">所属選手はいません。</p>'}</section><section class="card stack"><div class="section-title"><div><h3>チーム比較</h3><p>同一日・Pro 66項目</p></div></div><button class="primary" onclick="openTeamComparison_()">チーム比較を開く</button></section><section class="card stack"><div class="section-title"><div><h3>個別比較</h3><p>同一選手・他選手の2件比較</p></div></div><button class="primary" onclick="openComparison('coach')">比較する分析を選ぶ</button></section></div>`;}
 

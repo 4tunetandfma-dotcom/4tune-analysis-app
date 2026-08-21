@@ -815,7 +815,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260822-PRO-01",
+        BUILD_VERSION:"20260822-PERF-01",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -825,7 +825,8 @@ const ANALYSIS_CONNECTIONS = {
         // 同名画像を更新したときは、この値も変更すると古いキャッシュを回避できます。
         HELP_IMAGE_VERSION:"20260816-2"
       });
-      const STATE={idToken:null,profile:null,data:null,products:[],analysisResults:[],analysisData:{},raceGraphData:null,adminDashboard:null,adminSection:"applications",teamDashboard:null,teamComparison:null,teamSort:"desc",teamPhase:"最高速",teamEditing:false,comparisonOrigin:"home",submitting:false};
+      const STATE={idToken:null,profile:null,data:null,products:[],productsCachedAt:0,applicationsCache:null,applicationsCachedAt:0,analysisResults:[],analysisResultsCachedAt:0,analysisData:{},raceGraphData:null,adminDashboard:null,adminSection:"applications",teamDashboard:null,teamComparison:null,teamSort:"desc",teamPhase:"最高速",teamEditing:false,comparisonOrigin:"home",submitting:false};
+      const VIEW_CACHE_TTL_MS=60000;
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
       const escapeHtml=(value)=>String(value??"").replace(/[&<>'"]/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
@@ -839,6 +840,15 @@ const ANALYSIS_CONNECTIONS = {
         const data=await response.json();
         if(!data.success) throw new Error(data.message||"処理に失敗しました");
         return data;
+      }
+
+      async function getCachedApplications_(force=false){
+        const fresh=STATE.applicationsCache&&Date.now()-STATE.applicationsCachedAt<VIEW_CACHE_TTL_MS;
+        if(!force&&fresh)return STATE.applicationsCache;
+        const result=await apiPost("getApplications");
+        STATE.applicationsCache=result.applications||[];
+        STATE.applicationsCachedAt=Date.now();
+        return STATE.applicationsCache;
       }
 
       async function startApp(){
@@ -1012,8 +1022,7 @@ const ANALYSIS_CONNECTIONS = {
         if (!card) return;
 
         try {
-          const result = await apiPost("getApplications");
-          const applications = result.applications || [];
+          const applications = await getCachedApplications_();
           const actionable = applications
             .map((application) => ({
               application,
@@ -1260,7 +1269,7 @@ const ANALYSIS_CONNECTIONS = {
       async function cancelRaceApplication(raceApplicationId){if(!confirm("この申込みを取り消し、チケットを1枚返却しますか？"))return;lock("申込みを取り消し中...");try{await apiPost("cancelRaceAnalysisApplication",{raceApplicationId});await openRaceTicketDashboard();}catch(error){alert(error.message||"申込みを取り消せませんでした");}finally{unlock();}}
       async function openApplication(){
         lock("商品情報を読み込み中...");
-        try{const result=await apiPost("getProducts");STATE.products=(result.products||[]).filter((product)=>product.category!=="レースチケット");if(!STATE.products.length)throw new Error("現在申し込める商品がありません");renderApplicationForm();}
+        try{if(!STATE.productsCachedAt||Date.now()-STATE.productsCachedAt>=VIEW_CACHE_TTL_MS){const result=await apiPost("getProducts");STATE.products=(result.products||[]).filter((product)=>product.category!=="レースチケット");STATE.productsCachedAt=Date.now();}if(!STATE.products.length)throw new Error("現在申し込める商品がありません");renderApplicationForm();}
         catch(error){console.error(error);alert(error.message||"商品情報を読み込めませんでした");}
         finally{unlock();}
       }
@@ -1291,10 +1300,10 @@ const ANALYSIS_CONNECTIONS = {
       function calculateClientPrice(){const product=selectedProduct(),athletes=selectedAthletes(),type=$('input[name="applicationType"]:checked')?.value||"個人";if(!product)return null;const groupApplied=type==="団体"&&product.groupDiscountEnabled&&athletes.length>=product.groupMinimum;const groupTotal=groupApplied?product.groupDiscount*athletes.length:0;const campaignTotal=product.campaignEnabled?Math.max(0,product.normalPrice-product.price)*athletes.length:0;const visitFeePerAthlete=product.deliveryMethod==="Visit"?(athletes.length>=20?product.visitFee20Plus:athletes.length>=10?product.visitFee10To19:product.visitFee1To9):0;const visitFeeTotal=visitFeePerAthlete*athletes.length;return{product,count:athletes.length,groupApplied,groupTotal,campaignTotal,visitFeePerAthlete,visitFeeTotal,total:Math.max(0,product.price*athletes.length-groupTotal+visitFeeTotal)};}
       function updatePriceSummary(){const price=calculateClientPrice();if(!price){$("#priceSummary").innerHTML="";return;}$("#priceSummary").innerHTML=`<div class="summary-row"><span>${escapeHtml(price.product.name)} × ${price.count}名</span><b>${formatYen(price.product.price*price.count)}</b></div>${price.campaignTotal?`<div class="summary-row discount"><span>キャンペーン割引</span><b>通常価格より−${formatYen(price.campaignTotal)}</b></div>`:""}${price.groupApplied?`<div class="summary-row discount"><span>団体割</span><b>−${formatYen(price.groupTotal)}</b></div>`:""}${price.visitFeeTotal?`<div class="summary-row"><span>訪問料（${formatYen(price.visitFeePerAthlete)}/人）</span><b>＋${formatYen(price.visitFeeTotal)}</b></div>`:""}<div class="summary-row total"><span>${price.product.deliveryMethod==="Visit"?"交通費を除く予定金額":"予定金額"}</span><b>${formatYen(price.total)}</b></div>${price.product.deliveryMethod==="Visit"?'<div class="notice">訪問地域を確認後、交通費を加えた確定金額をご案内します。</div>':""}`;}
       function collectApplicationAthletes(){if(selectedProduct()?.deliveryMethod==="Visit")return selectedAthletes().map((athlete)=>({athleteId:athlete.athleteId}));return $$('.shooting-card').map((card)=>({athleteId:card.dataset.athleteId,shootingDate:$('.shooting-date',card).value,calibrationDistance:$('.calibration-distance',card).value,fps:$('.shooting-fps',card).value,direction:$('.shooting-direction',card).value,notes:$('.shooting-notes',card).value.trim()}));}
-      async function submitApplication(event){event.preventDefault();if(STATE.submitting)return;$("#formError").classList.remove("visible");const payload={applicationType:$('input[name="applicationType"]:checked')?.value||"",productId:$('input[name="productId"]:checked')?.value||"",athletes:collectApplicationAthletes()};STATE.submitting=true;$("#applicationSubmit").disabled=true;lock("申し込みを登録中...");try{const result=await apiPost("createApplication",payload);renderApplicationComplete(result.application);}catch(error){console.error(error);showError(error.message);}finally{STATE.submitting=false;unlock();const button=$("#applicationSubmit");if(button)button.disabled=false;}}
+      async function submitApplication(event){event.preventDefault();if(STATE.submitting)return;$("#formError").classList.remove("visible");const payload={applicationType:$('input[name="applicationType"]:checked')?.value||"",productId:$('input[name="productId"]:checked')?.value||"",athletes:collectApplicationAthletes()};STATE.submitting=true;$("#applicationSubmit").disabled=true;lock("申し込みを登録中...");try{const result=await apiPost("createApplication",payload);STATE.applicationsCache=null;STATE.applicationsCachedAt=0;renderApplicationComplete(result.application);}catch(error){console.error(error);showError(error.message);}finally{STATE.submitting=false;unlock();const button=$("#applicationSubmit");if(button)button.disabled=false;}}
       function renderApplicationComplete(application){const visit=application.deliveryMethod==="Visit";$("#screen").innerHTML=`<div class="stack"><section class="card hero"><small>APPLICATION ACCEPTED</small><h2>申し込みを受け付けました</h2><p>${visit?"撮影場所・日時をLINEで調整します":"続けて、選手ごとに分析動画を提出してください"}</p></section><section class="card stack"><div><b>申込ID</b><p style="margin:5px 0 0;color:var(--blue);font-weight:900">${escapeHtml(application.applicationId)}</p></div><div class="summary-row"><span>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}</span><b>${application.count}名</b></div>${application.groupDiscountApplied?`<div class="summary-row discount"><span>団体割</span><b>−${formatYen(application.groupDiscountTotal)}</b></div>`:""}${application.visitFeeTotal?`<div class="summary-row"><span>訪問料</span><b>＋${formatYen(application.visitFeeTotal)}</b></div>`:""}<div class="summary-row total"><span>${visit?"交通費を除く予定金額":"予定金額"}</span><b>${formatYen(application.total)}</b></div><div class="notice">${visit?"訪問地域を確認後、交通費を含む確定金額と撮影候補日時をご案内します。":"まだ振り込まないでください。動画確認後に振込先と確定金額をご案内します。"}</div></section><section class="card stack">${visit?'<div class="section-title"><div><h3>次の流れ</h3><p>LINEでご連絡します</p></div></div><div class="notice">動画の提出は不要です。撮影場所・希望日時を確認する連絡をお待ちください。</div>':`<div class="section-title"><div><h3>動画を提出</h3><p>Googleアカウントへのログインが必要です</p></div></div>${application.athletes.map((athlete)=>`<button class="primary" type="button" data-upload-url="${escapeHtml(athlete.uploadUrl)}">${escapeHtml(athlete.name)}の動画を提出</button>`).join("")}`}<button class="secondary" type="button" onclick="reloadHome()">ホームへ戻る</button></section></div>`;$$('[data-upload-url]').forEach((button)=>button.addEventListener("click",()=>openUploadForm(button.dataset.uploadUrl)));}
       function openUploadForm(url){if(window.liff?.openWindow)liff.openWindow({url,external:true});else window.open(url,"_blank","noopener");}
-      async function openApplications(){lock("申し込み状況を読み込み中...");try{const result=await apiPost("getApplications");renderApplications(result.applications||[]);}catch(error){console.error(error);alert(error.message||"申し込み状況を読み込めませんでした");}finally{unlock();}}
+      async function openApplications(){lock("申し込み状況を読み込み中...");try{renderApplications(await getCachedApplications_());}catch(error){console.error(error);alert(error.message||"申し込み状況を読み込めませんでした");}finally{unlock();}}
       const APPLICATION_PROGRESS_STEPS = [
         "申込受付", "動画提出", "内容確認", "入金", "分析中", "完了",
       ];
@@ -1630,7 +1639,7 @@ function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit) {
   if (comparisonSeries.length) drawSeries(comparisonSeries, "#e8751a");
 }
 
-      async function openAnalysisResults(){document.body.classList.remove("analysis-detail-mode");lock("分析結果を読み込み中...");try{const result=await apiPost("getAnalysisResults");renderAnalysisResults(result.results||[]);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
+      async function openAnalysisResults(){document.body.classList.remove("analysis-detail-mode");lock("分析結果を読み込み中...");try{if(!STATE.analysisResultsCachedAt||Date.now()-STATE.analysisResultsCachedAt>=VIEW_CACHE_TTL_MS){const result=await apiPost("getAnalysisResults");STATE.analysisResults=result.results||[];STATE.analysisResultsCachedAt=Date.now();}renderAnalysisResults(STATE.analysisResults);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
 function renderAnalysisResults(results) {
   $("#screen").innerHTML = `
     <div class="stack">
@@ -3964,9 +3973,9 @@ function formatAnalysisValue(
           </div>`).join("") : '<p class="muted">商品情報はありません。</p>'}`;
       }
 
-      async function saveAdminProduct_(button){const card=button.closest(".admin-application"),productId=button.dataset.adminProductSave,normalPrice=Number(card?.querySelector("[data-product-price]")?.value),receptionStatus=card?.querySelector("[data-product-reception]")?.value||"",displayStatus=card?.querySelector("[data-product-display]")?.value||"";lock("商品設定を保存中...");try{STATE.adminDashboard=await apiPost("updateAdminProduct",{productId,normalPrice,receptionStatus,displayStatus});STATE.adminSection="products";renderAdminDashboard();}catch(error){alert(error.message||"商品設定を保存できませんでした");}finally{unlock();}}
+      async function saveAdminProduct_(button){const card=button.closest(".admin-application"),productId=button.dataset.adminProductSave,normalPrice=Number(card?.querySelector("[data-product-price]")?.value),receptionStatus=card?.querySelector("[data-product-reception]")?.value||"",displayStatus=card?.querySelector("[data-product-display]")?.value||"";lock("商品設定を保存中...");try{STATE.adminDashboard=await apiPost("updateAdminProduct",{productId,normalPrice,receptionStatus,displayStatus});STATE.products=[];STATE.productsCachedAt=0;STATE.adminSection="products";renderAdminDashboard();}catch(error){alert(error.message||"商品設定を保存できませんでした");}finally{unlock();}}
 
-      async function reloadHome(){lock("ホームを更新中...");try{STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
+      async function reloadHome(){lock("ホームを更新中...");try{STATE.products=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
       function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
       window.addEventListener("DOMContentLoaded",startApp);

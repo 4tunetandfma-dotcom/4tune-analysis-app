@@ -815,7 +815,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260822-LIGHT-01",
+        BUILD_VERSION:"20260822-ADMIN-01",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -3790,7 +3790,7 @@ function formatAnalysisValue(
         return `<h3 class="admin-section-title">申し込み状況</h3><p class="muted">対応優先度が高いステータスから表示</p>${renderAdminApplicationGroups_(applications)}`;
       }
 
-      function adminApplicationDisplayStatus_(application){if(application.category==="レースチケット"){if(application.progressStatus==="完了")return"完成";if(application.progressStatus==="キャンセル")return"キャンセル";return"入金待ち";}return application.progressStatus||"申込受付";}
+      function adminApplicationDisplayStatus_(application){if(application.category==="レースチケット")return application.ticketStatus||"入金待ち";return application.progressStatus||"申込受付";}
       function adminApplicationPriority_(status){const order={"動画再提出待ち":0,"振込報告済み":1,"最終確認中":2,"動画確認中":3,"申込受付":4,"入金待ち":5,"入金確認済み":6,"分析中":7,"動画提出待ち":8,"結果公開":9,"完成":10,"完了":10,"キャンセル":11};return order[status]??6;}
       function renderAdminApplicationGroups_(applications){if(!applications.length)return'<p class="muted">申し込みはありません。</p>';const groups=new Map();applications.forEach((application)=>{const status=adminApplicationDisplayStatus_(application);if(!groups.has(status))groups.set(status,[]);groups.get(status).push(application);});return[...groups.entries()].sort((a,b)=>adminApplicationPriority_(a[0])-adminApplicationPriority_(b[0])).map(([status,items])=>{const priority=adminApplicationPriority_(status);return`<div class="admin-status-group ${priority<=3?'admin-priority-high':priority<=6?'admin-priority-medium':''}"><div class="admin-status-group-title"><span>${escapeHtml(status)}</span><span>${items.length}件</span></div>${items.map(renderAdminApplication_).join('')}</div>`;}).join('');}
 
@@ -3831,17 +3831,17 @@ function formatAnalysisValue(
                 </div>
               `).join("")}
             </div>
-            <div class="admin-edit-grid">
+            ${application.category === "レースチケット" && application.ticketGrantStatus === "付与済み" ? "" : `<div class="admin-edit-grid">
               <div class="field">
                 <label>進行状態</label>
-                <select data-admin-progress>${application.category === "レースチケット" ? adminStatusOptions_(["振込案内","完了","キャンセル"], application.progressStatus, {"振込案内":"入金待ち","完了":"完成"}) : adminStatusOptions_(["申込受付","動画提出待ち","動画確認中","動画再提出待ち","振込案内","振込報告済み","入金確認済み","分析中","最終確認中","結果公開","完了","キャンセル"], application.progressStatus)}</select>
+                <select data-admin-progress>${application.category === "レースチケット" ? adminStatusOptions_(["振込案内","キャンセル"], application.ticketStatus === "キャンセル" ? "キャンセル" : "振込案内", {"振込案内":"入金待ち"}) : adminStatusOptions_(["申込受付","動画提出待ち","動画確認中","動画再提出待ち","振込案内","振込報告済み","入金確認済み","分析中","最終確認中","結果公開","完了","キャンセル"], application.progressStatus)}</select>
               </div>
               ${application.category !== "レースチケット" ? `<div class="field">
                 <label>入金状態</label>
                 <select data-admin-payment>${adminStatusOptions_(["未案内","振込待ち","報告済み","確認済み"], application.paymentStatus)}</select>
               </div>` : ""}
               <button class="admin-save-button" type="button" data-admin-application-save="${escapeHtml(application.applicationId)}">変更を保存</button>
-            </div>
+            </div>`}
             </div>
           </details>
         `;

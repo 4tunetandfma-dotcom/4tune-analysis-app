@@ -815,7 +815,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260822-COACH-06",
+        BUILD_VERSION:"20260822-LIGHT-01",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -2055,6 +2055,7 @@ function renderAnalysisDetail(analysis) {
     </div>
   </div>
 
+  ${isLight ? "" : `
   <div class="analysis-graph-card" data-analysis-graph="velocity">
     <div class="analysis-graph-header">
       <div class="analysis-graph-title-row">
@@ -2080,6 +2081,7 @@ function renderAnalysisDetail(analysis) {
       ></canvas>
     </div>
   </div>
+  `}
   </div>
 </div>
       </section>

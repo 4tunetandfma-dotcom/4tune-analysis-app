@@ -832,7 +832,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260822-ATHLETE-CODE-05",
+        BUILD_VERSION:"20260822-BUGFIX-06",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -1078,7 +1078,7 @@ const ANALYSIS_CONNECTIONS = {
         }
         $("#screen").innerHTML=`
           <div class="stack home-screen">
-            <section class="card hero home-hero"><div class="home-welcome-row"><div class="home-welcome-copy"><small>WELCOME</small><h2>${escapeHtml(customer.applicantName)}さん</h2><p>申し込みから結果の比較まで、アプリ1つで完了</p></div><button class="coach-switch-button" type="button" onclick="openTeamDashboard('coach')">指導者画面</button></div></section>
+            <section class="card hero home-hero"><div class="home-welcome-row"><div class="home-welcome-copy"><small>WELCOME</small><h2>${escapeHtml(customer.applicantName)}さん</h2><p>申し込みから結果の比較まで、アプリ1つで完了</p></div>${customer.applicantType==="指導者"?'<button class="coach-switch-button" type="button" onclick="openTeamDashboard(\'coach\')">指導者画面</button>':""}</div></section>
             <section class="card home-profile"><div class="profile-line"><img class="avatar" src="${escapeHtml(STATE.profile?.pictureUrl||"")}" alt=""><div><strong>${escapeHtml(customer.applicantName)}</strong><span>${escapeHtml(customer.applicantType||"")}として登録済み</span></div></div></section>
             <section id="homeTaskCard" class="task-card"><strong>申し込み状況を確認しています</strong><p>少しお待ちください。</p></section>
             <section class="card home-menu-card"><div class="section-title"><div><h3>メニュー</h3><p>各機能は順番に接続します</p></div></div><div class="menu-grid">
@@ -1102,7 +1102,13 @@ const ANALYSIS_CONNECTIONS = {
         if (!card) return;
 
         try {
-          const applications = await getCachedApplications_();
+          const [applicationResult,raceResult] = await Promise.allSettled([getCachedApplications_(),apiPost("getRaceTicketDashboard")]);
+          if(applicationResult.status!=="fulfilled")throw applicationResult.reason;
+          const applications=applicationResult.value;
+          const raceData=raceResult.status==="fulfilled"?raceResult.value:{applications:[]};
+          if(raceResult.status!=="fulfilled")console.error("レース分析の進捗確認に失敗しました",raceResult.reason);
+          STATE.raceTickets=raceData;
+          const raceActionable=(raceData.applications||[]).filter((item)=>!["キャンセル","完了","公開中"].includes(item.status)).map((item)=>({item,priority:item.videoSubmitted?2:0})).sort((a,b)=>a.priority-b.priority)[0];
           const actionable = applications
             .map((application) => ({
               application,
@@ -1120,6 +1126,13 @@ const ANALYSIS_CONNECTIONS = {
               };
               return priority(a) - priority(b);
             })[0];
+
+          if (raceActionable&&(!actionable||raceActionable.priority===0)) {
+            const race=raceActionable.item;
+            card.innerHTML=`<strong>${escapeHtml(race.videoSubmitted?"レース分析の完了をお待ちください":"レース動画を提出してください")}</strong><p>レース分析｜${escapeHtml(race.raceName)}・${escapeHtml(race.status)}</p><button class="secondary" style="margin-top:10px;min-height:40px" type="button">レース分析を確認</button>`;
+            $("button",card)?.addEventListener("click",openRaceTicketDashboard);
+            return;
+          }
 
           if (!actionable) {
             card.innerHTML = `
@@ -1408,7 +1421,10 @@ const ANALYSIS_CONNECTIONS = {
       function collectApplicationAthletes(){if(selectedProduct()?.deliveryMethod==="Visit")return selectedAthletes().map((athlete)=>({athleteId:athlete.athleteId}));return $$('.shooting-card').map((card)=>({athleteId:card.dataset.athleteId,shootingDate:$('.shooting-date',card).value,calibrationDistance:$('.calibration-distance',card).value,fps:$('.shooting-fps',card).value,direction:$('.shooting-direction',card).value,notes:$('.shooting-notes',card).value.trim()}));}
       async function submitApplication(event){event.preventDefault();if(STATE.submitting)return;$("#formError").classList.remove("visible");const payload={applicationType:$('input[name="applicationType"]:checked')?.value||"",productId:$('input[name="productId"]:checked')?.value||"",athletes:collectApplicationAthletes()};STATE.submitting=true;$("#applicationSubmit").disabled=true;lock("申し込みを登録中...");try{const result=await apiPost("createApplication",payload);STATE.applicationsCache=null;STATE.applicationsCachedAt=0;renderApplicationComplete(result.application);}catch(error){console.error(error);showError(error.message);}finally{STATE.submitting=false;unlock();const button=$("#applicationSubmit");if(button)button.disabled=false;}}
       function renderApplicationComplete(application){const visit=application.deliveryMethod==="Visit";$("#screen").innerHTML=`<div class="stack"><section class="card hero"><small>APPLICATION ACCEPTED</small><h2>申し込みを受け付けました</h2><p>${visit?"撮影場所・日時をLINEで調整します":"続けて、選手ごとに分析動画を提出してください"}</p></section><section class="card stack"><div><b>申込ID</b><p style="margin:5px 0 0;color:var(--blue);font-weight:900">${escapeHtml(application.applicationId)}</p></div><div class="summary-row"><span>${escapeHtml(application.phase)}｜${escapeHtml(application.productName)}</span><b>${application.count}名</b></div>${application.groupDiscountApplied?`<div class="summary-row discount"><span>団体割</span><b>−${formatYen(application.groupDiscountTotal)}</b></div>`:""}${application.visitFeeTotal?`<div class="summary-row"><span>訪問料</span><b>＋${formatYen(application.visitFeeTotal)}</b></div>`:""}<div class="summary-row total"><span>${visit?"交通費を除く予定金額":"予定金額"}</span><b>${formatYen(application.total)}</b></div><div class="notice">${visit?"訪問地域を確認後、交通費を含む確定金額と撮影候補日時をご案内します。":"まだ振り込まないでください。動画確認後に振込先と確定金額をご案内します。"}</div></section><section class="card stack">${visit?'<div class="section-title"><div><h3>次の流れ</h3><p>LINEでご連絡します</p></div></div><div class="notice">動画の提出は不要です。撮影場所・希望日時を確認する連絡をお待ちください。</div>':`<div class="section-title"><div><h3>動画を提出</h3><p>Googleアカウントへのログインが必要です</p></div></div>${application.athletes.map((athlete)=>`<button class="primary" type="button" data-upload-url="${escapeHtml(athlete.uploadUrl)}">${escapeHtml(athlete.name)}の動画を提出</button>`).join("")}`}<button class="secondary" type="button" onclick="reloadHome()">ホームへ戻る</button></section></div>`;$$('[data-upload-url]').forEach((button)=>button.addEventListener("click",()=>openUploadForm(button.dataset.uploadUrl)));}
-      function openUploadForm(url){if(window.liff?.openWindow)liff.openWindow({url,external:true});else window.open(url,"_blank","noopener");}
+      function openUploadForm(url){STATE.uploadFormOpenedAt=Date.now();if(window.liff?.openWindow)liff.openWindow({url,external:true});else window.open(url,"_blank","noopener");}
+      async function returnHomeAfterUploadForm_(){if(!STATE.uploadFormOpenedAt||Date.now()-STATE.uploadFormOpenedAt<1500)return;STATE.uploadFormOpenedAt=0;await reloadHome();}
+      window.addEventListener("focus",returnHomeAfterUploadForm_);
+      document.addEventListener("visibilitychange",()=>{if(!document.hidden)returnHomeAfterUploadForm_();});
       async function openApplications(){lock("申し込み状況を読み込み中...");try{renderApplications(await getCachedApplications_());}catch(error){console.error(error);alert(error.message||"申し込み状況を読み込めませんでした");}finally{unlock();}}
       const APPLICATION_PROGRESS_STEPS = [
         "申込受付", "動画提出", "内容確認", "入金", "分析中", "完了",

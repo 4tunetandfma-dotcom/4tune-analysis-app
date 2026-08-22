@@ -832,7 +832,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260822-RACEFORM-01",
+        BUILD_VERSION:"20260822-ATHLETE-CLAIM-02",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -868,18 +868,55 @@ const ANALYSIS_CONNECTIONS = {
         return STATE.applicationsCache;
       }
 
+      const ATHLETE_REGISTRATION_TOKEN_KEY="4tuneAthleteRegistrationToken";
+
+      function getAthleteRegistrationToken_(){
+        const searchParams=new URLSearchParams(location.search);
+        let token=searchParams.get("athleteRegister")||"";
+
+        // LIFF認証後は元のクエリがliff.state内へ移される場合がある。
+        if(!token){
+          const liffState=searchParams.get("liff.state")||"";
+          if(liffState){
+            try{
+              const restoredUrl=new URL(decodeURIComponent(liffState),location.origin);
+              token=restoredUrl.searchParams.get("athleteRegister")||"";
+            }catch(error){
+              console.warn("liff.stateを解析できませんでした",error);
+            }
+          }
+        }
+
+        if(token){
+          sessionStorage.setItem(ATHLETE_REGISTRATION_TOKEN_KEY,token);
+          return token;
+        }
+        return sessionStorage.getItem(ATHLETE_REGISTRATION_TOKEN_KEY)||"";
+      }
+
+      function clearAthleteRegistrationToken_(){
+        sessionStorage.removeItem(ATHLETE_REGISTRATION_TOKEN_KEY);
+        history.replaceState({},document.title,location.pathname);
+      }
+
       async function startApp(){
+        // LINEログインへ移る前に、本人登録リンクのトークンを保持する。
+        const athleteRegistrationToken=getAthleteRegistrationToken_();
         lock("LINEに接続中...");
         try{
           await liff.init({liffId:CONFIG.LIFF_ID});
-          if(!liff.isLoggedIn()){liff.login({redirectUri:location.href});return;}
+          if(!liff.isLoggedIn()){
+            getAthleteRegistrationToken_();
+            liff.login({redirectUri:location.href});
+            return;
+          }
           STATE.idToken=liff.getIDToken();
           if(!STATE.idToken) throw new Error("LINE認証情報を取得できません。LIFFのScopeでopenidを確認してください");
           STATE.profile=await liff.getProfile();
           lock("登録情報を確認中...");
           STATE.data=await apiPost("bootstrap");
-          const athleteRegistrationToken=new URLSearchParams(location.search).get("athleteRegister")||"";
-          if(athleteRegistrationToken){await openAthleteRegistration_(athleteRegistrationToken);}
+          const restoredAthleteRegistrationToken=athleteRegistrationToken||getAthleteRegistrationToken_();
+          if(restoredAthleteRegistrationToken){await openAthleteRegistration_(restoredAthleteRegistrationToken);}
           else if(STATE.data.registered){renderHome();handleFriendInviteFromUrl_();}
           else{renderRegistration();}
         }catch(error){console.error(error);renderFatal(error.message||"アプリを起動できませんでした");}
@@ -935,7 +972,7 @@ const ANALYSIS_CONNECTIONS = {
         }catch(error){
           console.error(error);
           alert(error.message||"登録リンクを確認できませんでした");
-          history.replaceState({},document.title,location.pathname);
+          clearAthleteRegistrationToken_();
           if(STATE.data.registered)renderHome();else renderRegistration();
         }
       }
@@ -951,12 +988,12 @@ const ANALYSIS_CONNECTIONS = {
         if(STATE.submitting)return;
         const applicantName=$("#athleteClaimName")?.value.trim()||STATE.data?.customer?.applicantName||"";
         STATE.submitting=true;$("#athleteClaimButton").disabled=true;lock("選手情報を引き継いでいます...");
-        try{STATE.data=await apiPost("acceptAthleteRegistration",{token,applicantName});history.replaceState({},document.title,location.pathname);alert("選手登録が完了しました");renderHome();}
+        try{STATE.data=await apiPost("acceptAthleteRegistration",{token,applicantName});clearAthleteRegistrationToken_();alert("選手登録が完了しました");renderHome();}
         catch(error){console.error(error);showError(error.message);}
         finally{STATE.submitting=false;unlock();const button=$("#athleteClaimButton");if(button)button.disabled=false;}
       }
 
-      function cancelAthleteRegistration_(){history.replaceState({},document.title,location.pathname);if(STATE.data?.registered)renderHome();else renderRegistration();}
+      function cancelAthleteRegistration_(){clearAthleteRegistrationToken_();if(STATE.data?.registered)renderHome();else renderRegistration();}
 
       function getApplicantType(){return $('input[name="applicantType"]:checked')?.value||"";}
       function handleApplicantType(){

@@ -751,6 +751,31 @@ body.analysis-help-modal-open {
 .application-plan-card small { margin-top:auto; color:var(--green); font-weight:900; }
 .application-plan-card:disabled { opacity:.45; }
 
+/* Analysis list: two full cards per viewport */
+.analysis-results-scroll { grid-auto-rows:calc((100% - 7px)/2); }
+
+/* Comparison selection dashboard */
+.app:has(.comparison-selection-screen) { padding-top:max(8px,env(safe-area-inset-top)); padding-bottom:max(10px,env(safe-area-inset-bottom)); }
+.app:has(.comparison-selection-screen) .brand { margin-bottom:6px; }
+.comparison-selection-screen { display:grid; grid-template-rows:1fr 4fr; gap:7px; height:calc(100dvh - 104px); min-height:0; }
+.comparison-application-cta { min-height:0; }
+.comparison-selection-body { display:grid; grid-template-rows:auto 1fr; gap:7px; min-height:0; }
+.comparison-filter-compact { display:grid; gap:7px; padding:10px 12px; border-radius:15px; }
+.comparison-filter-compact>h2 { margin:0; font-size:16px; line-height:1.2; }
+.comparison-filter-columns { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.comparison-filter-compact .comparison-filter-group { gap:3px; }
+.comparison-filter-compact .comparison-filter-label { font-size:8px; }
+.comparison-filter-compact .comparison-segmented { padding:3px; border-radius:10px; }
+.comparison-filter-compact .comparison-segmented button { min-height:31px; padding:4px 6px; border-radius:7px; font-size:9px; }
+.comparison-choice-form { min-height:0; }
+.comparison-choice-card { display:grid; align-content:center; gap:10px; height:100%; min-height:0; padding:12px; border-radius:15px; }
+.comparison-choice-card .field { gap:4px; }
+.comparison-choice-card .field label { font-size:9px; }
+.comparison-choice-card select { min-height:40px; padding:7px 9px; font-size:10px; }
+.comparison-choice-card .primary { min-height:42px; border-radius:11px; font-size:11px; }
+.comparison-choice-empty { display:grid; place-items:center; min-height:0; padding:14px; border-radius:15px; }
+.comparison-choice-empty p { margin:0; color:var(--muted); font-size:10px; text-align:center; }
+
 @media(max-width:430px) {
   .race-graph-select-grid { grid-template-columns: 1fr; }
   .race-graph-select-grid .field:first-child { grid-column: auto; }
@@ -3697,7 +3722,7 @@ function formatAnalysisValue(
       function comparisonFiltered_(){return COMPARISON_VIEW_STATE.candidates.filter((item)=>String(item.plan).toLowerCase()===COMPARISON_VIEW_STATE.plan.toLowerCase()&&String(item.phase)===COMPARISON_VIEW_STATE.phase);}
       function setComparisonFilter_(type,value){COMPARISON_VIEW_STATE[type]=value;renderComparisonSelection();}
       function comparisonBigTabs_(type,values){return `<div class="comparison-segmented">${values.map((value)=>`<button type="button" class="${COMPARISON_VIEW_STATE[type]===value?"active":""}" onclick="setComparisonFilter_('${type}','${value}')">${value}</button>`).join("")}</div>`;}
-      function renderComparisonSelection(){const results=comparisonFiltered_();$("#screen").innerHTML=`<div class="stack ${STATE.comparisonOrigin==="coach"?"coach-screen":""}"><section class="card comparison-filter-card"><div class="section-title"><div><h2>分析結果を比較</h2><p>同じプラン・局面の2件を比較</p></div><button class="secondary" style="width:auto;min-height:34px;padding:0 11px" type="button" onclick="comparisonBack_()">戻る</button></div><div class="comparison-filter-group"><span class="comparison-filter-label">PLAN</span>${comparisonBigTabs_("plan",["Pro","Light"])}</div><div class="comparison-filter-group"><span class="comparison-filter-label">PHASE</span>${comparisonBigTabs_("phase",["最高速","スタート"])}</div></section>${results.length>=2?`<form id="comparisonForm" class="stack"><section class="card stack"><div class="field"><label class="required">比較1</label><select id="comparisonA">${results.map((r,i)=>`<option value="${escapeHtml(r.analysisId)}" ${i===0?"selected":""}>${comparisonOption(r)}</option>`).join("")}</select></div><div class="field"><label class="required">比較2</label><select id="comparisonB">${results.map((r,i)=>`<option value="${escapeHtml(r.analysisId)}" ${i===1?"selected":""}>${comparisonOption(r)}</option>`).join("")}</select></div><div id="formError" class="error"></div><button class="primary" type="submit">この2件を比較する</button></section></form>`:`<section class="card"><p class="muted">${escapeHtml(COMPARISON_VIEW_STATE.plan)}・${escapeHtml(COMPARISON_VIEW_STATE.phase)}で比較できる分析が2件以上ありません。</p></section>`}</div>`;$("#comparisonForm")?.addEventListener("submit",showComparison);}
+      function renderComparisonSelection(){const results=comparisonFiltered_();$("#screen").innerHTML=`<div class="comparison-selection-screen ${STATE.comparisonOrigin==="coach"?"coach-screen":""}"><button class="card ticket-apply-card comparison-application-cta" type="button" onclick="openApplication()"><small>MOTION ANALYSIS</small><h2>新しく申し込む</h2><p>最高速・スタート動作分析を申し込む</p></button><section class="comparison-selection-body"><section class="card comparison-filter-card comparison-filter-compact"><h2>分析結果を比較</h2><div class="comparison-filter-columns"><div class="comparison-filter-group"><span class="comparison-filter-label">PLAN</span>${comparisonBigTabs_("plan",["Pro","Light"])}</div><div class="comparison-filter-group"><span class="comparison-filter-label">PHASE</span>${comparisonBigTabs_("phase",["最高速","スタート"])}</div></div></section>${results.length>=2?`<form id="comparisonForm" class="comparison-choice-form"><section class="card comparison-choice-card"><div class="field"><label class="required">比較1</label><select id="comparisonA">${results.map((r,i)=>`<option value="${escapeHtml(r.analysisId)}" ${i===0?"selected":""}>${comparisonOption(r)}</option>`).join("")}</select></div><div class="field"><label class="required">比較2</label><select id="comparisonB">${results.map((r,i)=>`<option value="${escapeHtml(r.analysisId)}" ${i===1?"selected":""}>${comparisonOption(r)}</option>`).join("")}</select></div><div id="formError" class="error"></div><button class="primary" type="submit">この2件を比較する</button></section></form>`:`<section class="card comparison-choice-empty"><p>${escapeHtml(COMPARISON_VIEW_STATE.plan)}・${escapeHtml(COMPARISON_VIEW_STATE.phase)}で比較できる分析が2件以上ありません。</p></section>`}</section></div>`;$("#comparisonForm")?.addEventListener("submit",showComparison);}
       function comparisonBack_(){STATE.comparisonOrigin==="coach"?renderTeamDashboard():renderHome();}
       async function showComparison(event){event.preventDefault();const idA=$("#comparisonA").value,idB=$("#comparisonB").value,error=$("#formError");error.classList.remove("visible");if(idA===idB){error.textContent="異なる2件の分析を選択してください";error.classList.add("visible");return;}lock("比較データを読み込み中...");try{const mode=STATE.comparisonOrigin;const [ra,rb]=await Promise.all([apiPost("getComparisonAnalysisData",{analysisId:idA,mode}),apiPost("getComparisonAnalysisData",{analysisId:idB,mode})]);COMPARISON_VIEW_STATE.dataA=ra.analysis;COMPARISON_VIEW_STATE.dataB=rb.analysis;COMPARISON_VIEW_STATE.layout="overlay";COMPARISON_VIEW_STATE.activeTab="metrics";COMPARISON_VIEW_STATE.elapsed=0;renderComparison();}catch(e){error.textContent=e.message||"比較データを読み込めませんでした";error.classList.add("visible");}finally{unlock();}}
       function comparisonDate_(data){return String(data?.publishedAt||"日付なし").split(" ")[0];}

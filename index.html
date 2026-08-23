@@ -801,6 +801,49 @@ body.analysis-help-modal-open {
 .athlete-management-empty { display:grid; place-content:center; gap:10px; height:100%; text-align:center; }
 .athlete-management-empty h2,.athlete-management-empty p { margin:0; }
 
+/* Larger athlete details with a quarter-height history */
+.athlete-management-screen>.athlete-manage-card { grid-template-rows:1.45fr 1fr 1fr 1.2fr 1.55fr; }
+.athlete-management-screen .section-title { align-items:center; }
+.athlete-management-screen .section-title h3 { font-size:21px; }
+.athlete-management-screen .section-title p { font-size:11px; }
+.athlete-management-screen .summary-row { align-items:center; padding:8px 0; font-size:14px; }
+.athlete-management-screen .summary-row b { font-size:15px; }
+.athlete-management-screen .athlete-manage-actions button { height:100%; min-height:42px; font-size:13px; }
+.athlete-management-screen .athlete-history>strong { font-size:13px!important; }
+.athlete-management-screen .athlete-history-item span { font-size:10px; }
+
+/* Larger comparison selectors */
+.comparison-choice-card .field label { font-size:13px; }
+.comparison-choice-card select { min-height:48px; padding:9px 11px; font-size:14px; font-weight:800; }
+
+/* Team join dashboard */
+.app:has(.team-join-screen) { padding-top:max(8px,env(safe-area-inset-top)); padding-bottom:max(10px,env(safe-area-inset-bottom)); }
+.app:has(.team-join-screen) .brand { margin-bottom:6px; }
+.team-join-screen { display:grid; grid-template-rows:1fr 2fr; gap:7px; height:calc(100dvh - 104px); min-height:0; }
+.team-join-screen>.card { min-height:0; padding:10px 12px; border-radius:15px; }
+.team-join-entry { display:grid; grid-template-rows:auto 1fr; gap:7px; }
+.team-join-title { display:flex; align-items:end; justify-content:space-between; gap:8px; }
+.team-join-title small { display:block; color:var(--aqua); font-size:7px; font-weight:900; letter-spacing:.12em; }
+.team-join-title h2 { margin:0; font-size:17px; }
+.team-join-title>span { padding:4px 7px; border-radius:99px; background:#e6f3ef; color:var(--navy); font-size:8px; font-weight:900; }
+.team-join-form { display:grid; grid-template-columns:1fr 1fr; gap:6px 7px; min-height:0; }
+.team-join-form .field { gap:3px; }
+.team-join-form label { font-size:8px; }
+.team-join-form select,.team-join-form input { min-height:38px; padding:7px 9px; font-size:10px; }
+.team-join-form>.primary { grid-column:1/-1; min-height:38px; border-radius:10px; font-size:10px; }
+.joined-team-section { display:grid; grid-template-rows:auto 1fr; gap:7px; }
+.joined-team-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.joined-team-head h3 { margin:0; font-size:15px; }
+.joined-team-head span { padding:4px 8px; border-radius:99px; background:#e7f3ef; color:var(--navy); font-size:9px; font-weight:900; }
+.joined-team-list { display:grid; grid-template-rows:repeat(3,minmax(0,1fr)); gap:7px; min-height:0; }
+.joined-team-card { display:flex; align-items:center; justify-content:space-between; gap:10px; min-height:0; padding:9px 11px; border:1px solid var(--line); border-radius:12px; background:linear-gradient(135deg,#f5faf8,#fff); }
+.joined-team-main { display:grid; gap:2px; min-width:0; }
+.joined-team-main b { overflow:hidden; color:var(--navy); font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+.joined-team-main span { color:var(--muted); font-size:8px; }
+.joined-team-main small { color:var(--blue); font-size:9px; font-weight:900; }
+.joined-team-card .athlete-delete-button { width:auto; min-height:34px; padding:0 11px; border-radius:9px; font-size:9px; }
+.team-join-empty { align-self:center; margin:0; color:var(--muted); font-size:10px; text-align:center; }
+
 @media(max-width:430px) {
   .race-graph-select-grid { grid-template-columns: 1fr; }
   .race-graph-select-grid .field:first-child { grid-column: auto; }
@@ -1373,7 +1416,7 @@ const ANALYSIS_CONNECTIONS = {
       function copyAthleteRegistrationLink_(athleteId){const share=getAthleteRegistrationShare_(athleteId);if(share)copyText_(share.link,"登録リンクをコピーしました");}
       function copyAthleteRegistrationShare_(athleteId){const share=getAthleteRegistrationShare_(athleteId);if(share)copyText_(share.text,"登録リンクとコードをコピーしました");}
 
-      function renderTeamJoinPage_(data){const athletes=data.athletes||[],memberships=data.memberships||[];$("#screen").innerHTML=`<div class="stack"><section class="card stack"><div class="section-title"><div><h2>チーム参加</h2><p>指導者から共有されたチームIDを入力</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderHome()">戻る</button></div>${athletes.length?`<form id="teamJoinForm" class="stack"><div class="field"><label>参加する選手</label><select id="teamJoinAthlete">${athletes.map(a=>`<option value="${escapeHtml(a.athleteId)}">${escapeHtml(a.name)}</option>`).join("")}</select></div><div class="field"><label>チームID</label><input id="teamJoinId" placeholder="TEAM-XXXXXXXX" maxlength="13"></div><button class="primary">このチームに参加</button></form>`:'<p class="muted">先に選手を登録してください。</p>'}</section><section class="card stack"><h3 style="margin:0">参加中のチーム</h3>${memberships.length?memberships.map(m=>`<div class="team-member-card"><div class="section-title"><div><b>${escapeHtml(m.teamName)}</b><p>${escapeHtml(m.teamId)}</p></div><button class="athlete-delete-button" onclick="leaveTeam_('${escapeHtml(m.membershipId)}')">退出</button></div></div>`).join(""):'<p class="muted">参加中のチームはありません。</p>'}</section></div>`;$("#teamJoinForm")?.addEventListener("submit",joinTeam_);}
+      function renderTeamJoinPage_(data){const athletes=data.athletes||[],memberships=data.memberships||[],atLimit=memberships.length>=3;$("#screen").innerHTML=`<div class="team-join-screen"><section class="card team-join-entry"><div class="team-join-title"><div><small>TEAM</small><h2>チーム参加</h2></div><span>最大3チーム</span></div>${athletes.length?`<form id="teamJoinForm" class="team-join-form"><div class="field"><label>参加する選手</label><select id="teamJoinAthlete" ${atLimit?"disabled":""}>${athletes.map(a=>`<option value="${escapeHtml(a.athleteId)}">${escapeHtml(a.name)}</option>`).join("")}</select></div><div class="field"><label>チームID</label><input id="teamJoinId" placeholder="TEAM-XXXXXXXX" maxlength="13" ${atLimit?"disabled":""}></div><button class="primary" ${atLimit?"disabled":""}>${atLimit?"参加上限に達しています":"このチームに参加"}</button></form>`:'<p class="team-join-empty">先に本人情報を登録してください。</p>'}</section><section class="card joined-team-section"><div class="joined-team-head"><h3>参加中のチーム</h3><span>${memberships.length}/3チーム</span></div><div class="joined-team-list">${memberships.length?memberships.map(m=>`<div class="joined-team-card"><div class="joined-team-main"><b>${escapeHtml(m.teamName)}</b><span>${escapeHtml(m.teamId)}</span><small>所属人数 ${Number(m.memberCount||0)}/50人</small></div><button class="athlete-delete-button" onclick="leaveTeam_('${escapeHtml(m.membershipId)}')">退出</button></div>`).join(""):'<p class="team-join-empty">参加中のチームはありません。</p>'}</div></section></div>`;$("#teamJoinForm")?.addEventListener("submit",joinTeam_);}
 
       async function joinTeam_(event){event.preventDefault();lock("チームに参加中...");try{STATE.teamDashboard=await apiPost("joinTeamById",{teamId:$("#teamJoinId").value.trim(),athleteId:$("#teamJoinAthlete").value});renderTeamDashboard();}catch(error){alert(error.message||"チームに参加できませんでした");}finally{unlock();}}
       async function removeTeamMember_(membershipId,name){if(!confirm(`${name}さんをチームから外しますか？\n選手データ自体は削除されません。`))return;lock("チームから外しています...");try{STATE.teamDashboard=await apiPost("removeTeamMember",{membershipId});renderTeamDashboard();}catch(error){alert(error.message||"チームから外せませんでした");}finally{unlock();}}

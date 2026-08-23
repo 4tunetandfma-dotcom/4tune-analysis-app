@@ -776,6 +776,31 @@ body.analysis-help-modal-open {
 .comparison-choice-empty { display:grid; place-items:center; min-height:0; padding:14px; border-radius:15px; }
 .comparison-choice-empty p { margin:0; color:var(--muted); font-size:10px; text-align:center; }
 
+/* Comparison balance refinements */
+.comparison-filter-compact>h2 { font-size:19px; }
+.comparison-choice-card { gap:6px; padding:8px 10px; }
+.comparison-choice-card select { min-height:42px; }
+.comparison-choice-card .primary { min-height:48px; font-size:15px; letter-spacing:.01em; }
+
+/* Single-screen athlete information */
+.app:has(.athlete-management-screen) { padding-top:max(8px,env(safe-area-inset-top)); padding-bottom:max(10px,env(safe-area-inset-bottom)); }
+.app:has(.athlete-management-screen) .brand { margin-bottom:6px; }
+.athlete-management-screen { display:grid; grid-auto-rows:100%; gap:7px; height:calc(100dvh - 104px); min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+.athlete-management-screen>.athlete-manage-card { display:grid; grid-template-rows:auto auto auto auto 1fr; gap:8px; height:100%; min-height:0; padding:12px; border-radius:15px; }
+.athlete-management-screen .section-title { margin-bottom:0; }
+.athlete-management-screen .section-title h3 { font-size:18px; }
+.athlete-card-badges { display:grid; justify-items:end; gap:4px; }
+.athlete-ticket-balance { padding:4px 7px; border-radius:99px; background:#fff1df; color:#a85a17; font-size:8px; font-weight:900; white-space:nowrap; }
+.athlete-management-screen .summary-row { padding:6px 0; font-size:11px; }
+.athlete-management-screen .athlete-manage-actions { gap:7px; }
+.athlete-management-screen .athlete-manage-actions button { min-height:36px; }
+.athlete-management-screen .athlete-history { display:grid; grid-template-rows:auto 1fr; gap:6px; min-height:0; padding-top:7px; overflow:hidden; }
+.athlete-history-scroll { display:grid; grid-auto-rows:calc((100% - 6px)/2); align-content:start; gap:6px; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+.athlete-management-screen .athlete-history-item { min-height:0; padding:7px 9px; }
+.athlete-management-screen .athlete-history-item button { min-height:30px; }
+.athlete-management-empty { display:grid; place-content:center; gap:10px; height:100%; text-align:center; }
+.athlete-management-empty h2,.athlete-management-empty p { margin:0; }
+
 @media(max-width:430px) {
   .race-graph-select-grid { grid-template-columns: 1fr; }
   .race-graph-select-grid .field:first-child { grid-column: auto; }
@@ -1192,8 +1217,9 @@ const ANALYSIS_CONNECTIONS = {
         document.body.classList.remove("analysis-detail-mode");
         lock("選手情報を読み込み中...");
         try {
-          const result = await apiPost("getAthleteManagementData");
+          const [result,ticketData] = await Promise.all([apiPost("getAthleteManagementData"),apiPost("getRaceTicketDashboard")]);
           STATE.athleteManagement = result;
+          STATE.raceTickets = ticketData;
           renderAthleteManagement();
         } catch (error) {
           console.error(error);
@@ -1208,15 +1234,8 @@ const ANALYSIS_CONNECTIONS = {
         const athletes = data.athletes || [];
         const analysesByAthlete = data.analysesByAthlete || {};
         $("#screen").innerHTML = `
-          <div class="stack">
-            <section class="card">
-              <div class="section-title">
-                <div><h2>登録情報</h2><p>登録選手 ${athletes.length}名</p></div>
-                <button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="renderHome()">戻る</button>
-              </div>
-              ${athletes.length ? '<div class="notice">通常画面では、ご本人の登録情報のみ表示します。チーム選手は指導者画面で管理してください。</div>' : '<button class="primary" type="button" onclick="renderAthleteForm()">本人情報を登録</button>'}
-            </section>
-            ${athletes.length ? athletes.map((athlete) => renderAthleteManagementCard_(athlete, analysesByAthlete[athlete.athleteId] || [])).join("") : '<section class="card"><p class="muted">登録選手はいません。「選手を追加」から登録できます。</p></section>'}
+          <div class="athlete-management-screen">
+            ${athletes.length ? athletes.map((athlete) => renderAthleteManagementCard_(athlete, analysesByAthlete[athlete.athleteId] || [])).join("") : '<section class="card athlete-management-empty"><h2>登録情報</h2><p>本人情報がまだ登録されていません。</p><button class="primary" type="button" onclick="renderAthleteForm()">本人情報を登録</button></section>'}
           </div>`;
       }
 
@@ -1225,7 +1244,7 @@ const ANALYSIS_CONNECTIONS = {
           <section class="athlete-manage-card stack">
             <div class="section-title">
               <div><h3>${escapeHtml(athlete.name)}</h3><p>${escapeHtml(athlete.affiliation)}・${athlete.age == null ? "年齢未設定" : athlete.age + "歳"}</p></div>
-              <span class="pill">登録済み</span>
+              <div class="athlete-card-badges"><span class="pill">登録済み</span><span class="athlete-ticket-balance">チケット ${Number(STATE.raceTickets?.balance||0)}枚</span></div>
             </div>
             <div class="summary-row"><span>身長・体重</span><b>${escapeHtml(athlete.height)}cm${athlete.weight ? `・${escapeHtml(athlete.weight)}kg` : ""}</b></div>
             <div class="summary-row"><span>役職・立場</span><b>${escapeHtml(athlete.position || "-")}</b></div>
@@ -1235,11 +1254,12 @@ const ANALYSIS_CONNECTIONS = {
             </div>
             <div class="athlete-history">
               <strong style="font-size:12px">分析履歴（${analyses.length}件）</strong>
-              ${analyses.length ? analyses.map((analysis) => `
+              <div class="athlete-history-scroll">${analyses.length ? analyses.map((analysis) => `
                 <div class="athlete-history-item">
                   <span>${escapeHtml(analysis.phase)}｜${escapeHtml(analysis.plan)}<br>${escapeHtml(analysis.publishedAt || "公開日未設定")}</span>
                   ${analysis.hasAnalysisData ? `<button class="secondary" type="button" onclick="openAnalysisDetail('${escapeHtml(analysis.analysisId)}')">見る</button>` : '<span class="muted">データ未登録</span>'}
                 </div>`).join("") : '<p class="muted" style="margin:0">公開済みの分析結果はありません。</p>'}
+              </div>
             </div>
           </section>`;
       }
@@ -1796,6 +1816,7 @@ function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit) {
 function renderAnalysisResults(results) {
   const filteredResults=(results||[]).filter((result)=>String(result.plan||"").toLowerCase()===ANALYSIS_RESULTS_FILTER.plan.toLowerCase()&&String(result.phase||"")===ANALYSIS_RESULTS_FILTER.phase);
   $("#screen").innerHTML = `<div class="analysis-results-screen"><button class="card ticket-apply-card analysis-results-cta" type="button" onclick="openApplication()"><small>MOTION ANALYSIS</small><h2>新しく申し込む</h2><p>最高速・スタート動作分析を申し込む</p></button><section class="analysis-results-area"><div class="analysis-results-heading"><div><small>RESULTS</small><h2>動作分析結果</h2></div><span>${filteredResults.length}件</span></div><div class="analysis-results-filters"><div class="analysis-filter-group"><small>コース</small><div><button class="${ANALYSIS_RESULTS_FILTER.plan==="Pro"?"active":""}" onclick="setAnalysisResultsFilter_('plan','Pro')">Pro</button><button class="${ANALYSIS_RESULTS_FILTER.plan==="Light"?"active":""}" onclick="setAnalysisResultsFilter_('plan','Light')">Light</button></div></div><div class="analysis-filter-group"><small>区間</small><div><button class="${ANALYSIS_RESULTS_FILTER.phase==="最高速"?"active":""}" onclick="setAnalysisResultsFilter_('phase','最高速')">最高速</button><button class="${ANALYSIS_RESULTS_FILTER.phase==="スタート"?"active":""}" onclick="setAnalysisResultsFilter_('phase','スタート')">スタート</button></div></div></div><div class="analysis-results-scroll">${filteredResults.length?filteredResults.map((result)=>`<section class="card analysis-list-card"><div class="analysis-list-head"><div><small>${escapeHtml(result.plan)}コース</small><h3>${escapeHtml(result.phase)}</h3></div><span class="pill">公開済み</span></div><div class="analysis-list-meta"><span>公開日時</span><b>${escapeHtml(result.publishedAt||"-")}</b></div><div class="analysis-list-meta"><span>申込ID</span><b>${escapeHtml(result.applicationId)}</b></div>${result.hasAnalysisData?`<button class="primary" type="button" data-open-analysis-id="${escapeHtml(result.analysisId)}">分析結果を見る</button>`:'<p class="analysis-list-empty">分析データはまだ登録されていません</p>'}</section>`).join(""):'<section class="card analysis-results-empty"><p>${escapeHtml(ANALYSIS_RESULTS_FILTER.plan)}・${escapeHtml(ANALYSIS_RESULTS_FILTER.phase)}の公開済み結果はありません</p></section>'}</div></section></div>`;
+  const emptyResultMessage=$(".analysis-results-empty p");if(emptyResultMessage)emptyResultMessage.textContent=`${ANALYSIS_RESULTS_FILTER.plan}・${ANALYSIS_RESULTS_FILTER.phase}の公開済み結果はありません`;
 
   $$("[data-open-analysis-id]").forEach(
     (button) =>

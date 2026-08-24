@@ -1270,12 +1270,32 @@ const ANALYSIS_CONNECTIONS = {
 
       function renderAthleteManagement() {
         const data = STATE.athleteManagement || {};
+        const customer = data.customer || STATE.data?.customer || {};
         const athletes = data.athletes || [];
         const analysesByAthlete = data.analysesByAthlete || {};
         $("#screen").innerHTML = `
           <div class="athlete-management-screen">
+            <section class="card stack">
+              <div class="section-title"><div><h2>アカウント情報</h2><p>${escapeHtml(customer.applicantName || "")}</p></div></div>
+              <div class="field"><label class="required">利用者種別</label><select id="accountUserType">
+                ${["選手","指導者","選手兼指導者"].map((type)=>`<option value="${type}" ${type===(customer.userType||customer.applicantType)?"selected":""}>${type}</option>`).join("")}
+              </select></div>
+              <button class="secondary" type="button" onclick="saveAccountUserType()">利用者種別を保存</button>
+            </section>
             ${athletes.length ? athletes.map((athlete) => renderAthleteManagementCard_(athlete, analysesByAthlete[athlete.athleteId] || [])).join("") : '<section class="card athlete-management-empty"><h2>登録情報</h2><p>本人情報がまだ登録されていません。</p><button class="primary" type="button" onclick="renderAthleteForm()">本人情報を登録</button></section>'}
           </div>`;
+      }
+
+      async function saveAccountUserType(){
+        if(STATE.submitting)return;
+        STATE.submitting=true;lock("利用者種別を更新中...");
+        try{
+          STATE.athleteManagement=await apiPost("updateUserType",{userType:$("#accountUserType").value});
+          STATE.data=await apiPost("bootstrap");
+          renderAthleteManagement();
+          alert("利用者種別を更新しました");
+        }catch(error){console.error(error);alert(error.message||"利用者種別を更新できませんでした");}
+        finally{STATE.submitting=false;unlock();}
       }
 
       function renderAthleteManagementCard_(athlete, analyses) {

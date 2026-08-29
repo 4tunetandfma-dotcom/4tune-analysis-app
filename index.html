@@ -31,6 +31,7 @@
       .athlete-card{position:relative;padding:15px;border:1px solid var(--line);border-radius:16px;background:#fbfdfe}.athlete-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.athlete-head strong{font-size:14px}.remove{border:0;background:transparent;color:var(--danger);font-size:12px;font-weight:800}
       .primary,.secondary{width:100%;min-height:48px;border-radius:14px;font-weight:850}.primary{border:0;background:var(--blue);color:#fff}.secondary{border:1px solid #bfd2da;background:#fff;color:var(--blue)}.primary:disabled,.secondary:disabled{cursor:not-allowed;opacity:.5}
       .notice{padding:12px;border-radius:12px;background:#edf6f2;color:#365f54;font-size:12px;line-height:1.65}.error{display:none;padding:12px;border-radius:12px;background:#fdecef;color:#8e2834;font-size:12px;line-height:1.65;white-space:pre-wrap}.error.visible{display:block}
+      .terms-consent{display:grid;gap:10px;padding:13px;border:1px solid #bfd8cf;border-radius:14px;background:#f4faf7}.terms-open-button{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:44px;padding:0 13px;border:1px solid #8ebbad;border-radius:12px;background:#fff;color:var(--navy);font-size:12px;font-weight:900}.terms-check{display:flex;align-items:flex-start;gap:9px;color:var(--text);font-size:12px;font-weight:800;line-height:1.55}.terms-check input{flex:0 0 auto;width:20px;min-height:20px;margin:0}.terms-check input:disabled+span{color:var(--muted)}.terms-hint{margin:0;color:var(--muted);font-size:10px;line-height:1.5}.terms-modal{position:fixed;inset:0;z-index:9999;display:grid;grid-template-rows:auto 1fr auto;background:#eef5f2}.terms-modal-head,.terms-modal-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;background:#fff;box-shadow:0 2px 12px rgba(23,79,67,.12)}.terms-modal-head b{font-size:14px}.terms-modal-close{width:auto;min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);font-weight:900}.terms-modal-scroll{overflow:auto;padding:10px}.terms-modal-scroll img{display:block;width:min(100%,680px);height:auto;margin:0 auto;border-radius:8px;background:#fff;box-shadow:0 6px 24px rgba(23,79,67,.12)}.terms-modal-foot{display:block}.terms-modal-foot .primary{min-height:44px}
       .profile-line{display:flex;align-items:center;gap:11px}.avatar{width:48px;height:48px;border-radius:50%;background:#e6eef1;object-fit:cover}.profile-line strong{display:block}.profile-line span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
       .task-card{padding:15px;border-radius:16px;background:linear-gradient(135deg,#eaf5f0,#fff);border:1px solid #cfe3da}.task-card strong{color:var(--navy);font-size:13px}.task-card p{margin:5px 0 0;color:#527369;font-size:11px}
       .menu-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.menu-button{min-height:92px;padding:13px;border:1px solid var(--line);border-radius:16px;background:#fff;text-align:left}.menu-button b{display:block;color:var(--navy);font-size:14px}.menu-button span{display:block;margin-top:6px;color:var(--muted);font-size:11px;line-height:1.45}.menu-button.primary-menu{border:0;background:linear-gradient(145deg,var(--blue),var(--navy));color:#fff}.menu-button.primary-menu b,.menu-button.primary-menu span{color:#fff}
@@ -960,7 +961,8 @@ const ANALYSIS_CONNECTIONS = {
         // 同名画像を更新したときは、この値も変更すると古いキャッシュを回避できます。
         HELP_IMAGE_VERSION:"20260816-2"
       });
-      const STATE={idToken:null,profile:null,data:null,products:[],applicationProducts:[],productsCachedAt:0,applicationsCache:null,applicationsCachedAt:0,analysisResults:[],analysisResultsCachedAt:0,analysisData:{},raceGraphData:null,adminDashboard:null,adminSection:"applications",teamDashboard:null,teamComparison:null,teamSort:"desc",teamPhase:"最高速",teamEditing:false,comparisonOrigin:"home",submitting:false};
+      const TERMS_VERSION="2026-08-30";
+      const STATE={idToken:null,profile:null,data:null,products:[],applicationProducts:[],productsCachedAt:0,applicationsCache:null,applicationsCachedAt:0,analysisResults:[],analysisResultsCachedAt:0,analysisData:{},raceGraphData:null,adminDashboard:null,adminSection:"applications",teamDashboard:null,teamComparison:null,teamSort:"desc",teamPhase:"最高速",teamEditing:false,comparisonOrigin:"home",submitting:false,termsViewed:false};
       const VIEW_CACHE_TTL_MS=60000;
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
@@ -1093,7 +1095,11 @@ const ANALYSIS_CONNECTIONS = {
               </section>
 
               <section class="card stack">
-                <div class="notice">現在はテスト構築中です。利用規約とプライバシーポリシーの本文は、正式公開前に追加します。</div>
+                <div class="terms-consent">
+                  <button class="terms-open-button" type="button" onclick="openTermsModal_()"><span>利用規約・個人情報取扱方針</span><span>確認する ›</span></button>
+                  <label class="terms-check"><input id="termsAccepted" type="checkbox" disabled><span>利用規約・個人情報取扱方針の全文を確認し、同意します。</span></label>
+                  <p id="termsHint" class="terms-hint">「確認する」から全文を開くと、同意欄を選択できます。18歳未満の方は、法定代理人の同意を得てください。</p>
+                </div>
                 <div id="formError" class="error"></div>
                 <button id="submitButton" class="primary" type="submit">登録して開始する</button>
               </section>
@@ -1121,15 +1127,18 @@ const ANALYSIS_CONNECTIONS = {
       function renderAthleteRegistrationInvite_(invite,token){
         const athlete=invite.athlete||{};
         const registered=Boolean(STATE.data?.registered);
-        $("#screen").innerHTML=`<div class="stack"><section class="card hero"><small>ATHLETE REGISTRATION</small><h2>本人確認</h2><p>${escapeHtml(invite.teamName||"指導者")}から登録リンクが届いています。</p></section><section class="card stack"><div style="text-align:center"><p class="muted" style="margin:0 0 8px">登録されている選手名</p><h2 style="margin:0;font-size:24px">${escapeHtml(athlete.name||"選手名未設定")}</h2></div><div class="notice">「${escapeHtml(athlete.name||"選手")}」さん本人でお間違いないですか？${registered?`<br>現在のLINE登録「${escapeHtml(STATE.data.customer?.applicantName||"")}」へ選手情報を引き継ぎます。`:"<br>その他の未入力情報は、空欄のまま引き継がれます。"}</div><div id="formError" class="error"></div><button id="athleteClaimButton" class="primary" type="button">はい、このLINEでログインする</button><button class="secondary" type="button" onclick="cancelAthleteRegistration_()">違います</button></section></div>`;
+        const termsBlock=registered?"":`<div class="terms-consent"><button class="terms-open-button" type="button" onclick="openTermsModal_()"><span>利用規約・個人情報取扱方針</span><span>確認する ›</span></button><label class="terms-check"><input id="termsAccepted" type="checkbox" disabled><span>利用規約・個人情報取扱方針の全文を確認し、同意します。</span></label><p id="termsHint" class="terms-hint">18歳未満の方は、法定代理人の同意を得てください。</p></div>`;
+        $("#screen").innerHTML=`<div class="stack"><section class="card hero"><small>ATHLETE REGISTRATION</small><h2>本人確認</h2><p>${escapeHtml(invite.teamName||"指導者")}から登録リンクが届いています。</p></section><section class="card stack"><div style="text-align:center"><p class="muted" style="margin:0 0 8px">登録されている選手名</p><h2 style="margin:0;font-size:24px">${escapeHtml(athlete.name||"選手名未設定")}</h2></div><div class="notice">「${escapeHtml(athlete.name||"選手")}」さん本人でお間違いないですか？${registered?`<br>現在のLINE登録「${escapeHtml(STATE.data.customer?.applicantName||"")}」へ選手情報を引き継ぎます。`:"<br>その他の未入力情報は、空欄のまま引き継がれます。"}</div>${termsBlock}<div id="formError" class="error"></div><button id="athleteClaimButton" class="primary" type="button">はい、このLINEでログインする</button><button class="secondary" type="button" onclick="cancelAthleteRegistration_()">違います</button></section></div>`;
         $("#athleteClaimButton").addEventListener("click",()=>acceptAthleteRegistration_(token));
       }
 
       async function acceptAthleteRegistration_(token){
         if(STATE.submitting)return;
+        const needsTerms=!STATE.data?.registered;
+        if(needsTerms&&(!STATE.termsViewed||!$("#termsAccepted")?.checked)){showError("利用規約・個人情報取扱方針を確認し、同意欄にチェックしてください");return;}
         const applicantName=STATE.data?.customer?.applicantName||"";
         STATE.submitting=true;$("#athleteClaimButton").disabled=true;lock("選手情報を引き継いでいます...");
-        try{STATE.data=await apiPost("acceptAthleteRegistration",{token,applicantName});clearAthleteRegistrationToken_();alert("選手登録が完了しました");renderHome();}
+        try{STATE.data=await apiPost("acceptAthleteRegistration",{token,applicantName,termsAccepted:true,termsVersion:TERMS_VERSION});clearAthleteRegistrationToken_();alert("選手登録が完了しました");renderHome();}
         catch(error){console.error(error);showError(error.message);}
         finally{STATE.submitting=false;unlock();const button=$("#athleteClaimButton");if(button)button.disabled=false;}
       }
@@ -1137,6 +1146,20 @@ const ANALYSIS_CONNECTIONS = {
       function cancelAthleteRegistration_(){clearAthleteRegistrationToken_();if(STATE.data?.registered)renderHome();else renderRegistration();}
 
       function getApplicantType(){return $('input[name="applicantType"]:checked')?.value||"";}
+      function openTermsModal_(){
+        document.getElementById("termsModal")?.remove();
+        const modal=document.createElement("div");
+        modal.id="termsModal";modal.className="terms-modal";modal.setAttribute("role","dialog");modal.setAttribute("aria-modal","true");modal.setAttribute("aria-label","利用規約・個人情報取扱方針");
+        modal.innerHTML=`<div class="terms-modal-head"><b>利用規約・個人情報取扱方針</b><button class="terms-modal-close" type="button" onclick="closeTermsModal_(false)">閉じる</button></div><div class="terms-modal-scroll"><img src="terms_of_service.png" alt="4TUNE動作分析サービス 利用規約・個人情報取扱方針" loading="eager"></div><div class="terms-modal-foot"><button class="primary" type="button" onclick="closeTermsModal_(true)">全文を確認しました</button></div>`;
+        document.body.appendChild(modal);
+      }
+      function closeTermsModal_(confirmed){
+        document.getElementById("termsModal")?.remove();
+        if(!confirmed)return;
+        STATE.termsViewed=true;
+        const checkbox=$("#termsAccepted");if(checkbox){checkbox.disabled=false;checkbox.focus();}
+        const hint=$("#termsHint");if(hint)hint.textContent="内容を確認のうえ、同意する場合はチェックしてください。";
+      }
       function handleApplicantType(){
         const type=getApplicantType();
         $("#coachNote").classList.toggle("hidden",type!=="指導者");
@@ -1173,7 +1196,8 @@ const ANALYSIS_CONNECTIONS = {
       async function submitRegistration(event){
         event.preventDefault();if(STATE.submitting)return;
         const error=$("#formError");error.classList.remove("visible");
-        const payload={applicantName:$("#applicantName").value.trim(),applicantType:getApplicantType(),guardianName:$("#guardianName").value.trim(),athletes:collectAthletes()};
+        if(!STATE.termsViewed||!$("#termsAccepted")?.checked){showError("利用規約・個人情報取扱方針を確認し、同意欄にチェックしてください");return;}
+        const payload={applicantName:$("#applicantName").value.trim(),applicantType:getApplicantType(),guardianName:$("#guardianName").value.trim(),athletes:collectAthletes(),termsAccepted:true,termsVersion:TERMS_VERSION};
         STATE.submitting=true;$("#submitButton").disabled=true;lock("登録しています...");
         try{STATE.data=await apiPost("registerCustomer",payload);renderHome();}
         catch(err){console.error(err);showError(err.message);}

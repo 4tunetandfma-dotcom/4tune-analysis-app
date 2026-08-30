@@ -670,7 +670,7 @@ body.analysis-help-modal-open {
 }
 
 .race-graph-select-grid .field:first-child {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
 .race-graph-controls select {
@@ -912,7 +912,8 @@ ANALYSIS_WATERMARK_IMAGE.addEventListener("load", () => {
 
 const RACE_GRAPH_STATE = {
   athletes: [],
-  athleteId: "",
+  mainAthleteId: "",
+  comparisonAthleteId: "",
   mainRaceId: "",
   comparisonRaceId: "",
 };
@@ -1704,8 +1705,11 @@ async function openRaceGraphs() {
     }
 
     RACE_GRAPH_STATE.athletes = STATE.raceGraphData;
-    if (!RACE_GRAPH_STATE.athleteId) {
-      RACE_GRAPH_STATE.athleteId = RACE_GRAPH_STATE.athletes[0]?.athleteId || "";
+    if (!RACE_GRAPH_STATE.mainAthleteId) {
+      RACE_GRAPH_STATE.mainAthleteId = RACE_GRAPH_STATE.athletes[0]?.athleteId || "";
+    }
+    if (!RACE_GRAPH_STATE.comparisonAthleteId) {
+      RACE_GRAPH_STATE.comparisonAthleteId = RACE_GRAPH_STATE.mainAthleteId;
     }
     initializeRaceSelection_();
     renderRaceGraphScreen();
@@ -1717,33 +1721,35 @@ async function openRaceGraphs() {
   }
 }
 
-function getSelectedRaceAthlete_() {
+function getRaceAthleteById_(athleteId) {
   return RACE_GRAPH_STATE.athletes.find(
-    (athlete) => athlete.athleteId === RACE_GRAPH_STATE.athleteId,
+    (athlete) => athlete.athleteId === athleteId,
   ) || RACE_GRAPH_STATE.athletes[0] || null;
 }
 
 function initializeRaceSelection_() {
-  const athlete = getSelectedRaceAthlete_();
-  const races = athlete?.races || [];
-  if (!races.some((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId)) {
-    RACE_GRAPH_STATE.mainRaceId = races[0]?.raceId || "";
+  const mainAthlete = getRaceAthleteById_(RACE_GRAPH_STATE.mainAthleteId);
+  const comparisonAthlete = getRaceAthleteById_(RACE_GRAPH_STATE.comparisonAthleteId);
+  const mainRaces = mainAthlete?.races || [];
+  const comparisonRaces = comparisonAthlete?.races || [];
+  if (!mainRaces.some((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId)) {
+    RACE_GRAPH_STATE.mainRaceId = mainRaces[0]?.raceId || "";
   }
-  if (
-    !races.some((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId) ||
-    RACE_GRAPH_STATE.comparisonRaceId === RACE_GRAPH_STATE.mainRaceId
-  ) {
-    RACE_GRAPH_STATE.comparisonRaceId =
-      races.find((race) => race.raceId !== RACE_GRAPH_STATE.mainRaceId)?.raceId || "";
+  if (!comparisonRaces.some((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId)) {
+    RACE_GRAPH_STATE.comparisonRaceId = comparisonRaces.find((race) =>
+      mainAthlete?.athleteId !== comparisonAthlete?.athleteId || race.raceId !== RACE_GRAPH_STATE.mainRaceId
+    )?.raceId || "";
   }
 }
 
 function renderRaceGraphScreen() {
   const athletes = RACE_GRAPH_STATE.athletes || [];
-  const athlete = getSelectedRaceAthlete_();
-  const races = athlete?.races || [];
-  const mainRace = races.find((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId) || null;
-  const comparisonRace = races.find((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId) || null;
+  const mainAthlete = getRaceAthleteById_(RACE_GRAPH_STATE.mainAthleteId);
+  const comparisonAthlete = getRaceAthleteById_(RACE_GRAPH_STATE.comparisonAthleteId);
+  const mainRaces = mainAthlete?.races || [];
+  const comparisonRaces = comparisonAthlete?.races || [];
+  const mainRace = mainRaces.find((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId) || null;
+  const comparisonRace = comparisonRaces.find((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId) || null;
 
   if (!athletes.length) {
     $("#screen").innerHTML = `
@@ -1770,9 +1776,10 @@ function renderRaceGraphScreen() {
           <button class="secondary" style="width:auto;min-height:34px;padding:0 10px" type="button" onclick="renderHome()">戻る</button>
         </div>
         <div class="race-graph-select-grid">
-          <div class="field"><label>選手</label><select id="raceAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === athlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
-          <div class="field"><label>メイン</label><select id="raceMainSelect">${races.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
-          <div class="field"><label>比較</label><select id="raceComparisonSelect"><option value="">比較なし</option>${races.filter((race) => race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+          <div class="field"><label>メイン選手</label><select id="raceMainAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === mainAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
+          <div class="field"><label>メインレース</label><select id="raceMainSelect">${mainRaces.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+          <div class="field"><label>比較選手</label><select id="raceComparisonAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === comparisonAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
+          <div class="field"><label>比較レース</label><select id="raceComparisonSelect"><option value="">比較なし</option>${comparisonRaces.filter((race) => mainAthlete?.athleteId !== comparisonAthlete?.athleteId || race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
         </div>
         ${(mainRace?.linkedAnalysisId || comparisonRace?.linkedAnalysisId) ? `
           <div class="race-graph-link-row">
@@ -1786,17 +1793,23 @@ function renderRaceGraphScreen() {
         <section class="race-graph-card">
           <h3>${escapeHtml(title)}</h3>
           <div class="race-graph-legend">
-            <span>${escapeHtml(mainRace?.raceName || "メイン")}</span>
-            ${comparisonRace ? `<span class="comparison">${escapeHtml(comparisonRace.raceName)}</span>` : ""}
+            <span>${escapeHtml(mainAthlete?.athleteName || "メイン")}｜${escapeHtml(mainRace?.raceName || "メイン")}</span>
+            ${comparisonRace ? `<span class="comparison">${escapeHtml(comparisonAthlete?.athleteName || "比較")}｜${escapeHtml(comparisonRace.raceName)}</span>` : ""}
           </div>
           <canvas class="race-chart-canvas" data-race-chart="${key}" data-unit="${escapeHtml(unit)}"></canvas>
         </section>
       `).join("")}
     </div>`;
 
-  $("#raceAthleteSelect").addEventListener("change", (event) => {
-    RACE_GRAPH_STATE.athleteId = event.target.value;
+  $("#raceMainAthleteSelect").addEventListener("change", (event) => {
+    RACE_GRAPH_STATE.mainAthleteId = event.target.value;
     RACE_GRAPH_STATE.mainRaceId = "";
+    initializeRaceSelection_();
+    renderRaceGraphScreen();
+  });
+
+  $("#raceComparisonAthleteSelect").addEventListener("change", (event) => {
+    RACE_GRAPH_STATE.comparisonAthleteId = event.target.value;
     RACE_GRAPH_STATE.comparisonRaceId = "";
     initializeRaceSelection_();
     renderRaceGraphScreen();

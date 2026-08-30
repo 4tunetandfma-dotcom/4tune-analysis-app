@@ -1770,7 +1770,7 @@ function renderRaceGraphScreen() {
           <button class="secondary" style="width:auto;min-height:34px;padding:0 10px" type="button" onclick="renderHome()">戻る</button>
         </div>
         <div class="race-graph-select-grid">
-          <div class="field"><label>選手</label><select id="raceAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === athlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}</option>`).join("")}</select></div>
+          <div class="field"><label>選手</label><select id="raceAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === athlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
           <div class="field"><label>メイン</label><select id="raceMainSelect">${races.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
           <div class="field"><label>比較</label><select id="raceComparisonSelect"><option value="">比較なし</option>${races.filter((race) => race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
         </div>

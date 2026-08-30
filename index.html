@@ -666,17 +666,23 @@ body.analysis-help-modal-open {
 .race-graph-select-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 6px;
 }
 
-.race-graph-select-grid .field:first-child {
-  grid-column: auto;
+.race-graph-select-column {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #f7faf9;
 }
 
 .race-graph-controls select {
-  min-height: 39px;
-  padding: 7px 9px;
-  font-size: 11px;
+  min-height: 33px;
+  padding: 5px 7px;
+  font-size: 10px;
 }
 
 .race-graph-link-row {
@@ -694,7 +700,7 @@ body.analysis-help-modal-open {
 .race-graph-card {
   display: grid;
   gap: 7px;
-  padding: 11px;
+  padding: 9px;
   border: 1px solid var(--line);
   border-radius: 15px;
   background: #fff;
@@ -733,7 +739,7 @@ body.analysis-help-modal-open {
 .race-chart-canvas {
   display: block;
   width: 100%;
-  height: 190px;
+  height: 180px;
   border-radius: 10px;
   background: #f7faf9;
 }
@@ -874,8 +880,9 @@ body.analysis-help-modal-open {
 .team-join-empty { align-self:center; margin:0; color:var(--muted); font-size:10px; text-align:center; }
 
 @media(max-width:430px) {
-  .race-graph-select-grid { grid-template-columns: 1fr; }
-  .race-graph-select-grid .field:first-child { grid-column: auto; }
+  .race-graph-select-grid { grid-template-columns: 1fr 1fr; }
+  .race-graph-select-column { padding:6px; }
+  .race-graph-controls select { font-size:9px; }
 }
     </style>
   </head>
@@ -1761,6 +1768,7 @@ function renderRaceGraphScreen() {
   }
 
   const chartDefinitions = [
+    ["steps", "歩数", "歩"],
     ["passingTime", "通過タイム", "秒"],
     ["intervalTime", "区間タイム", "秒"],
     ["stride", "ストライド", "m"],
@@ -1776,10 +1784,14 @@ function renderRaceGraphScreen() {
           <button class="secondary" style="width:auto;min-height:34px;padding:0 10px" type="button" onclick="renderHome()">戻る</button>
         </div>
         <div class="race-graph-select-grid">
-          <div class="field"><label>メイン選手</label><select id="raceMainAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === mainAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
-          <div class="field"><label>メインレース</label><select id="raceMainSelect">${mainRaces.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
-          <div class="field"><label>比較選手</label><select id="raceComparisonAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === comparisonAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
-          <div class="field"><label>比較レース</label><select id="raceComparisonSelect"><option value="">比較なし</option>${comparisonRaces.filter((race) => mainAthlete?.athleteId !== comparisonAthlete?.athleteId || race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+          <div class="race-graph-select-column">
+            <div class="field"><label>メイン選手</label><select id="raceMainAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === mainAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
+            <div class="field"><label>メインレース</label><select id="raceMainSelect">${mainRaces.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+          </div>
+          <div class="race-graph-select-column">
+            <div class="field"><label>比較選手</label><select id="raceComparisonAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === comparisonAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
+            <div class="field"><label>比較レース</label><select id="raceComparisonSelect"><option value="">比較なし</option>${comparisonRaces.filter((race) => mainAthlete?.athleteId !== comparisonAthlete?.athleteId || race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
+          </div>
         </div>
         ${(mainRace?.linkedAnalysisId || comparisonRace?.linkedAnalysisId) ? `
           <div class="race-graph-link-row">
@@ -1854,7 +1866,7 @@ function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit) {
 
   const width = rect.width;
   const height = rect.height;
-  const padding = { left: 38, right: 12, top: 13, bottom: 30 };
+  const padding = { left: 49, right: 17, top: 17, bottom: 33 };
   context.clearRect(0, 0, width, height);
   context.fillStyle = "#f7faf9";
   context.fillRect(0, 0, width, height);
@@ -1880,7 +1892,7 @@ function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit) {
   const xAt = (index) => padding.left + (labels.length === 1 ? plotWidth / 2 : index * plotWidth / (labels.length - 1));
   const yAt = (value) => padding.top + (maxValue - value) * plotHeight / (maxValue - minValue);
 
-  context.font = "9px sans-serif";
+  context.font = "8.5px sans-serif";
   context.textBaseline = "middle";
   for (let tick = 0; tick <= 4; tick += 1) {
     const value = minValue + (maxValue - minValue) * tick / 4;

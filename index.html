@@ -4058,7 +4058,9 @@ function formatAnalysisValue(
                   <div class="admin-status-row">
                     <span class="admin-status-chip">動画：${escapeHtml(athlete.videoStatus)}</span>
                     <span class="admin-status-chip analysis">分析：${escapeHtml(athlete.analysisStatus)}</span>
+                    ${athlete.isRaceAnalysis ? `<span class="admin-status-chip analysis">レースデータ：${escapeHtml(athlete.raceDataStatus)}${athlete.raceCount ? `（${Number(athlete.raceCount)}レース）` : ""}</span>` : ""}
                   </div>
+                  ${athlete.isRaceAnalysis ? `<div class="admin-status-row">${athlete.raceDataUrl ? `<a class="secondary" style="width:auto;min-height:32px;padding:7px 10px;text-decoration:none" href="${escapeHtml(athlete.raceDataUrl)}" target="_blank" rel="noopener noreferrer">レースデータを開く</a>` : ""}${athlete.applicationFolderUrl ? `<a class="secondary" style="width:auto;min-height:32px;padding:7px 10px;text-decoration:none" href="${escapeHtml(athlete.applicationFolderUrl)}" target="_blank" rel="noopener noreferrer">申込フォルダを開く</a>` : ""}</div>` : ""}
                 </div>
               `).join("")}
             </div>
@@ -4175,7 +4177,7 @@ function formatAnalysisValue(
             ${registrant.guardianName ? `<div class="summary-row"><span>保護者名</span><b>${escapeHtml(registrant.guardianName)}</b></div>` : ""}
             <div class="summary-row"><span>レースチケット残高</span><b>${Number(registrant.ticketBalance||0)}枚</b></div>
             <div class="admin-edit-grid"><div class="field"><label>増減枚数</label><input data-ticket-adjust type="number" min="-100" max="100" step="1" placeholder="例：1 または -1"></div><div class="field"><label>理由・メモ</label><input data-ticket-note maxlength="300" placeholder="例：アンケート特典"></div><button class="admin-save-button" type="button" onclick="adjustAdminTickets_(this,'${escapeHtml(registrant.customerId)}')">チケットを調整</button></div>
-            <div class="athlete-status-list">${(registrant.athletes || []).map((athlete) => `<div class="shooting-card"><div class="athlete-head"><strong>${escapeHtml(athlete.name)}</strong><span class="pill">${escapeHtml(athlete.status)}</span></div><p class="muted" style="margin:0">${escapeHtml(athlete.affiliation)}・${escapeHtml(athlete.height)}cm${athlete.weight ? `・${escapeHtml(athlete.weight)}kg` : ""}</p></div>`).join("") || '<p class="muted">登録選手はいません。</p>'}</div>
+            <div class="athlete-status-list">${(registrant.athletes || []).map((athlete) => `<div class="shooting-card"><div class="athlete-head"><strong>${escapeHtml(athlete.name)}</strong><span class="pill">${escapeHtml(athlete.status)}</span></div><p class="muted" style="margin:0">${escapeHtml(athlete.affiliation)}・${escapeHtml(athlete.height)}cm${athlete.weight ? `・${escapeHtml(athlete.weight)}kg` : ""}</p><div class="admin-status-row"><span class="admin-status-chip analysis">レースデータ：${escapeHtml(athlete.raceDataStatus || "未共有")}${athlete.raceCount ? `（${Number(athlete.raceCount)}レース）` : ""}</span></div><div class="admin-status-row">${athlete.raceDataUrl ? `<a class="secondary" style="width:auto;min-height:32px;padding:7px 10px;text-decoration:none" href="${escapeHtml(athlete.raceDataUrl)}" target="_blank" rel="noopener noreferrer">レースデータを開く</a>` : ""}${athlete.athleteFolderUrl ? `<a class="secondary" style="width:auto;min-height:32px;padding:7px 10px;text-decoration:none" href="${escapeHtml(athlete.athleteFolderUrl)}" target="_blank" rel="noopener noreferrer">選手フォルダを開く</a>` : ""}</div></div>`).join("") || '<p class="muted">登録選手はいません。</p>'}</div>
           </div>`).join("") : '<p class="muted">登録者はいません。</p>'}`;
       }
 

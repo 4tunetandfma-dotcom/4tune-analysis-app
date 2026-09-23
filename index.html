@@ -2207,6 +2207,7 @@ function renderAnalysisDetail(analysis) {
           ${renderAnalysisSections(
             analysis.displaySections || [],
             analysis.metrics || {},
+            analysis.plan,
           )}
         </div>
 
@@ -2367,7 +2368,7 @@ function renderAnalysisMetrics(metrics) {
   `;
 }
 
-function renderAnalysisSections(sections, fallbackMetrics) {
+function renderAnalysisSections(sections, fallbackMetrics, plan) {
   if (!Array.isArray(sections) || !sections.length) {
     return renderAnalysisMetrics(fallbackMetrics || {});
   }
@@ -2391,12 +2392,12 @@ function renderAnalysisSections(sections, fallbackMetrics) {
     </div>
 
     <div id="analysisSectionContent" class="analysis-section-content">
-      ${renderAnalysisSectionContent(activeSection)}
+      ${renderAnalysisSectionContent(activeSection, plan)}
     </div>
   `;
 }
 
-function renderAnalysisSectionContent(section) {
+function renderAnalysisSectionContent(section, plan) {
   const items = Array.isArray(section?.items) ? section.items : [];
   const rows = section?.comparison
     ? `
@@ -2426,8 +2427,8 @@ function renderAnalysisSectionContent(section) {
 
   return `
     ${rows}
-    ${section?.comment ? `
-      <div class="analysis-section-comment"><strong class="analysis-comment-title">コメント</strong>${escapeHtml(section.comment)}</div>
+    ${String(plan || "").toLowerCase() === "pro" && section?.key !== "一覧" ? `
+      <div class="analysis-section-comment"><strong class="analysis-comment-title">コメント</strong>${escapeHtml(section.comment || "")}</div>
     ` : ""}
   `;
 }
@@ -2657,7 +2658,7 @@ function selectAnalysisMetricSection(sectionKey) {
   if (select && select.value !== section.key) select.value = section.key;
 
   const content = $("#analysisSectionContent");
-  if (content) content.innerHTML = renderAnalysisSectionContent(section);
+  if (content) content.innerHTML = renderAnalysisSectionContent(section, ANALYSIS_VIEW_STATE.data?.plan);
 }
 
 function analysisMetricHtml(

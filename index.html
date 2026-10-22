@@ -985,19 +985,46 @@ const ANALYSIS_CONNECTIONS = {
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
       const escapeHtml=(value)=>String(value??"").replace(/[&<>'"]/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
-      function lock(message="処理中..."){ $("#loadingText").textContent=message; $("#loading").classList.remove("hidden"); }
-      function unlock(){ $("#loading").classList.add("hidden"); }
+      let LOADING_TIMER=null;
+      function lock(message="処理中..."){ $("#loadingText").textContent=message;if(LOADING_TIMER!==null)clearTimeout(LOADING_TIMER);const overlay=$("#loading");if(overlay.classList.contains("hidden")){overlay.style.opacity="0";overlay.classList.remove("hidden");}LOADING_TIMER=setTimeout(()=>{LOADING_TIMER=null;overlay.style.opacity="";},150); }
+      function unlock(){if(LOADING_TIMER!==null){clearTimeout(LOADING_TIMER);LOADING_TIMER=null;}const overlay=$("#loading");overlay.classList.add("hidden");overlay.style.opacity="";}
       function showError(message){ const box=$("#formError")||$("#pageError"); if(box){box.textContent=String(message||"エラーが発生しました");box.classList.add("visible");box.scrollIntoView({behavior:"smooth",block:"center"});}else alert(message); }
 
-      const API_READ_TTLS={bootstrap:30000,getProducts:60000,getApplications:30000,getAnalysisResults:60000,getComparisonCandidates:60000,getComparisonAnalysisData:120000,getAnalysisData:120000,getRaceGraphData:60000,getTeamDashboard:60000,getTeamComparison:60000};
+      const API_READ_TTLS={getHomeSummary:30000,getRaceTicketDashboard:15000,getAthleteManagementData:30000,getFriendDashboard:30000,bootstrap:30000,getProducts:60000,getApplications:30000,getAnalysisResults:60000,getComparisonCandidates:60000,getComparisonAnalysisData:120000,getAnalysisData:120000,getRaceGraphData:60000,getTeamDashboard:60000,getTeamComparison:60000};
       const API_READ_CACHE=new Map(),API_INFLIGHT=new Map();let API_CACHE_EPOCH=0;
       function clearApiReadCache_(){API_CACHE_EPOCH++;API_READ_CACHE.clear();API_INFLIGHT.clear();STATE.raceGraphData=null;STATE.productsCachedAt=0;STATE.analysisResultsCachedAt=0;STATE.applicationsCachedAt=0;STATE.analysisData={};}
+      function apiReadKey_(action,payload={}){const clean={...payload};delete clean.force;return JSON.stringify([STATE.idToken,action,clean]);}
+      function seedApiRead_(action,payload,data){if(!data)return;API_READ_CACHE.set(apiReadKey_(action,payload),{data,at:Date.now()});while(API_READ_CACHE.size>20)API_READ_CACHE.delete(API_READ_CACHE.keys().next().value);}
+      function invalidateForAction_(action){
+        const groups={
+          updateCoachTeam:["getTeamDashboard"],createAthleteRegistrationLink:["getTeamDashboard"],
+          saveCoachAthlete:["bootstrap","getTeamDashboard","getProducts","getComparisonCandidates","getComparisonAnalysisData","getAnalysisData","getAnalysisResults","getAthleteManagementData","getRaceGraphData","getTeamComparison"],
+          coachUpdateTeamAthlete:["bootstrap","getTeamDashboard","getProducts","getComparisonCandidates","getComparisonAnalysisData","getAnalysisData","getAnalysisResults","getAthleteManagementData","getRaceGraphData","getTeamComparison"],
+          removeTeamMember:["getTeamDashboard","getProducts","getComparisonCandidates","getComparisonAnalysisData","getAnalysisData","getRaceGraphData","getTeamComparison"],
+          joinTeamById:["getTeamDashboard","getProducts","getComparisonCandidates","getRaceGraphData","getTeamComparison"],
+          leaveTeam:["getTeamDashboard","getProducts","getComparisonCandidates","getComparisonAnalysisData","getAnalysisData","getRaceGraphData","getTeamComparison"]
+        };
+        const affected=groups[action];if(!affected){clearApiReadCache_();return;}
+        API_CACHE_EPOCH++;
+        for(const key of API_READ_CACHE.keys())if(affected.includes(JSON.parse(key)[1]))API_READ_CACHE.delete(key);
+        for(const key of API_INFLIGHT.keys())if(affected.includes(JSON.parse(key)[1]))API_INFLIGHT.delete(key);
+        if(affected.includes("getRaceGraphData"))STATE.raceGraphData=null;
+        if(affected.includes("getProducts"))STATE.productsCachedAt=0;
+        if(affected.includes("getAnalysisResults"))STATE.analysisResultsCachedAt=0;
+        if(affected.includes("getAnalysisData"))STATE.analysisData={};
+      }
+      function seedMutationResponse_(action,data){
+        const team=data.teamDashboard||(typeof data.isCoach==="boolean"?data:null);
+        if(team){const mode=team.isCoach?"coach":"join";seedApiRead_("getTeamDashboard",{mode},team);if(team.isCoach)seedApiRead_("getTeamDashboard",{},team);}
+        if(data.bootstrap)seedApiRead_("bootstrap",{},data.bootstrap);
+      }
       async function apiPost(action,payload={},options={}){
         const ttl=API_READ_TTLS[action]||0;
         const force=options.force===true||payload.force===true;
         const cachePayload={...payload};delete cachePayload.force;
         const key=JSON.stringify([STATE.idToken,action,cachePayload]);
-        if(!ttl)clearApiReadCache_();
+        const isRead=action.startsWith("get")||action==="bootstrap"||action==="health";
+        if(!isRead)invalidateForAction_(action);
         const epoch=API_CACHE_EPOCH;
         const cached=API_READ_CACHE.get(key);
         if(ttl&&!force&&cached&&Date.now()-cached.at<ttl)return cached.data;
@@ -1006,6 +1033,7 @@ const ANALYSIS_CONNECTIONS = {
           const response=await fetch(CONFIG.GAS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:STATE.idToken,payload})});
           if(!response.ok)throw new Error(`通信エラー: HTTP ${response.status}`);
           const data=await response.json();if(!data.success)throw new Error(data.message||"処理に失敗しました");
+          if(!isRead&&epoch===API_CACHE_EPOCH)seedMutationResponse_(action,data);
           if(ttl&&epoch===API_CACHE_EPOCH){API_READ_CACHE.set(key,{data,at:Date.now()});while(API_READ_CACHE.size>20)API_READ_CACHE.delete(API_READ_CACHE.keys().next().value);}
           return data;
         })();
@@ -1016,7 +1044,7 @@ const ANALYSIS_CONNECTIONS = {
       async function getCachedApplications_(force=false){
         const fresh=STATE.applicationsCache&&Date.now()-STATE.applicationsCachedAt<VIEW_CACHE_TTL_MS;
         if(!force&&fresh)return STATE.applicationsCache;
-        const result=await apiPost("getApplications");
+        const result=await apiPost("getApplications",{},{force});
         STATE.applicationsCache=result.applications||[];
         STATE.applicationsCachedAt=Date.now();
         return STATE.applicationsCache;
@@ -1273,12 +1301,12 @@ const ANALYSIS_CONNECTIONS = {
         if (!card) return;
 
         try {
-          const [applicationResult,raceResult] = await Promise.allSettled([getCachedApplications_(),apiPost("getRaceTicketDashboard")]);
-          if(applicationResult.status!=="fulfilled")throw applicationResult.reason;
-          const applications=applicationResult.value;
-          const raceData=raceResult.status==="fulfilled"?raceResult.value:{applications:[]};
-          if(raceResult.status!=="fulfilled")console.error("レース分析の進捗確認に失敗しました",raceResult.reason);
-          STATE.raceTickets=raceData;
+          const summary=await apiPost("getHomeSummary");
+          if($("#homeTaskCard")!==card)return;
+          const applications=summary.applications||[];
+          const raceData={applications:summary.raceApplications||[]};
+          STATE.applicationsCache=applications;STATE.applicationsCachedAt=Date.now();
+          seedApiRead_("getApplications",{},{success:true,applications});
           const raceActionable=(raceData.applications||[]).filter((item)=>!["キャンセル","完了","公開中"].includes(item.status)).map((item)=>({item,priority:item.videoSubmitted?2:0})).sort((a,b)=>a.priority-b.priority)[0];
           const actionable = applications
             .map((application) => ({
@@ -1321,6 +1349,7 @@ const ANALYSIS_CONNECTIONS = {
           `;
           $("button", card)?.addEventListener("click", openApplications);
         } catch (error) {
+          if($("#homeTaskCard")!==card)return;
           console.error("ホームの進捗確認に失敗しました", error);
           card.innerHTML = `
             <strong>申し込み状況を取得できませんでした</strong>
@@ -1441,7 +1470,7 @@ const ANALYSIS_CONNECTIONS = {
         button.disabled = true;
         lock(athleteId ? "選手情報を更新中..." : "選手を登録中...");
         try {
-          if(STATE.teamEditing){const saved=await apiPost("saveCoachAthlete",collectManagedAthlete_(athleteId));STATE.teamDashboard=saved.teamDashboard;STATE.data=saved.bootstrap;STATE.teamEditing=false;STATE.productsCachedAt=0;renderTeamDashboard();}
+          if(STATE.teamEditing){const saved=await apiPost("saveCoachAthlete",collectManagedAthlete_(athleteId));STATE.teamDashboard=saved.teamDashboard;STATE.data=saved.bootstrap||STATE.data;STATE.teamEditing=false;STATE.productsCachedAt=0;renderTeamDashboard();}
           else{STATE.athleteManagement = await apiPost(athleteId ? "updateAthlete" : "createAthlete", collectManagedAthlete_(athleteId));STATE.data = await apiPost("bootstrap");renderAthleteManagement();}
         } catch (error) {
           console.error(error);
@@ -1507,7 +1536,7 @@ const ANALYSIS_CONNECTIONS = {
         $$("#coachMemberList [data-member-search]").forEach(card=>{const visible=card.dataset.memberSearch.includes(query);card.classList.toggle("hidden",!visible);if(visible)count++;});
         $("#coachSearchEmpty").classList.toggle("hidden",count>0||!query);
       }
-      function openCoachApplication_(){STATE.productsCachedAt=0;openApplication();}
+      function openCoachApplication_(){openApplication();}
       async function openCoachAthleteAnalyses_(athleteId){
         lock("選手の分析を読み込み中...");
         try{const result=await apiPost("getComparisonCandidates",{mode:"coach"});STATE.coachAnalyses=(result.candidates||[]).filter(item=>item.athleteId===athleteId);STATE.coachAnalysisAthleteId=athleteId;renderCoachAthleteAnalyses_();}
@@ -1756,7 +1785,7 @@ async function openRaceGraphs(mode="home",force=false) {
     // Fetch team data on each entry, so removed members do not remain in the comparison.
     let result;
     if(coachMode){result=await apiPost("getRaceGraphData",{mode:"coach"},{force});}
-    else{if(!STATE.raceGraphData){result=await apiPost("getRaceGraphData");STATE.raceGraphData=result.athletes||[];}result=result||{athletes:STATE.raceGraphData};}
+    else{if(!STATE.raceGraphData||force){result=await apiPost("getRaceGraphData",{},{force});STATE.raceGraphData=result.athletes||[];}result=result||{athletes:STATE.raceGraphData};}
     const previousMode=RACE_GRAPH_STATE.mode||"home";
     RACE_GRAPH_STATE.mode=coachMode?"coach":"home";
     RACE_GRAPH_STATE.warnings=result.warnings||[];
@@ -4278,7 +4307,7 @@ function formatAnalysisValue(
 
       async function saveAdminProduct_(button){const card=button.closest(".admin-application"),productId=button.dataset.adminProductSave,normalPrice=Number(card?.querySelector("[data-product-price]")?.value),receptionStatus=card?.querySelector("[data-product-reception]")?.value||"",displayStatus=card?.querySelector("[data-product-display]")?.value||"";lock("商品設定を保存中...");try{STATE.adminDashboard=await apiPost("updateAdminProduct",{productId,normalPrice,receptionStatus,displayStatus});STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.adminSection="products";renderAdminDashboard();}catch(error){alert(error.message||"商品設定を保存できませんでした");}finally{unlock();}}
 
-      async function reloadHome(){lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
+      async function reloadHome(){clearApiReadCache_();lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
       function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
       function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="ホームへ";homeButton.addEventListener("click",renderHome);brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}

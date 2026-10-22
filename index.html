@@ -989,12 +989,28 @@ const ANALYSIS_CONNECTIONS = {
       function unlock(){ $("#loading").classList.add("hidden"); }
       function showError(message){ const box=$("#formError")||$("#pageError"); if(box){box.textContent=String(message||"エラーが発生しました");box.classList.add("visible");box.scrollIntoView({behavior:"smooth",block:"center"});}else alert(message); }
 
-      async function apiPost(action,payload={}){
-        const response=await fetch(CONFIG.GAS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:STATE.idToken,payload})});
-        if(!response.ok) throw new Error(`通信エラー: HTTP ${response.status}`);
-        const data=await response.json();
-        if(!data.success) throw new Error(data.message||"処理に失敗しました");
-        return data;
+      const API_READ_TTLS={bootstrap:30000,getProducts:60000,getApplications:30000,getAnalysisResults:60000,getComparisonCandidates:60000,getComparisonAnalysisData:120000,getAnalysisData:120000,getRaceGraphData:60000,getTeamDashboard:60000,getTeamComparison:60000};
+      const API_READ_CACHE=new Map(),API_INFLIGHT=new Map();let API_CACHE_EPOCH=0;
+      function clearApiReadCache_(){API_CACHE_EPOCH++;API_READ_CACHE.clear();API_INFLIGHT.clear();STATE.raceGraphData=null;STATE.productsCachedAt=0;STATE.analysisResultsCachedAt=0;STATE.applicationsCachedAt=0;STATE.analysisData={};}
+      async function apiPost(action,payload={},options={}){
+        const ttl=API_READ_TTLS[action]||0;
+        const force=options.force===true||payload.force===true;
+        const cachePayload={...payload};delete cachePayload.force;
+        const key=JSON.stringify([STATE.idToken,action,cachePayload]);
+        if(!ttl)clearApiReadCache_();
+        const epoch=API_CACHE_EPOCH;
+        const cached=API_READ_CACHE.get(key);
+        if(ttl&&!force&&cached&&Date.now()-cached.at<ttl)return cached.data;
+        if(ttl&&!force&&API_INFLIGHT.has(key))return API_INFLIGHT.get(key);
+        const run=(async()=>{
+          const response=await fetch(CONFIG.GAS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:STATE.idToken,payload})});
+          if(!response.ok)throw new Error(`通信エラー: HTTP ${response.status}`);
+          const data=await response.json();if(!data.success)throw new Error(data.message||"処理に失敗しました");
+          if(ttl&&epoch===API_CACHE_EPOCH){API_READ_CACHE.set(key,{data,at:Date.now()});while(API_READ_CACHE.size>20)API_READ_CACHE.delete(API_READ_CACHE.keys().next().value);}
+          return data;
+        })();
+        if(ttl)API_INFLIGHT.set(key,run);
+        try{return await run;}finally{if(API_INFLIGHT.get(key)===run)API_INFLIGHT.delete(key);}
       }
 
       async function getCachedApplications_(force=false){
@@ -1425,7 +1441,7 @@ const ANALYSIS_CONNECTIONS = {
         button.disabled = true;
         lock(athleteId ? "選手情報を更新中..." : "選手を登録中...");
         try {
-          if(STATE.teamEditing){await apiPost(athleteId?"coachUpdateTeamAthlete":"createAthlete",{...collectManagedAthlete_(athleteId),coachRegistration:true});STATE.teamDashboard=await apiPost("getTeamDashboard");STATE.data=await apiPost("bootstrap");STATE.teamEditing=false;STATE.productsCachedAt=0;renderTeamDashboard();}
+          if(STATE.teamEditing){const saved=await apiPost("saveCoachAthlete",collectManagedAthlete_(athleteId));STATE.teamDashboard=saved.teamDashboard;STATE.data=saved.bootstrap;STATE.teamEditing=false;STATE.productsCachedAt=0;renderTeamDashboard();}
           else{STATE.athleteManagement = await apiPost(athleteId ? "updateAthlete" : "createAthlete", collectManagedAthlete_(athleteId));STATE.data = await apiPost("bootstrap");renderAthleteManagement();}
         } catch (error) {
           console.error(error);
@@ -1509,9 +1525,9 @@ const ANALYSIS_CONNECTIONS = {
         catch(error){alert(error.message||"分析を読み込めませんでした");}finally{unlock();}
       }
 
-      async function openTeamDashboard(mode="coach"){document.body.classList.remove("analysis-detail-mode");lock(mode==="join"?"参加チームを読み込み中...":"指導者画面を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard",{mode});renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
+      async function openTeamDashboard(mode="coach",force=false){document.body.classList.remove("analysis-detail-mode");lock(mode==="join"?"参加チームを読み込み中...":"指導者画面を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard",{mode},{force});renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
 
-      function renderTeamDashboard(){STATE.coachRaceDetail=false;STATE.coachAnalysisAthleteId="";STATE.teamEditing=false;document.body.classList.remove("analysis-detail-mode");const data=STATE.teamDashboard||{};if(!data.isCoach){renderTeamJoinPage_(data);return;}const members=data.members||[],team=data.team||{};$("#screen").innerHTML=`<div class="stack coach-screen"><section class="card coach-hero"><div class="section-title"><div><small>COACH DASHBOARD</small><h2>指導者画面</h2><p>${escapeHtml(team.name||"")}・所属選手 ${members.length}名</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderHome()">通常画面</button></div></section><section class="card stack"><div class="team-id-box"><small>選手・保護者に共有するチームID</small><strong>${escapeHtml(team.teamId||"")}</strong></div><div class="team-action-grid"><button class="secondary" onclick="copyTeamId_()">チームIDをコピー</button><button class="secondary" onclick="renameCoachTeam_()">チーム名を変更</button></div><button class="secondary" onclick="openTeamDashboard()">最新の情報に更新</button><button class="primary" onclick="renderTeamAthleteCreate_()">＋ 選手を登録</button></section><section class="card stack"><div class="section-title"><div><h3>選手管理</h3><p>登録・編集・チームから削除（${members.length}/50名）</p></div></div><div class="field"><label>選手を検索</label><input type="search" placeholder="名前・所属で検索" oninput="filterCoachMembers_(this.value)"></div><div id="coachMemberList" class="stack">${members.length?members.map(renderTeamMember_).join(""):'<p class="muted">所属選手はいません。選手を登録するか、チームIDを共有して参加してもらってください。</p>'}</div><p id="coachSearchEmpty" class="muted hidden">該当する選手はいません。</p></section><section class="card stack"><div class="section-title"><div><h3>チーム比較</h3><p>同じ分析日のPro分析を項目ごとに比較</p></div></div><button class="primary" onclick="openTeamComparison_()">チーム比較を開く</button></section><section class="card stack"><div class="section-title"><div><h3>個別比較</h3><p>所属選手の2件の分析を比較</p></div></div><button class="primary" onclick="openComparison('coach')">比較する分析を選ぶ</button></section><section class="card stack"><div class="section-title"><div><h3>レース分析の比較</h3><p>所属選手の過去レース・他選手のレースを比較</p></div></div><p class="muted">歩数・通過タイム・区間タイム・ストライド・ピッチ・疾走速度を重ねて表示します。</p><button class="primary" onclick="openRaceGraphs('coach')">レース分析を比較する</button></section><section class="card stack"><h3>動作分析の申込み</h3><p class="muted">5名以上の選手が所属するチームは、団体申込みを利用できます。</p><button class="primary" onclick="openCoachApplication_()">申込みへ進む</button></section></div>`;}
+      function renderTeamDashboard(){STATE.coachRaceDetail=false;STATE.coachAnalysisAthleteId="";STATE.teamEditing=false;document.body.classList.remove("analysis-detail-mode");const data=STATE.teamDashboard||{};if(!data.isCoach){renderTeamJoinPage_(data);return;}const members=data.members||[],team=data.team||{};$("#screen").innerHTML=`<div class="stack coach-screen"><section class="card coach-hero"><div class="section-title"><div><small>COACH DASHBOARD</small><h2>指導者画面</h2><p>${escapeHtml(team.name||"")}・所属選手 ${members.length}名</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderHome()">通常画面</button></div></section><section class="card stack"><div class="team-id-box"><small>選手・保護者に共有するチームID</small><strong>${escapeHtml(team.teamId||"")}</strong></div><div class="team-action-grid"><button class="secondary" onclick="copyTeamId_()">チームIDをコピー</button><button class="secondary" onclick="renameCoachTeam_()">チーム名を変更</button></div><button class="secondary" onclick="openTeamDashboard('coach',true)">最新の情報に更新</button><button class="primary" onclick="renderTeamAthleteCreate_()">＋ 選手を登録</button></section><section class="card stack"><div class="section-title"><div><h3>選手管理</h3><p>登録・編集・チームから削除（${members.length}/50名）</p></div></div><div class="field"><label>選手を検索</label><input type="search" placeholder="名前・所属で検索" oninput="filterCoachMembers_(this.value)"></div><div id="coachMemberList" class="stack">${members.length?members.map(renderTeamMember_).join(""):'<p class="muted">所属選手はいません。選手を登録するか、チームIDを共有して参加してもらってください。</p>'}</div><p id="coachSearchEmpty" class="muted hidden">該当する選手はいません。</p></section><section class="card stack"><div class="section-title"><div><h3>チーム比較</h3><p>同じ分析日のPro分析を項目ごとに比較</p></div></div><button class="primary" onclick="openTeamComparison_()">チーム比較を開く</button></section><section class="card stack"><div class="section-title"><div><h3>個別比較</h3><p>所属選手の2件の分析を比較</p></div></div><button class="primary" onclick="openComparison('coach')">比較する分析を選ぶ</button></section><section class="card stack"><div class="section-title"><div><h3>レース分析の比較</h3><p>所属選手の過去レース・他選手のレースを比較</p></div></div><p class="muted">歩数・通過タイム・区間タイム・ストライド・ピッチ・疾走速度を重ねて表示します。</p><button class="primary" onclick="openRaceGraphs('coach')">レース分析を比較する</button></section><section class="card stack"><h3>動作分析の申込み</h3><p class="muted">5名以上の選手が所属するチームは、団体申込みを利用できます。</p><button class="primary" onclick="openCoachApplication_()">申込みへ進む</button></section></div>`;}
 
       function renderTeamMember_(member){const invite=member.registrationInvite||null;const link=invite?`https://liff.line.me/${CONFIG.LIFF_ID}?athleteRegister=${encodeURIComponent(invite.token)}`:"";return`<div class="team-member-card stack" data-member-search="${escapeHtml((member.name+' '+(member.affiliation||'')).toLowerCase())}"><div class="section-title"><div><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.affiliation||"")}・${member.age==null?"年齢未設定":member.age+"歳"}</p></div><span class="pill">${member.isClaimed?"本人登録済み":member.directlyRegistered?"本人未登録":"チーム参加"}</span></div><div class="summary-row"><span>身長・体重</span><b>${escapeHtml(member.height||"-")}cm${member.weight?`・${escapeHtml(member.weight)}kg`:""}</b></div>${invite?`<div class="team-id-box"><small>本人登録コード</small><strong>${escapeHtml(invite.code)}</strong><span class="muted">有効期限 ${escapeHtml(invite.expiresAt||"")}</span></div><div class="friend-link"><b>本人登録リンク</b><br>${escapeHtml(link)}</div><div class="team-action-grid"><button class="secondary" onclick="copyAthleteRegistrationCode_('${escapeHtml(member.athleteId)}')">コードをコピー</button><button class="secondary" onclick="copyAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">リンクをコピー</button></div><button class="primary" onclick="copyAthleteRegistrationShare_('${escapeHtml(member.athleteId)}')">リンク＋コードをまとめてコピー</button><button class="secondary" onclick="createAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">登録情報を再発行</button>`:""}<button class="primary" onclick="openCoachAthleteAnalyses_('${escapeHtml(member.athleteId)}')">この選手の分析を見る</button><div class="team-action-grid"><button class="secondary" onclick="openTeamAthleteEdit_('${escapeHtml(member.athleteId)}')">編集</button><button class="athlete-delete-button" onclick="removeTeamMember_('${escapeHtml(member.membershipId)}','${escapeHtml(member.name)}')">チームから外す</button></div></div>`;}
 
@@ -1732,14 +1748,14 @@ const ANALYSIS_CONNECTIONS = {
           button.addEventListener("click", () => openUploadForm(button.dataset.uploadUrl)),
         );
       }
-async function openRaceGraphs(mode="home") {
+async function openRaceGraphs(mode="home",force=false) {
   document.body.classList.remove("analysis-detail-mode");
   lock("レースグラフを読み込み中...");
   try {
     const coachMode=mode==="coach";
     // Fetch team data on each entry, so removed members do not remain in the comparison.
     let result;
-    if(coachMode){result=await apiPost("getRaceGraphData",{mode:"coach"});}
+    if(coachMode){result=await apiPost("getRaceGraphData",{mode:"coach"},{force});}
     else{if(!STATE.raceGraphData){result=await apiPost("getRaceGraphData");STATE.raceGraphData=result.athletes||[];}result=result||{athletes:STATE.raceGraphData};}
     const previousMode=RACE_GRAPH_STATE.mode||"home";
     RACE_GRAPH_STATE.mode=coachMode?"coach":"home";
@@ -1796,7 +1812,7 @@ function renderRaceGraphScreen() {
     $("#screen").innerHTML = `
       <div class="stack ${coachMode?"coach-screen":""}">
         <section class="card"><div class="section-title"><h2>${coachMode?"レース分析の比較":"レースグラフ"}</h2><button class="secondary" style="width:auto;min-height:34px;padding:0 10px" onclick="backFromRaceGraphs_()">戻る</button></div></section>
-        <section class="card"><p class="muted">${coachMode?"現在所属する選手のレースデータがありません。選手のフォルダに「レースデータ」スプレッドシートがあるか確認してください。":"表示できるレースデータがありません。"}</p>${warningHtml}<button class="secondary" onclick="openRaceGraphs(RACE_GRAPH_STATE.mode||'home')">再読み込み</button></section>
+        <section class="card"><p class="muted">${coachMode?"現在所属する選手のレースデータがありません。選手のフォルダに「レースデータ」スプレッドシートがあるか確認してください。":"表示できるレースデータがありません。"}</p>${warningHtml}<button class="secondary" onclick="openRaceGraphs(RACE_GRAPH_STATE.mode||'home',true)">再読み込み</button></section>
       </div>`;
     return;
   }
@@ -1818,7 +1834,7 @@ function renderRaceGraphScreen() {
           <button class="secondary" style="width:auto;min-height:34px;padding:0 10px" type="button" onclick="backFromRaceGraphs_()">戻る</button>
         </div>
         ${warningHtml}
-        ${coachMode?'<button class="secondary" onclick="openRaceGraphs(RACE_GRAPH_STATE.mode)">最新のレースデータを読み込む</button>':""}
+        ${coachMode?'<button class="secondary" onclick="openRaceGraphs(RACE_GRAPH_STATE.mode,true)">最新のレースデータを読み込む</button>':""}
         <div class="race-graph-select-grid">
           <div class="race-graph-select-column">
             <div class="field"><label>メイン選手</label><select id="raceMainAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === mainAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>

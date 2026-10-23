@@ -1608,7 +1608,7 @@ const ANALYSIS_CONNECTIONS = {
         }catch(error){console.error(error);alert(error.message||"チーム比較を読み込めませんでした");}
         finally{unlock();}
       }
-      function teamComparisonDate_(date){return /^\d{8}$/.test(date||"")?`${date.slice(0,4)}/${date.slice(4,6)}/${date.slice(6,8)}`:"日付未設定";}
+      function teamComparisonDate_(date){const value=String(date||"");if(/^\d{6}$/.test(value))return `${value.slice(0,4)}/${value.slice(4,6)}`;if(/^\d{8}$/.test(value))return `${value.slice(0,4)}/${value.slice(4,6)}/${value.slice(6,8)}`;return "日付未設定";}
       function setTeamComparisonDate_(mode){return loadTeamComparison_({mode,selections:{}});}
       function setTeamComparisonAthlete_(athleteId,analysisId){
         const view=STATE.teamComparisonViews?.[STATE.teamPhase]||{mode:"latest",selections:{}};
@@ -1628,10 +1628,10 @@ const ANALYSIS_CONNECTIONS = {
             <div class="section-title"><div><h2>チーム比較</h2><p>選手ごとのデータ日付を選んでPro分析を比較</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderTeamDashboard()">戻る</button></div>
             <div class="team-compare-toolbar"><select aria-label="分析局面" onchange="setTeamComparisonPhase_(this.value)"><option ${STATE.teamPhase==="最高速"?"selected":""}>最高速</option><option ${STATE.teamPhase==="スタート"?"selected":""}>スタート</option></select><select aria-label="並び順" onchange="STATE.teamSort=this.value;renderTeamComparison_()"><option value="desc" ${STATE.teamSort==="desc"?"selected":""}>数値が高い順</option><option value="asc" ${STATE.teamSort==="asc"?"selected":""}>数値が低い順</option></select></div>
             <div class="field"><label>全員のデータをまとめて切り替え</label><div class="team-date-buttons"><button type="button" class="${view.mode==="latest"?"primary":"secondary"}" aria-pressed="${view.mode==="latest"}" onclick="setTeamComparisonDate_('latest')">各選手の最新</button>${(data.dates||[]).map(date=>`<button type="button" class="${view.mode===date?"primary":"secondary"}" aria-pressed="${view.mode===date}" onclick="setTeamComparisonDate_('${date}')">${teamComparisonDate_(date)}</button>`).join("")}</div></div>
-            <p class="muted">日付ボタンは個別の選択をリセットし、その日のデータがある選手だけを表示します。</p>
+            <p class="muted">日付ボタンは個別の選択をリセットし、同じ年月・年月日のデータがある選手だけを表示します。</p>
             <button class="secondary" onclick="openTeamComparison_('',true)">集計を更新</button>
           </section>
-          <section class="card stack"><h3>選手ごとの表示データ</h3><p class="muted">表示中 ${records.length}名 ／ 所属 ${catalog.length}名。日付はファイル名の先頭の分析日です。</p>
+          <section class="card stack"><h3>選手ごとの表示データ</h3><p class="muted">表示中 ${records.length}名 ／ 所属 ${catalog.length}名。日付はファイル名先頭の年月・年月日です。年月のみのデータは月単位で表示します。</p>
           ${catalog.map((athlete,index)=>{
             const selected=data.selected?.[athlete.athleteId]||"hidden";
             const overridden=Object.prototype.hasOwnProperty.call(view.selections,athlete.athleteId);

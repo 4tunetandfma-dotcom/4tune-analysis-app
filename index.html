@@ -1133,6 +1133,47 @@ body:has(.tc-screen){height:100dvh;min-height:0;overflow:hidden}
 .tc-options summary:focus-visible{outline:3px solid #2374c6;outline-offset:-2px;border-radius:10px}
 @media(max-height:650px){.app:has(.tc-screen) .brand-logo-window{width:120px;height:48px}.app:has(.tc-screen) .brand-logo-image{width:120px;top:-33px}.tc-options summary{padding:6px 9px;min-height:42px}.tc-screen{gap:5px}.tc-chart-panel{padding:8px;gap:4px}}
 
+body:has(.cr-screen){height:100dvh;min-height:0;overflow:hidden}
+.app:has(.cr-screen){display:flex;flex-direction:column;height:100dvh;min-height:0;padding:max(6px,env(safe-area-inset-top)) 12px max(6px,env(safe-area-inset-bottom))}
+.app:has(.cr-screen)>.brand{flex:0 0 auto;margin-bottom:5px}
+.app:has(.cr-screen) #screen{flex:1;min-height:0;overflow:hidden}
+.cr-screen{display:grid;grid-template-rows:auto auto auto minmax(0,1fr);height:100%;min-height:0;gap:7px}
+.cr-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cr-title h2{margin:0;font-size:19px;line-height:1.4}
+.cr-title .secondary{width:auto;min-height:40px;padding:6px 11px;border-radius:9px;font-size:11px}
+.cr-settings{display:grid;gap:6px;max-height:32dvh;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:2px}
+.cr-slot-list{display:grid;gap:8px}
+.cr-slot-list .race-graph-select-column{padding:9px;border:1px solid #e2e7dc;border-radius:10px;background:#fff;display:grid;gap:7px}
+.cr-slot-list .section-title{margin:0}
+.cr-slot-list .section-title strong{font-size:12px}
+.cr-slot-list .section-title label{min-height:32px;font-size:11px}
+.cr-slot-list .secondary{min-height:36px;font-size:11px}
+.cr-view-switch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:2px;border:1px solid #b8d4eb;border-radius:10px;background:#fff}
+.cr-view-switch button{min-height:38px;padding:6px;border:0;border-radius:8px;background:transparent;color:#245778;font-size:12px;font-weight:800}
+.cr-view-switch button[aria-pressed="true"]{background:#2374c6;color:#fff}
+.cr-chart-panel{display:flex;flex-direction:column;gap:7px;min-height:0;padding:10px;border:1px solid #cce9f1;border-radius:12px;background:#fff}
+.cr-chart-panel>h3{margin:0;font-size:16px;line-height:1.4}
+.cr-chart-panel>h3 small{font-size:11px;font-weight:500}
+.cr-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 8px;max-height:78px;overflow-y:auto;flex:0 0 auto}
+.cr-legend>span{min-width:0;font-size:10px;line-height:1.4}
+.cr-legend b,.cr-legend small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr-legend small{padding-left:10px;color:#637b74;font-size:9px}
+.cr-chart-viewport{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.cr-lines .race-chart-canvas{display:block;width:100%;height:100%;min-height:0;max-height:none}
+.cr-section-select{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px}
+.cr-section-select label{font-size:10px;font-weight:800}
+.cr-section-select select{min-height:36px;padding:5px 8px;font-size:11px}
+.cr-bars .team-metric-chart{display:flex;flex-direction:column;height:100%;min-height:0;gap:4px;padding:0;border:0;background:transparent}
+.cr-bars .team-metric-chart>p{flex:0 0 auto;margin:0;font-size:9px}
+.cr-bars .team-bar-row{flex:1 1 0;min-height:0;max-height:72px;grid-template-columns:minmax(65px,30%) minmax(0,1fr) auto;gap:5px}
+.cr-bars .team-bar-name{font-size:10px;line-height:1.3}
+.cr-bars .team-bar-name small{font-size:8px;margin-top:2px}
+.cr-bars .team-bar-track{height:clamp(4px,1.5dvh,14px)}
+.cr-bars .team-bar-value{min-width:42px;font-size:9px}
+.cr-empty{margin:0;padding:14px 5px;font-size:12px;line-height:1.7;color:#637b74}
+.cr-screen button:focus-visible{outline:3px solid #2374c6;outline-offset:2px}
+@media(max-height:650px){.app:has(.cr-screen) .brand-logo-window{width:120px;height:48px}.app:has(.cr-screen) .brand-logo-image{width:120px;top:-33px}.cr-screen{gap:5px}.cr-chart-panel{padding:8px;gap:5px}.cr-legend{max-height:54px}.cr-view-switch button{min-height:34px}}
+
     </style>
   </head>
   <body>
@@ -2173,16 +2214,28 @@ function renderCoachRaceBars_(entries,key,unit,label){
  const max=Math.max(0,...values.filter(v=>Number.isFinite(v.value)).map(v=>Math.abs(v.value)));
  return `<div class="team-metric-chart"><p class="muted">${escapeHtml(label)}・${escapeHtml(unit)}（棒の起点は0）</p>${values.map(({e,value})=>`<div class="team-bar-row"><span class="team-bar-name" title="${escapeHtml(coachRaceEntryName_(e))}"><span>選手${'①②③④⑤⑥⑦⑧⑨⑩'[e.index]} ${escapeHtml(e.athlete.athleteName)}</span><small>${escapeHtml(e.race.raceName)}</small></span><div class="team-bar-track"><div class="team-bar-fill" style="min-width:0;width:${Number.isFinite(value)&&max?Math.abs(value)/max*100:0}%;background:${e.color}"></div></div><span class="team-bar-value">${Number.isFinite(value)?escapeHtml(String(value))+' '+escapeHtml(unit):'データなし'}</span></div>`).join('')}</div>`;
 }
+let coachRaceChartObserver_=null;
+function setCoachRaceMetric_(key){if(COACH_RACE_METRICS.some(m=>m[0]===key)){RACE_GRAPH_STATE.coachMetric=key;renderCoachRaceGraphScreen_();}}
 function renderCoachRaceGraphScreen_(){
- initializeCoachRaceSlots_();const athletes=RACE_GRAPH_STATE.athletes||[],entries=coachRaceEntries_(),bars=RACE_GRAPH_STATE.coachView==='bar',sections=RACE_GRAPH_STATE.coachSections||(RACE_GRAPH_STATE.coachSections={});
- $('#screen').innerHTML=`<div class="race-graph-screen coach-screen"><section class="card stack"><div class="section-title"><div><h2>レース分析の比較</h2><p>最大10人・同じ選手の別レースも比較できます</p></div><button class="secondary" style="width:auto" onclick="backFromRaceGraphs_()">戻る</button></div>${(RACE_GRAPH_STATE.warnings||[]).length?`<div class="notice">${RACE_GRAPH_STATE.warnings.map(escapeHtml).join('<br>')}</div>`:''}<button class="secondary" onclick="openRaceGraphs('coach',true)">最新のレースデータを読み込む</button>${!athletes.length?'<p class="muted">表示できるレースデータがありません。</p>':''}<div class="race-graph-select-grid">${RACE_GRAPH_STATE.slots.map((s,i)=>{
+ const previousScroll=$('#crSettings')?.scrollTop||0;
+ if(coachRaceChartObserver_)coachRaceChartObserver_.disconnect();
+ initializeCoachRaceSlots_();
+ const athletes=RACE_GRAPH_STATE.athletes||[],entries=coachRaceEntries_(),bars=RACE_GRAPH_STATE.coachView==='bar',sections=RACE_GRAPH_STATE.coachSections||(RACE_GRAPH_STATE.coachSections={});
+ const metric=COACH_RACE_METRICS.find(m=>m[0]===RACE_GRAPH_STATE.coachMetric)||COACH_RACE_METRICS[5];RACE_GRAPH_STATE.coachMetric=metric[0];
+ const [key,title,unit]=metric,labels=coachRaceLabels_(entries,key);if(!labels.includes(sections[key]))sections[key]=labels[0];
+ $('#screen').innerHTML=`<div class="cr-screen coach-screen"><div class="cr-title"><h2>レース分析の比較</h2><button class="secondary" type="button" onclick="openRaceGraphs('coach',true)">更新</button></div>
+ <div id="crSettings" class="cr-settings"><details class="tc-options" ${RACE_GRAPH_STATE.graphOptionsOpen?'open':''} ontoggle="RACE_GRAPH_STATE.graphOptionsOpen=this.open"><summary><span><strong>グラフの表示設定</strong><small>${title} ／ ${bars?'棒グラフ':'折れ線グラフ'}</small></span><span class="tc-arrow" aria-hidden="true">▼</span></summary><div class="tc-options-body"><div class="field"><label for="crMetric">比較する項目</label><select id="crMetric" onchange="setCoachRaceMetric_(this.value)">${COACH_RACE_METRICS.map(([value,label])=>`<option value="${value}" ${value===key?'selected':''}>${label}</option>`).join('')}</select></div></div></details>
+ <details class="tc-options tc-athletes" ${RACE_GRAPH_STATE.athleteOptionsOpen?'open':''} ontoggle="RACE_GRAPH_STATE.athleteOptionsOpen=this.open"><summary><span><strong>選手・レースの選択</strong><small>表示${entries.length}枠 ／ 最大10枠</small></span><span class="tc-arrow" aria-hidden="true">▼</span></summary><div class="tc-options-body"><p class="tc-hint">同じ選手の別レースも比較できます。非表示にしても選択内容を保持します。</p>${!athletes.length?'<p class="tc-hint">表示できるレースデータがありません。</p>':''}<div class="cr-slot-list">${RACE_GRAPH_STATE.slots.map((s,i)=>{
  const a=athletes.find(a=>a.athleteId===s.athleteId),races=a?.races||[],race=races.find(r=>r.raceId===s.raceId);
  return `<div class="race-graph-select-column"><div class="section-title"><strong style="color:${COACH_RACE_COLORS[i]}">● 選手${'①②③④⑤⑥⑦⑧⑨⑩'[i]}</strong><label style="display:flex;align-items:center;gap:6px"><input style="width:auto;min-height:auto" type="checkbox" ${s.visible?'checked':''} onchange="setCoachRaceSlot_(${i},'visible',this.checked)">表示</label></div><div class="field"><label for="coachAthlete${i}">選手</label><select id="coachAthlete${i}" onchange="setCoachRaceSlot_(${i},'athleteId',this.value)"><option value="">選手を選択</option>${athletes.map(a=>`<option value="${escapeHtml(a.athleteId)}" ${a.athleteId===s.athleteId?'selected':''}>${escapeHtml(a.athleteName)}</option>`).join('')}</select></div><div class="field"><label for="coachRace${i}">レース</label><select id="coachRace${i}" ${races.length?'':'disabled'} onchange="setCoachRaceSlot_(${i},'raceId',this.value)">${races.length?races.map(r=>`<option value="${escapeHtml(r.raceId)}" ${r.raceId===s.raceId?'selected':''}>${escapeHtml(r.raceName)}</option>`).join(''):'<option value="">レースなし</option>'}</select></div>${race?.linkedAnalysisId?`<button class="secondary" data-linked-analysis="${escapeHtml(race.linkedAnalysisId)}">選手${'①②③④⑤⑥⑦⑧⑨⑩'[i]}の動作分析を見る</button>`:''}</div>`;
- }).join('')}</div><div class="team-compare-toolbar"><button class="${bars?'secondary':'primary'}" aria-pressed="${!bars}" onclick="setCoachRaceView_('line')">折れ線グラフ</button><button class="${bars?'primary':'secondary'}" aria-pressed="${bars}" onclick="setCoachRaceView_('bar')">棒グラフ</button></div></section>${!entries.length?'<section class="card"><p class="muted">選手とレースを選び、「表示」にチェックを入れてください。</p></section>':COACH_RACE_METRICS.map(([key,title,unit])=>{
- const labels=coachRaceLabels_(entries,key);if(!labels.includes(sections[key]))sections[key]=labels[0];
- return `<section class="race-graph-card stack"><h3>${title}</h3>${bars?`<div class="field"><label for="coachSection${key}">比較する区間・通過地点</label><select id="coachSection${key}" ${labels.length?'':'disabled'} onchange="RACE_GRAPH_STATE.coachSections['${key}']=this.value;renderCoachRaceGraphScreen_()">${labels.map(label=>`<option value="${escapeHtml(label)}" ${label===sections[key]?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div>${labels.length?renderCoachRaceBars_(entries,key,unit,sections[key]):'<p class="muted">データがありません。</p>'}`:`<div class="race-graph-legend">${entries.map(e=>`<span style="color:${e.color}">● ${escapeHtml(coachRaceEntryName_(e))}</span>`).join('')}</div><canvas class="race-chart-canvas" data-coach-race-chart="${key}" data-unit="${unit}"></canvas>`}</section>`;
- }).join('')}</div>`;
- $$('[data-linked-analysis]').forEach(b=>b.addEventListener('click',()=>openRaceLinkedAnalysis_(b.dataset.linkedAnalysis)));
+ }).join('')}</div></div></details>
+ ${(RACE_GRAPH_STATE.warnings||[]).length?`<details class="tc-options"><summary><strong>確認事項 ${RACE_GRAPH_STATE.warnings.length}件</strong><span aria-hidden="true">▼</span></summary><div class="tc-options-body tc-hint">${RACE_GRAPH_STATE.warnings.map(escapeHtml).join('<br>')}</div></details>`:''}</div>
+ <div class="cr-view-switch" role="group" aria-label="グラフの種類"><button type="button" aria-pressed="${!bars}" onclick="setCoachRaceView_('line')">折れ線グラフ</button><button type="button" aria-pressed="${bars}" onclick="setCoachRaceView_('bar')">棒グラフ</button></div>
+ <section class="cr-chart-panel"><h3>${title} <small>（${unit}）</small></h3>${bars?`<div class="cr-section-select"><label for="crSection">区間・通過地点</label><select id="crSection" ${labels.length?'':'disabled'} onchange="RACE_GRAPH_STATE.coachSections['${key}']=this.value;renderCoachRaceGraphScreen_()">${labels.map(label=>`<option value="${escapeHtml(label)}" ${label===sections[key]?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div>`:`<div class="cr-legend">${entries.map(e=>`<span title="${escapeHtml(coachRaceEntryName_(e))}" style="color:${e.color}"><b>● 選手${'①②③④⑤⑥⑦⑧⑨⑩'[e.index]} ${escapeHtml(e.athlete.athleteName)}</b><small>${escapeHtml(e.race.raceName)}</small></span>`).join('')}</div>`}
+ <div id="crChartViewport" class="cr-chart-viewport ${bars?'cr-bars':'cr-lines'}" style="--cr-count:${Math.max(entries.length,1)}">${!entries.length?'<p class="cr-empty">選手とレースを選び、「表示」にチェックを入れてください。</p>':!labels.length?'<p class="cr-empty">この項目のデータがありません。</p>':bars?renderCoachRaceBars_(entries,key,unit,sections[key]):`<canvas class="race-chart-canvas" data-coach-race-chart="${key}" data-unit="${unit}" role="img" aria-label="${escapeHtml(title)}：${escapeHtml(entries.map(coachRaceEntryName_).join('、'))}"></canvas>`}</div></section></div>`;
+ $$('[data-linked-analysis]').forEach(button=>button.addEventListener('click',()=>openRaceLinkedAnalysis_(button.dataset.linkedAnalysis)));
+ const settings=$('#crSettings');if(settings)settings.scrollTop=previousScroll;
+ const viewport=$('#crChartViewport');if(viewport&&typeof ResizeObserver!=='undefined'){coachRaceChartObserver_=new ResizeObserver(()=>{if(!viewport.isConnected){coachRaceChartObserver_?.disconnect();return;}drawCoachRaceCanvases_();});coachRaceChartObserver_.observe(viewport);}
  if(!bars)window.requestAnimationFrame(drawCoachRaceCanvases_);
 }
 function drawCoachRaceCanvases_(){const entries=coachRaceEntries_();$$('[data-coach-race-chart]').forEach(canvas=>drawRaceLineChart_(canvas,[],[],canvas.dataset.unit,entries.map(e=>({series:e.race.charts?.[canvas.dataset.coachRaceChart]||[],color:e.color}))));}
@@ -4657,7 +4710,7 @@ async function refreshAdminDashboard_(){
       async function reloadHome(){clearApiReadCache_();lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
       function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
-      function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".tc-screen")){renderTeamDashboard();return;}if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
+      function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".cr-screen")){backFromRaceGraphs_();return;}if($(".tc-screen")){renderTeamDashboard();return;}if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
       installHeaderNavigation_();
       window.addEventListener("DOMContentLoaded",startApp);
       function resizeAnalysisGraphCanvases() {

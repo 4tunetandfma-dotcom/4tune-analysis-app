@@ -1020,6 +1020,45 @@ body.analysis-help-modal-open {
 .admin-status-fold[open]>.admin-status-group-title .admin-status-closed-label,.admin-status-fold:not([open])>.admin-status-group-title .admin-status-open-label{display:none}
 .admin-status-fold-content{padding-top:8px;gap:8px}
 .admin-status-fold>.admin-status-group-title:focus-visible{outline:3px solid #2374c6;outline-offset:2px}
+/* Motion results: natural page scrolling, basic result cards. */
+.app:has(.mr-screen){padding-top:max(10px,env(safe-area-inset-top));padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.mr-screen{display:grid;gap:12px;color:#173c32}
+.mr-screen .hm-icon{width:30px;height:30px;flex:0 0 auto;color:#14523f}
+.mr-title{display:flex;align-items:center;gap:9px;padding:4px 2px}
+.mr-title h2{margin:0;font-size:21px;line-height:1.5}
+.mr-title .pill{margin-left:auto;align-self:center;white-space:nowrap;font-size:12px}
+.mr-filters{display:grid;gap:8px;padding:12px;border:1px solid #cce9f1;border-radius:13px;background:#edf8fc}
+.mr-filters h3{margin:0 0 2px;font-size:14px;line-height:1.5}
+.mr-filter-row{display:grid;grid-template-columns:50px minmax(0,1fr);align-items:center;gap:8px}
+.mr-filter-row>span{font-size:12px;font-weight:800}
+.mr-segments{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:2px;border:1px solid #cee4e8;border-radius:9px;background:#fff}
+.mr-segments button{min-width:0;min-height:40px;padding:6px;border:0;border-radius:7px;background:transparent;color:#294e43;font-size:13px;font-weight:800}
+.mr-segments button[aria-pressed="true"]{background:#17613f;color:white}
+.mr-result-area{display:grid;gap:8px;min-width:0}
+.mr-result-area>h3{margin:0 2px;font-size:12px;color:#50665e;line-height:1.6}
+.mr-list{display:grid;gap:10px;min-width:0}
+.mr-result-card{display:grid;gap:9px;min-width:0;padding:12px;border:1px solid #cce4ef;border-radius:12px;background:white}
+.mr-result-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.mr-result-heading small{font-size:11px;color:#50665e;line-height:1.5}
+.mr-result-heading h4{margin:2px 0 0;font-size:21px;line-height:1.3}
+.mr-result-heading .pill{font-size:10px;white-space:nowrap}
+.mr-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0;padding-top:8px;border-top:1px solid #e1eae8}
+.mr-meta>div{min-width:0}
+.mr-meta>div+div{padding-left:8px;border-left:1px solid #e1eae8}
+.mr-meta dt{margin:0;color:#637b74;font-size:10px;line-height:1.5}
+.mr-meta dd{margin:3px 0 0;color:#24493e;font-size:11px;font-weight:600;line-height:1.6;overflow-wrap:anywhere}
+.mr-screen .primary{min-height:44px;padding:8px 12px;border-radius:9px;background:#17613f;font-size:13px}
+.mr-screen .primary span{margin-left:8px;font-size:20px;line-height:1;vertical-align:-1px}
+.mr-data-pending,.mr-empty p{margin:0;color:#637b74;font-size:12px;line-height:1.7}
+.mr-data-pending{padding:8px;border-radius:8px;background:#f4f8f6;text-align:center}
+.mr-empty{padding:24px 14px;border:1px solid #cce4ef;border-radius:12px;background:#fff;text-align:center}
+.mr-application{display:grid;gap:10px;padding:12px;border:1px solid #dbe8d5;border-radius:13px;background:#f0f6ed}
+.mr-application-heading{display:flex;align-items:center;gap:9px}
+.mr-application h3{margin:0;font-size:15px;line-height:1.5}
+.mr-application p{margin:2px 0 0;color:#587067;font-size:10px;line-height:1.5}
+.mr-screen button:focus-visible{outline:3px solid #2374c6;outline-offset:3px}
+@media(max-width:350px){.mr-title h2{font-size:19px}.mr-filters,.mr-result-card,.mr-application{padding:10px}.mr-filter-row{grid-template-columns:44px minmax(0,1fr);gap:6px}.mr-meta dd{font-size:10px}}
+
     </style>
   </head>
   <body>
@@ -2284,23 +2323,16 @@ function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit, extraSer
       const ANALYSIS_RESULTS_FILTER={plan:"Pro",phase:"最高速"};
       async function openAnalysisResults(){STATE.coachAnalysisAthleteId="";document.body.classList.remove("analysis-detail-mode");lock("分析結果を読み込み中...");try{if(!STATE.analysisResultsCachedAt||Date.now()-STATE.analysisResultsCachedAt>=VIEW_CACHE_TTL_MS){const result=await apiPost("getAnalysisResults");STATE.analysisResults=result.results||[];STATE.analysisResultsCachedAt=Date.now();}renderAnalysisResults(STATE.analysisResults);}catch(error){console.error(error);alert(error.message||"分析結果を読み込めませんでした");}finally{unlock();}}
       function setAnalysisResultsFilter_(key,value){ANALYSIS_RESULTS_FILTER[key]=value;renderAnalysisResults(STATE.analysisResults||[]);}
-function renderAnalysisResults(results) {
-  const filteredResults=(results||[]).filter((result)=>String(result.plan||"").toLowerCase()===ANALYSIS_RESULTS_FILTER.plan.toLowerCase()&&String(result.phase||"")===ANALYSIS_RESULTS_FILTER.phase);
-  $("#screen").innerHTML = `<div class="analysis-results-screen"><button class="card ticket-apply-card analysis-results-cta" type="button" onclick="openApplication()"><small>MOTION ANALYSIS</small><h2>新しく申し込む</h2><p>最高速・スタート動作分析を申し込む</p></button><section class="analysis-results-area"><div class="analysis-results-heading"><div><small>RESULTS</small><h2>動作分析結果</h2></div><span>${filteredResults.length}件</span></div><div class="analysis-results-filters"><div class="analysis-filter-group"><small>コース</small><div><button class="${ANALYSIS_RESULTS_FILTER.plan==="Pro"?"active":""}" onclick="setAnalysisResultsFilter_('plan','Pro')">Pro</button><button class="${ANALYSIS_RESULTS_FILTER.plan==="Light"?"active":""}" onclick="setAnalysisResultsFilter_('plan','Light')">Light</button></div></div><div class="analysis-filter-group"><small>区間</small><div><button class="${ANALYSIS_RESULTS_FILTER.phase==="最高速"?"active":""}" onclick="setAnalysisResultsFilter_('phase','最高速')">最高速</button><button class="${ANALYSIS_RESULTS_FILTER.phase==="スタート"?"active":""}" onclick="setAnalysisResultsFilter_('phase','スタート')">スタート</button></div></div></div><div class="analysis-results-scroll">${filteredResults.length?filteredResults.map((result)=>`<section class="card analysis-list-card"><div class="analysis-list-head"><div><small>${escapeHtml(result.plan)}コース</small><h3>${escapeHtml(result.phase)}</h3></div><span class="pill">公開済み</span></div><div class="analysis-list-meta"><span>公開日時</span><b>${escapeHtml(result.publishedAt||"-")}</b></div><div class="analysis-list-meta"><span>申込ID</span><b>${escapeHtml(result.applicationId)}</b></div>${result.hasAnalysisData?`<button class="primary" type="button" data-open-analysis-id="${escapeHtml(result.analysisId)}">分析結果を見る</button>`:'<p class="analysis-list-empty">分析データはまだ登録されていません</p>'}</section>`).join(""):'<section class="card analysis-results-empty"><p>${escapeHtml(ANALYSIS_RESULTS_FILTER.plan)}・${escapeHtml(ANALYSIS_RESULTS_FILTER.phase)}の公開済み結果はありません</p></section>'}</div></section></div>`;
-  const emptyResultMessage=$(".analysis-results-empty p");if(emptyResultMessage)emptyResultMessage.textContent=`${ANALYSIS_RESULTS_FILTER.plan}・${ANALYSIS_RESULTS_FILTER.phase}の公開済み結果はありません`;
-
-  $$("[data-open-analysis-id]").forEach(
-    (button) =>
-      button.addEventListener(
-        "click",
-        () =>
-          openAnalysisDetail(
-            button.dataset.openAnalysisId,
-          ),
-      ),
-  );
-
+function renderAnalysisResults(results){
+ const filteredResults=(results||[]).filter(result=>String(result.plan||'').toLowerCase()===ANALYSIS_RESULTS_FILTER.plan.toLowerCase()&&String(result.phase||'')===ANALYSIS_RESULTS_FILTER.phase);
+ $('#screen').innerHTML=`<div class="mr-screen">
+ <div class="mr-title">${homeMenuIcon_('chart')}<h2>動作分析結果</h2><span class="pill">${filteredResults.length}件</span></div>
+ <section class="mr-filters" aria-labelledby="mrFilterTitle"><h3 id="mrFilterTitle">表示する分析を選ぶ</h3>${[['plan','コース',['Pro','Light']],['phase','区間',['最高速','スタート']]].map(([key,label,values])=>`<div class="mr-filter-row"><span id="mrFilter${key}">${label}</span><div class="mr-segments" role="group" aria-labelledby="mrFilter${key}">${values.map(value=>`<button type="button" aria-pressed="${ANALYSIS_RESULTS_FILTER[key]===value}" onclick="setAnalysisResultsFilter_('${key}','${value}')">${value}</button>`).join('')}</div></div>`).join('')}</section>
+ <section class="mr-result-area" aria-labelledby="mrResultTitle"><h3 id="mrResultTitle">${escapeHtml(ANALYSIS_RESULTS_FILTER.plan)}・${escapeHtml(ANALYSIS_RESULTS_FILTER.phase)}の分析結果</h3><div class="mr-list">${filteredResults.length?filteredResults.map(result=>`<section class="mr-result-card"><div class="mr-result-heading"><div><small>${escapeHtml(result.plan)}コース</small><h4>${escapeHtml(result.phase)}</h4></div><span class="pill">公開済み</span></div><dl class="mr-meta"><div><dt>公開日時</dt><dd>${escapeHtml(result.publishedAt||'-')}</dd></div><div><dt>申込ID</dt><dd>${escapeHtml(result.applicationId||'-')}</dd></div></dl>${result.hasAnalysisData?`<button class="primary" type="button" data-open-analysis-id="${escapeHtml(result.analysisId)}">分析結果を見る <span aria-hidden="true">›</span></button>`:'<p class="mr-data-pending">分析データはまだ登録されていません</p>'}</section>`).join(''):`<div class="mr-empty"><p>${escapeHtml(ANALYSIS_RESULTS_FILTER.plan)}・${escapeHtml(ANALYSIS_RESULTS_FILTER.phase)}の公開済み結果はありません</p></div>`}</div></section>
+ <section class="mr-application"><div class="mr-application-heading">${homeMenuIcon_('file')}<div><h3>新しい分析を申し込む</h3><p>最高速・スタート動作分析</p></div></div><button class="primary" type="button" onclick="openApplication()">新しく申し込む <span aria-hidden="true">›</span></button></section></div>`;
+ $$('[data-open-analysis-id]').forEach(button=>button.addEventListener('click',()=>openAnalysisDetail(button.dataset.openAnalysisId)));
 }
+
 async function openAnalysisDetail(
   analysisId,
 ) {

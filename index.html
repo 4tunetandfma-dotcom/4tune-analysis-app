@@ -948,6 +948,37 @@ body.analysis-help-modal-open {
 @media(hover:hover){.hm-home .hm-action:hover{filter:brightness(.97)}.hm-admin:hover{filter:brightness(.97)}}
 @media(max-width:350px){.hm-home .hm-section{padding:10px 8px}.hm-user{padding:6px 8px}.hm-user-copy>b{font-size:12px}.hm-logo .brand-logo-window{width:130px;height:52px}.hm-logo .brand-logo-image{width:130px;top:-35px}.hm-logo .brand-tagline{font-size:7px}.hm-home .hm-result{padding:10px 8px}.hm-result .hm-action-copy b{font-size:12px}.hm-ticket-row .hm-icon{width:19px;height:19px}.hm-ticket-row .hm-action-copy b{font-size:11px}.hm-heading h2{font-size:16px}}
 
+/* Coach menu shares the home card layout with compact comparison controls. */
+.hm-role-actions .hm-normal{border-color:#17613f;background:linear-gradient(135deg,#288260,#14543e)}
+.hm-coach-title{display:flex;align-items:center;flex-wrap:wrap;gap:4px 12px;padding:2px 5px}
+.hm-coach-title h1{margin:0;font-size:18px;line-height:1.5;color:#174f43}
+.hm-coach-title p{margin:0;color:var(--muted);font-size:11px;line-height:1.6;overflow-wrap:anywhere}
+.hm-coach-title p span{display:inline-block;margin-left:10px}
+.hm-coach-home .hm-coach-result{display:grid;grid-template-columns:auto 1fr auto;gap:7px;min-height:66px;padding:9px 8px;border-color:#d8eaf0}
+.hm-coach-result>.hm-icon{width:24px;height:24px}
+.hm-coach-result .hm-action-copy b{font-size:13px}
+.hm-coach-result .hm-action-copy small{margin-top:2px;font-size:9px;line-height:1.5}
+.hm-coach-home .hm-coach-race{min-height:54px;padding:8px 10px;border-color:#d8eaf0}
+.hm-coach-race .hm-action-copy small{margin-top:2px;font-size:10px}
+.hm-coach-note{margin:0 2px;color:#587067;font-size:10px;line-height:1.6}
+.hm-coach-home .hm-coach-register{min-height:44px;padding:8px 10px;border-color:#91b9a9}
+.hm-coach-members{min-width:0;overflow:hidden;border:1px solid #e9e6dd;border-radius:11px;background:#fff}
+.hm-coach-members .coach-members-tab{min-height:48px;padding:10px}
+.hm-coach-members .coach-members-content{padding:0 10px 10px}
+.hm-coach-settings-title{display:flex;align-items:center;gap:9px;margin:4px 2px 0;font-size:12px}
+.hm-coach-settings-title::after{content:'';height:1px;flex:1;background:#e3dfd3}
+.hm-coach-team-id{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px;border:1px solid #dfe7e6;border-radius:10px;background:#f7fafc}
+.hm-coach-team-id>div{display:grid;gap:3px;min-width:0}
+.hm-coach-team-id small{color:var(--muted);font-size:10px}
+.hm-coach-team-id strong{font-size:15px;letter-spacing:.06em;overflow-wrap:anywhere}
+.hm-coach-team-id span{color:var(--muted);font-size:9px}
+.hm-coach-team-id button{flex:0 0 auto;min-height:44px;padding:6px 12px;border:1px solid #c8d9d4;border-radius:8px;background:#fff;color:#246b58;font-size:12px;font-weight:800}
+.hm-coach-team-id button:disabled{opacity:.5;cursor:default}
+.hm-coach-home .hm-coach-settings-actions .hm-action{min-height:46px;padding:7px 8px;gap:5px}
+.hm-coach-settings-actions .hm-action-copy b{font-size:11px}
+.hm-coach-settings-actions .hm-icon{width:20px;height:20px}
+@media(max-width:350px){.hm-coach-home .hm-coach-result{gap:5px;padding:8px 6px}.hm-coach-result>.hm-icon{width:20px;height:20px}.hm-coach-result .hm-action-copy b{font-size:12px}.hm-coach-result .hm-chevron{font-size:18px}.hm-coach-settings-actions .hm-icon{display:none}}
+
     </style>
   </head>
   <body>
@@ -1614,7 +1645,22 @@ function renderHome(){
 
       async function openTeamDashboard(mode="coach",force=false){document.body.classList.remove("analysis-detail-mode");lock(mode==="join"?"参加チームを読み込み中...":"指導者画面を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard",{mode},{force});renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
 
-      function renderTeamDashboard(){STATE.coachRaceDetail=false;STATE.coachAnalysisAthleteId="";STATE.teamEditing=false;document.body.classList.remove("analysis-detail-mode");const data=STATE.teamDashboard||{};if(!data.isCoach){renderTeamJoinPage_(data);return;}const members=data.members||[],team=data.team||{};$("#screen").innerHTML=`<div class="stack coach-screen"><section class="card coach-hero"><div class="section-title"><div><small>COACH DASHBOARD</small><h2>指導者画面</h2><p>${escapeHtml(team.name||"")}・所属選手 ${members.length}名</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderHome()">通常画面</button></div></section><section class="card stack"><div class="team-id-box"><small>選手・保護者に共有するチームID</small><strong>${escapeHtml(team.teamId||"")}</strong></div><div class="team-action-grid"><button class="secondary" onclick="copyTeamId_()">チームIDをコピー</button><button class="secondary" onclick="renameCoachTeam_()">チーム名を変更</button></div><button class="secondary" onclick="openTeamDashboard('coach',true)">最新の情報に更新</button><button class="primary" onclick="renderTeamAthleteCreate_()">＋ 選手を登録</button></section><details class="card coach-members" ${STATE.coachMembersOpen?"open":""} ontoggle="STATE.coachMembersOpen=this.open"><summary class="coach-members-tab"><span><strong>選手管理</strong><span class="coach-members-caption">登録・編集・チームから削除（${members.length}/50名）</span></span><span class="coach-members-arrow" aria-hidden="true">▼</span></summary><div class="stack coach-members-content"><div class="field"><label>選手を検索</label><input type="search" placeholder="名前・所属で検索" oninput="filterCoachMembers_(this.value)"></div><div id="coachMemberList" class="stack">${members.length?members.map(renderTeamMember_).join(""):'<p class="muted">所属選手はいません。選手を登録するか、チームIDを共有して参加してもらってください。</p>'}</div><p id="coachSearchEmpty" class="muted hidden">該当する選手はいません。</p></div></details><section class="card stack"><div class="section-title"><div><h3>チーム比較</h3><p>選手ごとの最新・過去のPro分析を項目ごとに比較</p></div></div><button class="primary" onclick="openTeamComparison_()">チーム比較を開く</button></section><section class="card stack"><div class="section-title"><div><h3>個別比較</h3><p>所属選手の2件の分析を比較</p></div></div><button class="primary" onclick="openComparison('coach')">比較する分析を選ぶ</button></section><section class="card stack"><div class="section-title"><div><h3>レース分析の比較</h3><p>所属選手の過去レース・他選手のレースを比較</p></div></div><p class="muted">最大10人の歩数・通過タイム・区間タイム・ストライド・ピッチ・疾走速度を、折れ線・棒グラフで比較します。</p><button class="primary" onclick="openRaceGraphs('coach')">レース分析を比較する</button></section><section class="card stack"><h3>動作分析の申込み</h3><p class="muted">5名以上の選手が所属するチームは、団体申込みを利用できます。</p><button class="primary" onclick="openCoachApplication_()">申込みへ進む</button></section></div>`;}
+      function renderTeamDashboard(){
+ STATE.coachRaceDetail=false;STATE.coachAnalysisAthleteId='';STATE.teamEditing=false;
+ document.body.classList.remove('analysis-detail-mode');
+ const data=STATE.teamDashboard||{};
+ if(!data.isCoach){renderTeamJoinPage_(data);return;}
+ const members=data.members||[],team=data.team||{},customer=STATE.data?.customer||{},type=customer.userType||customer.applicantType||'指導者';
+ $('#screen').innerHTML=`<div class="hm-home hm-coach-home coach-screen">
+ <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><div class="hm-logo">${document.querySelector('.brand-logo-group')?.outerHTML||''}</div><button class="hm-user" type="button" onclick="openAthleteManagement()" aria-label="登録情報を編集"><span class="hm-user-copy"><b>${escapeHtml(customer.applicantName||'')}<small>さん</small></b><span>${escapeHtml(type)}</span><small class="hm-edit-hint">登録情報を編集</small></span><span class="hm-chevron" aria-hidden="true">›</span></button></div><div class="hm-role-actions"><button class="hm-normal" type="button" onclick="renderHome()">通常画面 <span aria-hidden="true">›</span></button>${STATE.data?.isAdmin?'<button class="hm-admin" type="button" onclick="openAdminDashboard()">管理者画面 <span aria-hidden="true">›</span></button>':''}</div></section>
+ <div class="hm-coach-title"><h1>指導者画面</h1><p>${escapeHtml(team.name||'')}<span>所属選手 ${members.length}名</span></p></div>
+ <section class="hm-section hm-analysis" aria-labelledby="hmCoachAnalysisTitle">${homeMenuHeading_('hmCoachAnalysisTitle','分析・比較','所属選手の分析データを比較できます。','chart')}<div class="hm-two">${homeMenuAction_('チーム比較','最新・過去のPro分析','run','openTeamComparison_()','hm-coach-result')}${homeMenuAction_('個別比較','2件の動作分析を比較','compare',"openComparison('coach')",'hm-coach-result')}</div>${homeMenuAction_('レース分析の比較','最大10人・折れ線／棒グラフ','chart',"openRaceGraphs('coach')",'hm-coach-race')}</section>
+ <section class="hm-section hm-application" aria-labelledby="hmCoachApplicationTitle">${homeMenuHeading_('hmCoachApplicationTitle','分析の申込み','チームで動作分析を申し込めます。','file')}${homeMenuAction_('動作分析を申し込む','','pen','openCoachApplication_()','hm-apply')}<p class="hm-coach-note">所属選手5名以上で団体申込みを利用できます。</p></section>
+ <section class="hm-section hm-settings" aria-labelledby="hmCoachSettingsTitle">${homeMenuHeading_('hmCoachSettingsTitle','選手・チーム管理','選手の登録・編集やチーム情報を管理します。','team')}${homeMenuAction_('選手を登録','','user','renderTeamAthleteCreate_()','hm-coach-register')}
+ <details class="coach-members hm-coach-members" ${STATE.coachMembersOpen?'open':''} ontoggle="STATE.coachMembersOpen=this.open"><summary class="coach-members-tab"><span><strong>選手管理</strong><span class="coach-members-caption">登録・編集・チームから削除（${members.length}/50名）</span></span><span class="coach-members-arrow" aria-hidden="true">▼</span></summary><div class="stack coach-members-content"><div class="field"><label for="hmCoachSearch">選手を検索</label><input id="hmCoachSearch" type="search" placeholder="名前・所属で検索" oninput="filterCoachMembers_(this.value)"></div><div id="coachMemberList" class="stack">${members.length?members.map(renderTeamMember_).join(''):'<p class="muted">所属選手はいません。選手を登録するか、チームIDを共有して参加してもらってください。</p>'}</div><p id="coachSearchEmpty" class="muted hidden">該当する選手はいません。</p></div></details>
+ <h3 class="hm-coach-settings-title">チーム設定</h3><div class="hm-coach-team-id"><div><small>チームID</small><strong>${escapeHtml(team.teamId||'未設定')}</strong><span>選手・保護者に共有</span></div><button type="button" onclick="copyTeamId_()" ${team.teamId?'':'disabled'}>コピー</button></div><div class="hm-two hm-coach-settings-actions">${homeMenuAction_('チーム名を変更','','pen','renameCoachTeam_()')}${homeMenuAction_('最新の情報に更新','','file',"openTeamDashboard('coach',true)")}</div></section>
+ </div>`;
+}
 
       function renderTeamMember_(member){const invite=member.registrationInvite||null;const link=invite?`https://liff.line.me/${CONFIG.LIFF_ID}?athleteRegister=${encodeURIComponent(invite.token)}`:"";return`<div class="team-member-card stack" data-member-search="${escapeHtml((member.name+' '+(member.affiliation||'')).toLowerCase())}"><div class="section-title"><div><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.affiliation||"")}・${member.age==null?"年齢未設定":member.age+"歳"}</p></div><span class="pill">${member.isClaimed?"本人登録済み":member.directlyRegistered?"本人未登録":"チーム参加"}</span></div><div class="summary-row"><span>身長・体重</span><b>${escapeHtml(member.height||"-")}cm${member.weight?`・${escapeHtml(member.weight)}kg`:""}</b></div>${invite?`<div class="team-id-box"><small>本人登録コード</small><strong>${escapeHtml(invite.code)}</strong><span class="muted">有効期限 ${escapeHtml(invite.expiresAt||"")}</span></div><div class="friend-link"><b>本人登録リンク</b><br>${escapeHtml(link)}</div><div class="team-action-grid"><button class="secondary" onclick="copyAthleteRegistrationCode_('${escapeHtml(member.athleteId)}')">コードをコピー</button><button class="secondary" onclick="copyAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">リンクをコピー</button></div><button class="primary" onclick="copyAthleteRegistrationShare_('${escapeHtml(member.athleteId)}')">リンク＋コードをまとめてコピー</button><button class="secondary" onclick="createAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">登録情報を再発行</button>`:""}<button class="primary" onclick="openCoachAthleteAnalyses_('${escapeHtml(member.athleteId)}')">この選手の分析を見る</button><div class="team-action-grid"><button class="secondary" onclick="openTeamAthleteEdit_('${escapeHtml(member.athleteId)}')">編集</button><button class="athlete-delete-button" onclick="removeTeamMember_('${escapeHtml(member.membershipId)}','${escapeHtml(member.name)}')">チームから外す</button></div></div>`;}
 

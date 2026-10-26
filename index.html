@@ -1009,6 +1009,17 @@ body.analysis-help-modal-open {
 .hm-admin-content .admin-application-compact summary{min-height:54px}
 @media(max-width:350px){.hm-admin-summary .admin-summary small{font-size:9px}.hm-admin-home .hm-admin-action{padding:8px 6px;gap:5px}.hm-admin-action>.hm-icon{width:20px;height:20px}.hm-admin-action .hm-action-copy b{font-size:12px}.hm-admin-action .hm-action-copy small{font-size:9px}.hm-admin-action .hm-chevron{font-size:18px}}
 
+
+.hm-admin-collapsible>.hm-admin-content-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;cursor:pointer;list-style:none;color:#a94b08}
+.hm-admin-content-toggle::-webkit-details-marker{display:none}
+.hm-admin-content-toggle>strong{font-size:17px}
+.hm-admin-toggle-label{display:flex;align-items:center;gap:7px;font-size:11px}
+.hm-admin-toggle-arrow{display:inline-block;font-size:10px}
+.hm-admin-collapsible[open] .hm-admin-toggle-arrow{transform:rotate(180deg)}
+.hm-admin-collapsible[open] .hm-admin-when-closed,.hm-admin-collapsible:not([open]) .hm-admin-when-open{display:none}
+.hm-admin-content-body{padding-top:9px;border-top:1px solid #f3d9bd;gap:9px}
+.hm-admin-content-body>p.muted{margin:0}
+.hm-admin-content-toggle:focus-visible{outline:3px solid #2374c6;outline-offset:3px;border-radius:6px}
     </style>
   </head>
   <body>
@@ -4298,7 +4309,7 @@ function formatAnalysisValue(
  <section class="hm-admin-summary" aria-label="現在の管理状況">${adminSummaryCard_('申込総数',summary.total||0)}${adminSummaryCard_('対応中',summary.active||0)}${adminSummaryCard_('入金対応',summary.paymentWaiting||0)}${adminSummaryCard_('分析中',summary.analyzing||0)}</section>
  <section class="hm-section hm-admin-operations" aria-labelledby="hmAdminOperationsTitle">${homeMenuHeading_('hmAdminOperationsTitle','申込み・分析管理','申込みから分析結果の公開まで。','file')}<div class="hm-two">${adminMenuButton_('applications','申し込み状況','申込・入金・動画')}${adminMenuButton_('analyses','分析結果','検出・確認・公開')}</div></section>
  <section class="hm-section hm-settings" aria-labelledby="hmAdminSettingsTitle">${homeMenuHeading_('hmAdminSettingsTitle','登録・商品管理','登録者情報や商品情報を管理します。','team')}<div class="hm-two">${adminMenuButton_('registrants','登録者情報','申込者・選手')}${adminMenuButton_('products','商品情報','料金・受付状態')}</div></section>
- <section id="adminSectionContent" class="card stack hm-admin-content" aria-live="polite">${renderAdminSection_()}</section></div>`;
+ ${STATE.adminSection==='applications'?`<details id="adminSectionContent" class="card hm-admin-content hm-admin-collapsible" ${STATE.adminApplicationsOpen!==false?'open':''} ontoggle="STATE.adminApplicationsOpen=this.open"><summary class="hm-admin-content-toggle"><strong>申し込み状況</strong><span class="hm-admin-toggle-label"><span class="hm-admin-when-open">閉じる</span><span class="hm-admin-when-closed">開く</span><span class="hm-admin-toggle-arrow" aria-hidden="true">▼</span></span></summary><div class="stack hm-admin-content-body">${renderAdminSection_().replace('<h3 class="admin-section-title">申し込み状況</h3>','')}</div></details>`:`<section id="adminSectionContent" class="card stack hm-admin-content" aria-live="polite">${renderAdminSection_()}</section>`}</div>`;
  $$('[data-admin-section]').forEach(button=>button.addEventListener('click',()=>{STATE.adminSection=button.dataset.adminSection;renderAdminDashboard();}));
  $$('[data-admin-application-save]').forEach(button=>button.addEventListener('click',()=>saveAdminApplication_(button)));
  $$('[data-admin-analysis-save]').forEach(button=>button.addEventListener('click',()=>saveAdminAnalysis_(button)));

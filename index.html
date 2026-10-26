@@ -1208,6 +1208,27 @@ body:has(.cr-screen){height:100dvh;min-height:0;overflow:hidden}
 .cr-metric-tabs::-webkit-scrollbar,.cr-legend::-webkit-scrollbar{height:4px;width:4px}
 .cr-metric-tabs::-webkit-scrollbar-thumb,.cr-legend::-webkit-scrollbar-thumb{border-radius:9px;background:#b4c9d8}
 .cr-metric-tabs::-webkit-scrollbar-track,.cr-legend::-webkit-scrollbar-track{background:#f0f5f8}
+
+/* Keep horizontal strips inside a viewport-width grid, including iOS Safari. */
+.app:has(.cr-screen){min-width:0;max-width:100%;overflow-x:hidden}
+.app:has(.cr-screen) #screen{width:100%;min-width:0;max-width:100%}
+.cr-screen{width:100%;min-width:0;max-width:100%;grid-template-columns:minmax(0,1fr);overflow-x:hidden}
+.cr-screen>*{min-width:0;max-width:100%}
+.cr-settings{grid-template-columns:minmax(0,1fr);overflow-x:hidden}
+.cr-settings .tc-options,.cr-settings .tc-options-body,.cr-settings .field,.cr-slot-list,.cr-slot-list .race-graph-select-column{min-width:0;max-width:100%}
+.cr-settings select{width:100%;min-width:0;max-width:100%}
+.cr-chart-panel{width:100%;min-width:0;max-width:100%;overflow:hidden}
+.cr-chart-panel>*{min-width:0;max-width:100%}
+.cr-scroll-shell{width:100%;min-width:0;max-width:100%;overflow:hidden}
+.cr-metric-tabs{width:100%;min-width:0;max-width:100%}
+.cr-legend-row{width:100%;min-width:0;max-width:100%}
+.cr-legend-row>.cr-scroll-shell{width:0;flex:1 1 0%;min-width:0}
+.cr-legend{width:100%;min-width:0;max-width:100%}
+.cr-legend-toggle{max-width:none}
+.cr-chart-viewport{width:100%;min-width:0;max-width:100%}
+.cr-lines .race-chart-canvas{width:100%;min-width:0;max-width:100%}
+.cr-section-select{min-width:0;grid-template-columns:auto minmax(0,1fr)}
+.cr-section-select select{min-width:0;max-width:100%}
     </style>
   </head>
   <body>

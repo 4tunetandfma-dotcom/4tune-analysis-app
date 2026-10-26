@@ -1101,6 +1101,38 @@ body:has(.mr-screen),body:has(.cs-screen){height:100dvh;min-height:0;overflow:hi
 .cs-screen button:focus-visible,.screen-application-button:focus-visible{outline:3px solid #2374c6;outline-offset:2px}
 @media(max-height:650px){.app:has(.mr-screen) .brand-logo-window,.app:has(.cs-screen) .brand-logo-window{width:120px;height:48px}.app:has(.mr-screen) .brand-logo-image,.app:has(.cs-screen) .brand-logo-image{width:120px;top:-33px}.mr-screen,.cs-screen{gap:5px}.mr-filters,.cs-filters{padding:6px 8px;gap:4px}.mr-filters h3{display:none}.cs-choice-form{gap:6px;padding:8px}.cs-choice{padding:6px 8px;gap:4px}.screen-application-button{min-height:42px}.screen-application-footer{padding-top:5px}}
 
+body:has(.tc-screen){height:100dvh;min-height:0;overflow:hidden}
+.app:has(.tc-screen){display:flex;flex-direction:column;height:100dvh;min-height:0;padding:max(6px,env(safe-area-inset-top)) 12px max(6px,env(safe-area-inset-bottom))}
+.app:has(.tc-screen)>.brand{flex:0 0 auto;margin-bottom:5px}
+.app:has(.tc-screen) #screen{flex:1;min-height:0;overflow:hidden}
+.tc-screen{display:grid;grid-template-rows:auto auto minmax(0,1fr);gap:7px;height:100%;min-height:0}
+.tc-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tc-title h2{margin:0;font-size:20px;line-height:1.4}
+.tc-title .secondary{width:auto;min-height:40px;padding:6px 10px;font-size:11px;border-radius:9px}
+.tc-settings{display:grid;gap:6px;max-height:32dvh;overflow-y:auto;overscroll-behavior:contain;min-height:0;padding:2px}
+.tc-options{border:1px solid #cce9f1;border-radius:11px;background:#edf8fc;min-width:0}
+.tc-options.tc-athletes{background:#fcf7ec;border-color:#efe4cf}
+.tc-options summary{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;min-height:48px;cursor:pointer;list-style:none}
+.tc-options summary::-webkit-details-marker{display:none}
+.tc-options summary strong{font-size:13px;line-height:1.5}
+.tc-options summary small{display:block;margin-top:2px;font-size:10px;line-height:1.5;color:#587067;overflow-wrap:anywhere}
+.tc-arrow{font-size:10px;flex:0 0 auto}
+.tc-options[open]>summary .tc-arrow{transform:rotate(180deg)}
+.tc-options-body{display:grid;gap:9px;padding:0 10px 10px}
+.tc-options-body select{min-height:40px;font-size:12px;padding:7px 9px}
+.tc-options-body .field label{font-size:11px}
+.tc-hint{margin:0;color:#637b74;font-size:10px;line-height:1.5}
+.tc-chart-panel{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:6px;min-height:0;padding:10px;border:1px solid #cce9f1;border-radius:12px;background:#fff}
+.tc-chart-title{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 8px}
+.tc-chart-title h3{margin:0;font-size:16px;line-height:1.4}
+.tc-chart-title small{color:#637b74;font-size:9px}
+.tc-chart-viewport{min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable}
+#tcChartCanvas{display:block}
+.tc-empty{margin:0;padding:16px 6px;color:#637b74;font-size:12px;line-height:1.7}
+.tc-chart-note{font-size:9px}
+.tc-options summary:focus-visible{outline:3px solid #2374c6;outline-offset:-2px;border-radius:10px}
+@media(max-height:650px){.app:has(.tc-screen) .brand-logo-window{width:120px;height:48px}.app:has(.tc-screen) .brand-logo-image{width:120px;top:-33px}.tc-options summary{padding:6px 9px;min-height:42px}.tc-screen{gap:5px}.tc-chart-panel{padding:8px;gap:4px}}
+
     </style>
   </head>
   <body>
@@ -1858,30 +1890,49 @@ function filterCoachMembers_(value){
         await openTeamComparison_();
         if(STATE.teamComparison?.phase!==phase){STATE.teamPhase=previous;renderTeamComparison_();}
       }
-      function renderTeamComparison_(){
-        const data=STATE.teamComparison||{},records=data.records||[],catalog=data.catalog||[];
-        const view=STATE.teamComparisonViews?.[STATE.teamPhase]||{mode:"latest",selections:{}};
-        const labels=[...new Set(records.flatMap(r=>(r.items||[]).map(i=>i.label)))];
-        $("#screen").innerHTML=`<div class="stack coach-screen">
-          <section class="card stack">
-            <div class="section-title"><div><h2>チーム比較</h2><p>選手ごとのデータ日付を選んでPro分析を比較</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" onclick="renderTeamDashboard()">戻る</button></div>
-            <div class="team-compare-toolbar"><select aria-label="分析局面" onchange="setTeamComparisonPhase_(this.value)"><option ${STATE.teamPhase==="最高速"?"selected":""}>最高速</option><option ${STATE.teamPhase==="スタート"?"selected":""}>スタート</option></select><select aria-label="並び順" onchange="STATE.teamSort=this.value;renderTeamComparison_()"><option value="desc" ${STATE.teamSort==="desc"?"selected":""}>数値が高い順</option><option value="asc" ${STATE.teamSort==="asc"?"selected":""}>数値が低い順</option></select></div>
-            <div class="field"><label>全員のデータをまとめて切り替え</label><div class="team-date-buttons"><button type="button" class="${view.mode==="latest"?"primary":"secondary"}" aria-pressed="${view.mode==="latest"}" onclick="setTeamComparisonDate_('latest')">各選手の最新</button>${(data.dates||[]).map(date=>`<button type="button" class="${view.mode===date?"primary":"secondary"}" aria-pressed="${view.mode===date}" onclick="setTeamComparisonDate_('${date}')">${teamComparisonDate_(date)}</button>`).join("")}</div></div>
-            <p class="muted">日付ボタンは個別の選択をリセットし、同じ年月・年月日のデータがある選手だけを表示します。</p>
-            <button class="secondary" onclick="openTeamComparison_('',true)">集計を更新</button>
-          </section>
-          <section class="card stack"><h3>選手ごとの表示データ</h3><p class="muted">表示中 ${records.length}名 ／ 所属 ${catalog.length}名。日付はファイル名先頭の年月・年月日です。年月のみのデータは月単位で表示します。</p>
-          ${catalog.map((athlete,index)=>{
-            const selected=data.selected?.[athlete.athleteId]||"hidden";
-            const overridden=Object.prototype.hasOwnProperty.call(view.selections,athlete.athleteId);
-            const choice=overridden?view.selections[athlete.athleteId]:"auto";
-            const current=athlete.analyses.find(a=>a.analysisId===selected);
-            return `<div class="field"><label for="team-athlete-${index}">${escapeHtml(athlete.athleteName)}</label><select id="team-athlete-${index}" data-athlete-id="${escapeHtml(athlete.athleteId)}" onchange="setTeamComparisonAthlete_(this.dataset.athleteId,this.value)"><option value="auto" ${choice==="auto"?"selected":""}>一括設定に合わせる（${view.mode==="latest"?"最新":teamComparisonDate_(view.mode)}）</option><option value="hidden" ${choice==="hidden"?"selected":""}>非表示</option>${athlete.analyses.map(a=>`<option value="${escapeHtml(a.analysisId)}" ${choice===a.analysisId?"selected":""}>${teamComparisonDate_(a.date)} · ${escapeHtml(a.fileName)} [${escapeHtml(a.analysisId)}]</option>`).join("")}</select><span class="muted">${current?`選択中：${teamComparisonDate_(current.date)}`:athlete.analyses.length?"非表示（指定日のデータなし、または非表示を選択）":"この局面の公開中Pro分析はありません"}</span></div>`;
-          }).join("")}</section>
-          ${(data.warnings||[]).length?`<section class="notice">${data.warnings.map(escapeHtml).join("<br>")}</section>`:""}
-          ${labels.length?labels.map(label=>renderTeamMetricChart_(label,records)).join(""):'<section class="card"><p class="muted">比較できる数値データがありません。日付・選手の表示設定・分析局面を確認してください。</p></section>'}
-        </div>`;
-      }
+      let teamComparisonChartObserver_=null;
+function teamComparisonValues_(label,records){
+ return records.map(r=>{const item=(r.items||[]).find(i=>i.label===label);return item&&item.number!==null&&item.number!==undefined&&String(item.number).trim()!==''?{name:r.athleteName,date:r.date,value:item.value,number:Number(item.number)}:null;}).filter(x=>x&&Number.isFinite(x.number)).sort((a,b)=>STATE.teamSort==='asc'?a.number-b.number:b.number-a.number);
+}
+function setTeamComparisonMetric_(value){STATE.teamMetric=value;renderTeamComparison_();}
+function renderTeamComparison_(){
+ if(teamComparisonChartObserver_)teamComparisonChartObserver_.disconnect();
+ const data=STATE.teamComparison||{},records=data.records||[],catalog=data.catalog||[],view=STATE.teamComparisonViews?.[STATE.teamPhase]||{mode:'latest',selections:{}};
+ const labels=[...new Set(records.flatMap(r=>(r.items||[]).map(i=>i.label)))];
+ if(!labels.includes(STATE.teamMetric))STATE.teamMetric=labels[0]||'';
+ const modeText=view.mode==='latest'?'各選手の最新':teamComparisonDate_(view.mode),custom=Object.keys(view.selections||{}).length>0;
+ $('#screen').innerHTML=`<div class="tc-screen coach-screen"><div class="tc-title"><h2>チーム比較</h2><button class="secondary" type="button" onclick="openTeamComparison_('',true)">集計を更新</button></div>
+ <div class="tc-settings"><details class="tc-options" ${STATE.teamMetricOptionsOpen?'open':''} ontoggle="STATE.teamMetricOptionsOpen=this.open"><summary><span><strong>比較項目・並び順</strong><small>${escapeHtml(STATE.teamPhase||'最高速')} ／ ${escapeHtml(STATE.teamMetric||'項目なし')} ／ ${STATE.teamSort==='asc'?'数値が低い順':'数値が高い順'}</small></span><span class="tc-arrow" aria-hidden="true">▼</span></summary><div class="tc-options-body"><div class="field"><label for="tcPhase">分析局面</label><select id="tcPhase" onchange="setTeamComparisonPhase_(this.value)"><option ${STATE.teamPhase==='最高速'?'selected':''}>最高速</option><option ${STATE.teamPhase==='スタート'?'selected':''}>スタート</option></select></div><div class="field"><label for="tcMetric">比較する項目</label><select id="tcMetric" ${labels.length?'':'disabled'} onchange="setTeamComparisonMetric_(this.value)">${labels.map(label=>`<option value="${escapeHtml(label)}" ${label===STATE.teamMetric?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div><div class="field"><label for="tcSort">並び順</label><select id="tcSort" onchange="STATE.teamSort=this.value;renderTeamComparison_()"><option value="desc" ${STATE.teamSort!=='asc'?'selected':''}>数値が高い順</option><option value="asc" ${STATE.teamSort==='asc'?'selected':''}>数値が低い順</option></select></div></div></details>
+ <details class="tc-options tc-athletes" ${STATE.teamAthleteOptionsOpen?'open':''} ontoggle="STATE.teamAthleteOptionsOpen=this.open"><summary><span><strong>日付・選手の表示設定</strong><small>${escapeHtml(modeText)}${custom?'（個別設定あり）':''} ／ 表示${records.length}名・所属${catalog.length}名</small></span><span class="tc-arrow" aria-hidden="true">▼</span></summary><div class="tc-options-body"><div class="field"><label for="tcDate">全員のデータをまとめて切り替え</label><select id="tcDate" onchange="setTeamComparisonDate_(this.value)"><option value="latest" ${view.mode==='latest'?'selected':''}>各選手の最新</option>${(data.dates||[]).map(date=>`<option value="${escapeHtml(date)}" ${view.mode===date?'selected':''}>${teamComparisonDate_(date)}</option>`).join('')}</select></div><p class="tc-hint">一括切り替えは個別設定をリセットします。指定日のデータがない選手は非表示になります。</p>${catalog.map((athlete,index)=>{
+ const analyses=athlete.analyses||[],selected=data.selected?.[athlete.athleteId]||'hidden',choice=Object.prototype.hasOwnProperty.call(view.selections,athlete.athleteId)?view.selections[athlete.athleteId]:'auto',current=analyses.find(a=>a.analysisId===selected);
+ return `<div class="field"><label for="tcAthlete${index}">${escapeHtml(athlete.athleteName)}</label><select id="tcAthlete${index}" data-athlete-id="${escapeHtml(athlete.athleteId)}" onchange="setTeamComparisonAthlete_(this.dataset.athleteId,this.value)"><option value="auto" ${choice==='auto'?'selected':''}>一括設定に合わせる（${escapeHtml(modeText)}）</option><option value="hidden" ${choice==='hidden'?'selected':''}>非表示</option>${analyses.map(a=>`<option value="${escapeHtml(a.analysisId)}" ${choice===a.analysisId?'selected':''}>${teamComparisonDate_(a.date)} · ${escapeHtml(a.fileName)}</option>`).join('')}</select><small class="tc-hint">${current?'表示中：'+teamComparisonDate_(current.date):analyses.length?'非表示（指定日のデータなし、または非表示を選択）':'この局面の公開中Pro分析はありません'}</small></div>`;
+ }).join('')}</div></details>${(data.warnings||[]).length?`<details class="tc-options"><summary><strong>確認事項 ${data.warnings.length}件</strong><span aria-hidden="true">▼</span></summary><div class="tc-options-body tc-hint">${data.warnings.map(escapeHtml).join('<br>')}</div></details>`:''}</div>
+ <section class="tc-chart-panel" aria-labelledby="tcChartTitle"><div class="tc-chart-title"><h3 id="tcChartTitle">${escapeHtml(STATE.teamMetric||'比較データ')}</h3><small id="tcChartCount"></small></div><div id="tcChartViewport" class="tc-chart-viewport"><canvas id="tcChartCanvas" role="img" aria-label="${escapeHtml(STATE.teamMetric||'比較データ')}の選手別棒グラフ"></canvas><p id="tcChartEmpty" class="tc-empty hidden"></p></div><p class="tc-hint tc-chart-note">10名までは人数に合わせて自動調整・11名以上はグラフ内をスクロール</p></section></div>`;
+ const viewport=$('#tcChartViewport');
+ if(typeof ResizeObserver!=='undefined'){teamComparisonChartObserver_=new ResizeObserver(()=>{if(!viewport.isConnected){teamComparisonChartObserver_?.disconnect();return;}drawTeamComparisonChart_();});teamComparisonChartObserver_.observe(viewport);}
+ window.requestAnimationFrame(drawTeamComparisonChart_);
+}
+function teamComparisonChartLayout_(count,width,height){
+ const shown=Math.min(Math.max(count,1),10),row=Math.min(76,Math.max(1,(height-25)/shown));
+ return {width:Math.max(1,width),height:Math.max(1,Math.ceil(row*count+25)),row,scroll:count>10};
+}
+function drawTeamComparisonChart_(){
+ const canvas=$('#tcChartCanvas'),viewport=$('#tcChartViewport');if(!canvas||!viewport)return;
+ const records=STATE.teamComparison?.records||[],values=teamComparisonValues_(STATE.teamMetric,records),empty=$('#tcChartEmpty');
+ $('#tcChartCount').textContent=`数値あり ${values.length}名 ／ 表示設定 ${records.length}名`;
+ if(!values.length){canvas.classList.add('hidden');empty.classList.remove('hidden');empty.textContent=records.length?'この項目の数値データがありません。比較項目・日付を変更してください。':'表示する選手を選択してください。';return;}
+ canvas.classList.remove('hidden');empty.classList.add('hidden');
+ const rect=viewport.getBoundingClientRect(),layout=teamComparisonChartLayout_(values.length,viewport.clientWidth,rect.height),ratio=Math.min(window.devicePixelRatio||1,2);
+ canvas.style.width=layout.width+'px';canvas.style.height=layout.height+'px';canvas.width=Math.round(layout.width*ratio);canvas.height=Math.round(layout.height*ratio);
+ canvas.setAttribute('aria-label',`${STATE.teamMetric}：`+values.map(v=>`${v.name} ${v.value} (${teamComparisonDate_(v.date)})`).join('、'));
+ const c=canvas.getContext('2d');c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,layout.width,layout.height);
+ const left=Math.min(95,layout.width*.29),right=Math.min(74,layout.width*.23),plot=Math.max(1,layout.width-left-right),min=Math.min(0,...values.map(v=>v.number)),max=Math.max(0,...values.map(v=>v.number)),span=max-min||1,x=v=>left+(v-min)/span*plot;
+ c.font='9px sans-serif';c.textBaseline='middle';
+ for(let tick=0;tick<=4;tick++){const value=min+span*tick/4,at=left+plot*tick/4;c.beginPath();c.moveTo(at,0);c.lineTo(at,layout.row*values.length);c.strokeStyle='#e2ebf1';c.lineWidth=1;c.stroke();c.fillStyle='#637b74';c.textAlign='center';c.fillText(Number(value.toFixed(2)).toString(),at,layout.row*values.length+12);}
+ const fit=(text,maxWidth)=>{let t=String(text||'');while(t.length>1&&c.measureText(t).width>maxWidth)t=t.slice(0,-1);return t===String(text||'')?t:t+'…';};
+ values.forEach((v,index)=>{const cy=layout.row*(index+.5),font=Math.max(7,Math.min(12,layout.row*.29)),twoLines=layout.row>=25;c.fillStyle='#173c32';c.textAlign='left';c.font=`bold ${font}px sans-serif`;c.fillText(fit(v.name,left-8),2,cy-(twoLines?6:0));if(twoLines){c.font=`${Math.max(7,font-2)}px sans-serif`;c.fillStyle='#637b74';c.fillText(teamComparisonDate_(v.date),2,cy+8);}const bar=Math.max(2,Math.min(23,layout.row*.4));c.fillStyle='#2374c6';c.fillRect(Math.min(x(0),x(v.number)),cy-bar/2,Math.abs(x(v.number)-x(0)),bar);c.fillStyle='#173c32';c.font=`bold ${font}px sans-serif`;c.fillText(fit(v.value,right-5),left+plot+6,cy);});
+}
+
       function renderTeamMetricChart_(label,records){
         const values=records.map(r=>{const item=(r.items||[]).find(i=>i.label===label);return item?{name:r.athleteName,date:r.date,value:item.value,number:Number(item.number)}:null;}).filter(x=>x&&Number.isFinite(x.number)).sort((a,b)=>STATE.teamSort==="asc"?a.number-b.number:b.number-a.number);
         if(!values.length)return"";
@@ -4606,7 +4657,7 @@ async function refreshAdminDashboard_(){
       async function reloadHome(){clearApiReadCache_();lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
       function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
-      function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
+      function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".tc-screen")){renderTeamDashboard();return;}if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
       installHeaderNavigation_();
       window.addEventListener("DOMContentLoaded",startApp);
       function resizeAnalysisGraphCanvases() {

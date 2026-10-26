@@ -986,6 +986,29 @@ body.analysis-help-modal-open {
 .coach-member-filters button[aria-pressed="true"]{border-color:#246b58;background:#246b58;color:#fff}
 .coach-member-filters button[aria-pressed="true"] span{background:rgba(255,255,255,.18)}
 @media(max-width:350px){.coach-member-filters button{gap:3px;font-size:10px}}
+/* Admin dashboard: compact grouped cards, retaining existing detail forms. */
+.hm-admin-title{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:1px 4px}
+.hm-admin-title h1{margin:0;padding-left:10px;border-left:4px solid #e8751a;font-size:19px;line-height:1.5;color:#173c32}
+.hm-admin-title .secondary{width:auto;min-height:44px;padding:6px 12px;border-radius:9px;font-size:12px}
+.hm-admin-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:7px;border:1px solid #cce9f1;border-radius:12px;background:#edf8fc}
+.hm-admin-summary .admin-summary{min-width:0;padding:9px 3px;border-color:#d8eaf0;border-radius:9px;text-align:center}
+.hm-admin-summary .admin-summary small{color:#50665e;font-size:10px;line-height:1.4}
+.hm-admin-summary .admin-summary strong{margin-top:4px;color:#174f43;font-size:23px;line-height:1.2}
+.hm-admin-home .hm-admin-operations{background:#fff3e7;border-color:#f3d9bd}
+.hm-admin-operations .hm-heading h2,.hm-admin-operations .hm-heading>.hm-icon{color:#b9580c}
+.hm-admin-home .hm-admin-action{min-height:70px;padding:9px 8px;gap:7px}
+.hm-admin-action>.hm-icon{width:25px;height:25px}
+.hm-admin-action .hm-action-copy b{font-size:13px}
+.hm-admin-action .hm-action-copy small{font-size:10px;margin-top:3px}
+.hm-admin-home .hm-admin-action.active{border-color:#e8751a;background:#fff7ee}
+.hm-admin-action.active>.hm-icon,.hm-admin-action.active .hm-action-copy b,.hm-admin-action.active .hm-chevron{color:#b9580c}
+.hm-admin-home .hm-admin-content{min-width:0;padding:12px 10px;border:1px solid #f3d9bd;border-radius:14px;background:#fffaf4;box-shadow:none;gap:9px}
+.hm-admin-content>.admin-section-title{font-size:17px}
+.hm-admin-content>p.muted{margin:0;font-size:11px}
+.hm-admin-content .admin-status-group-title{min-height:34px}
+.hm-admin-content .admin-application-compact summary{min-height:54px}
+@media(max-width:350px){.hm-admin-summary .admin-summary small{font-size:9px}.hm-admin-home .hm-admin-action{padding:8px 6px;gap:5px}.hm-admin-action>.hm-icon{width:20px;height:20px}.hm-admin-action .hm-action-copy b{font-size:12px}.hm-admin-action .hm-action-copy small{font-size:9px}.hm-admin-action .hm-chevron{font-size:18px}}
+
     </style>
   </head>
   <body>
@@ -4265,78 +4288,33 @@ function formatAnalysisValue(
         }
       }
 
-      function renderAdminDashboard() {
-        const data = STATE.adminDashboard || {};
-        const summary = data.summary || {};
-        const adminHeaderButton = $("#adminHeaderButton");
-        if (adminHeaderButton) {
-          adminHeaderButton.classList.remove("hidden");
-          adminHeaderButton.classList.add("normal-screen-button");
-          adminHeaderButton.textContent = "通常画面";
-          adminHeaderButton.onclick = renderHome;
-        }
-        $("#screen").innerHTML = `
-          <div class="stack admin-screen">
-            <section class="card admin-hero">
-              <div class="section-title">
-                <div>
-                  <small>ADMIN DASHBOARD</small>
-                  <h2>${escapeHtml(data.admin?.name || "管理者")}さん</h2>
-                  <p>申込・入金・分析の現在状況</p>
-                </div>
-              </div>
-            </section>
-
-            <section class="admin-summary-grid">
-              ${adminSummaryCard_("申込総数", summary.total || 0)}
-              ${adminSummaryCard_("対応中", summary.active || 0)}
-              ${adminSummaryCard_("入金対応", summary.paymentWaiting || 0)}
-              ${adminSummaryCard_("分析中", summary.analyzing || 0)}
-            </section>
-
-            <section class="card stack">
-              <div class="section-title"><div><h3>管理メニュー</h3><p>確認する情報を選択</p></div><button class="secondary" style="width:auto;min-height:38px;padding:0 12px" type="button" onclick="openAdminDashboard()">更新</button></div>
-              <div class="admin-menu-grid">
-                ${adminMenuButton_("applications", "申し込み状況", "申込・入金・動画")}
-                ${adminMenuButton_("analyses", "分析結果", "検出・確認・公開")}
-                ${adminMenuButton_("registrants", "登録者情報", "申込者・選手")}
-                ${adminMenuButton_("products", "商品情報", "料金・受付状態")}
-              </div>
-            </section>
-
-            <section id="adminSectionContent" class="card stack">
-              ${renderAdminSection_()}
-            </section>
-          </div>
-        `;
-
-        $$('[data-admin-section]').forEach((button) => {
-          button.addEventListener("click", () => {
-            STATE.adminSection = button.dataset.adminSection;
-            renderAdminDashboard();
-          });
-        });
-
-        $$('[data-admin-application-save]').forEach((button) => {
-          button.addEventListener("click", () => saveAdminApplication_(button));
-        });
-
-        $$('[data-admin-analysis-save]').forEach((button) => {
-          button.addEventListener("click", () => saveAdminAnalysis_(button));
-        });
-
-        $$('[data-admin-analysis-register]').forEach((button) => {
-          button.addEventListener("click", () => registerAdminAnalysis_(button));
-        });
-
-        $$('[data-admin-product-save]').forEach((button) => {
-          button.addEventListener("click", () => saveAdminProduct_(button));
-        });
-      }
-
-      function adminMenuButton_(key, label, description) {
-        return `<button class="admin-menu-button ${STATE.adminSection === key ? "active" : ""}" type="button" data-admin-section="${key}">${label}<span>${description}</span></button>`;
-      }
+      function renderAdminDashboard(){
+ document.body.classList.remove('analysis-detail-mode');
+ const data=STATE.adminDashboard||{},summary=data.summary||{},customer=STATE.data?.customer||{},coach=['指導者','選手兼指導者'].includes(customer.userType||customer.applicantType||'');
+ if(!['applications','analyses','registrants','products'].includes(STATE.adminSection))STATE.adminSection='applications';
+ $('#screen').innerHTML=`<div class="hm-home hm-admin-home admin-screen">
+ <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><div class="hm-logo">${document.querySelector('.brand-logo-group')?.outerHTML||''}</div><button class="hm-user" type="button" onclick="openAthleteManagement()" aria-label="登録情報を編集"><span class="hm-user-copy"><b>${escapeHtml(data.admin?.name||customer.applicantName||'管理者')}<small>さん</small></b><span>管理者</span><small class="hm-edit-hint">登録情報を編集</small></span><span class="hm-chevron" aria-hidden="true">›</span></button></div><div class="hm-role-actions"><button class="hm-normal" type="button" onclick="renderHome()">通常画面 <span aria-hidden="true">›</span></button>${coach?'<button class="hm-coach" type="button" onclick="openTeamDashboard(\'coach\')">指導者画面 <span aria-hidden="true">›</span></button>':''}</div></section>
+ <div class="hm-admin-title"><h1>管理者画面</h1><button class="secondary" type="button" onclick="refreshAdminDashboard_()">更新</button></div>
+ <section class="hm-admin-summary" aria-label="現在の管理状況">${adminSummaryCard_('申込総数',summary.total||0)}${adminSummaryCard_('対応中',summary.active||0)}${adminSummaryCard_('入金対応',summary.paymentWaiting||0)}${adminSummaryCard_('分析中',summary.analyzing||0)}</section>
+ <section class="hm-section hm-admin-operations" aria-labelledby="hmAdminOperationsTitle">${homeMenuHeading_('hmAdminOperationsTitle','申込み・分析管理','申込みから分析結果の公開まで。','file')}<div class="hm-two">${adminMenuButton_('applications','申し込み状況','申込・入金・動画')}${adminMenuButton_('analyses','分析結果','検出・確認・公開')}</div></section>
+ <section class="hm-section hm-settings" aria-labelledby="hmAdminSettingsTitle">${homeMenuHeading_('hmAdminSettingsTitle','登録・商品管理','登録者情報や商品情報を管理します。','team')}<div class="hm-two">${adminMenuButton_('registrants','登録者情報','申込者・選手')}${adminMenuButton_('products','商品情報','料金・受付状態')}</div></section>
+ <section id="adminSectionContent" class="card stack hm-admin-content" aria-live="polite">${renderAdminSection_()}</section></div>`;
+ $$('[data-admin-section]').forEach(button=>button.addEventListener('click',()=>{STATE.adminSection=button.dataset.adminSection;renderAdminDashboard();}));
+ $$('[data-admin-application-save]').forEach(button=>button.addEventListener('click',()=>saveAdminApplication_(button)));
+ $$('[data-admin-analysis-save]').forEach(button=>button.addEventListener('click',()=>saveAdminAnalysis_(button)));
+ $$('[data-admin-analysis-register]').forEach(button=>button.addEventListener('click',()=>registerAdminAnalysis_(button)));
+ $$('[data-admin-product-save]').forEach(button=>button.addEventListener('click',()=>saveAdminProduct_(button)));
+}
+function adminMenuButton_(key,label,description){
+ const icon={applications:'file',analyses:'chart',registrants:'users',products:'ticket'}[key];
+ return `<button class="hm-action hm-admin-action ${STATE.adminSection===key?'active':''}" type="button" data-admin-section="${key}" aria-pressed="${STATE.adminSection===key}">${homeMenuIcon_(icon)}<span class="hm-action-copy"><b>${label}</b><small>${description}</small></span><span class="hm-chevron" aria-hidden="true">›</span></button>`;
+}
+async function refreshAdminDashboard_(){
+ lock('管理データを更新中...');
+ try{STATE.adminDashboard=await apiPost('getAdminDashboard');renderAdminDashboard();}
+ catch(error){console.error(error);alert(error.message||'管理データを更新できませんでした');}
+ finally{unlock();}
+}
 
       function renderAdminSection_() {
         const data = STATE.adminDashboard || {};

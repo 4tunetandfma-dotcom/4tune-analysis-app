@@ -1010,16 +1010,16 @@ body.analysis-help-modal-open {
 @media(max-width:350px){.hm-admin-summary .admin-summary small{font-size:9px}.hm-admin-home .hm-admin-action{padding:8px 6px;gap:5px}.hm-admin-action>.hm-icon{width:20px;height:20px}.hm-admin-action .hm-action-copy b{font-size:12px}.hm-admin-action .hm-action-copy small{font-size:9px}.hm-admin-action .hm-chevron{font-size:18px}}
 
 
-.hm-admin-collapsible>.hm-admin-content-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px;cursor:pointer;list-style:none;color:#a94b08}
-.hm-admin-content-toggle::-webkit-details-marker{display:none}
-.hm-admin-content-toggle>strong{font-size:17px}
-.hm-admin-toggle-label{display:flex;align-items:center;gap:7px;font-size:11px}
-.hm-admin-toggle-arrow{display:inline-block;font-size:10px}
-.hm-admin-collapsible[open] .hm-admin-toggle-arrow{transform:rotate(180deg)}
-.hm-admin-collapsible[open] .hm-admin-when-closed,.hm-admin-collapsible:not([open]) .hm-admin-when-open{display:none}
-.hm-admin-content-body{padding-top:9px;border-top:1px solid #f3d9bd;gap:9px}
-.hm-admin-content-body>p.muted{margin:0}
-.hm-admin-content-toggle:focus-visible{outline:3px solid #2374c6;outline-offset:3px;border-radius:6px}
+.admin-status-fold{display:block}
+.admin-status-fold>.admin-status-group-title{min-height:44px;cursor:pointer;list-style:none;gap:10px}
+.admin-status-fold>.admin-status-group-title::-webkit-details-marker{display:none}
+.admin-status-fold-controls{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+.admin-status-open-label,.admin-status-closed-label{font-size:10px;font-weight:500}
+.admin-status-fold-arrow{font-size:9px}
+.admin-status-fold[open]>.admin-status-group-title .admin-status-fold-arrow{transform:rotate(180deg)}
+.admin-status-fold[open]>.admin-status-group-title .admin-status-closed-label,.admin-status-fold:not([open])>.admin-status-group-title .admin-status-open-label{display:none}
+.admin-status-fold-content{padding-top:8px;gap:8px}
+.admin-status-fold>.admin-status-group-title:focus-visible{outline:3px solid #2374c6;outline-offset:2px}
     </style>
   </head>
   <body>
@@ -4309,7 +4309,7 @@ function formatAnalysisValue(
  <section class="hm-admin-summary" aria-label="現在の管理状況">${adminSummaryCard_('申込総数',summary.total||0)}${adminSummaryCard_('対応中',summary.active||0)}${adminSummaryCard_('入金対応',summary.paymentWaiting||0)}${adminSummaryCard_('分析中',summary.analyzing||0)}</section>
  <section class="hm-section hm-admin-operations" aria-labelledby="hmAdminOperationsTitle">${homeMenuHeading_('hmAdminOperationsTitle','申込み・分析管理','申込みから分析結果の公開まで。','file')}<div class="hm-two">${adminMenuButton_('applications','申し込み状況','申込・入金・動画')}${adminMenuButton_('analyses','分析結果','検出・確認・公開')}</div></section>
  <section class="hm-section hm-settings" aria-labelledby="hmAdminSettingsTitle">${homeMenuHeading_('hmAdminSettingsTitle','登録・商品管理','登録者情報や商品情報を管理します。','team')}<div class="hm-two">${adminMenuButton_('registrants','登録者情報','申込者・選手')}${adminMenuButton_('products','商品情報','料金・受付状態')}</div></section>
- ${STATE.adminSection==='applications'?`<details id="adminSectionContent" class="card hm-admin-content hm-admin-collapsible" ${STATE.adminApplicationsOpen!==false?'open':''} ontoggle="STATE.adminApplicationsOpen=this.open"><summary class="hm-admin-content-toggle"><strong>申し込み状況</strong><span class="hm-admin-toggle-label"><span class="hm-admin-when-open">閉じる</span><span class="hm-admin-when-closed">開く</span><span class="hm-admin-toggle-arrow" aria-hidden="true">▼</span></span></summary><div class="stack hm-admin-content-body">${renderAdminSection_().replace('<h3 class="admin-section-title">申し込み状況</h3>','')}</div></details>`:`<section id="adminSectionContent" class="card stack hm-admin-content" aria-live="polite">${renderAdminSection_()}</section>`}</div>`;
+ <section id="adminSectionContent" class="card stack hm-admin-content" aria-live="polite">${renderAdminSection_()}</section></div>`;
  $$('[data-admin-section]').forEach(button=>button.addEventListener('click',()=>{STATE.adminSection=button.dataset.adminSection;renderAdminDashboard();}));
  $$('[data-admin-application-save]').forEach(button=>button.addEventListener('click',()=>saveAdminApplication_(button)));
  $$('[data-admin-analysis-save]').forEach(button=>button.addEventListener('click',()=>saveAdminAnalysis_(button)));
@@ -4338,7 +4338,15 @@ async function refreshAdminDashboard_(){
 
       function adminApplicationDisplayStatus_(application){if(application.category==="レースチケット")return application.ticketStatus||"入金待ち";return application.progressStatus||"申込受付";}
       function adminApplicationPriority_(status){const order={"動画再提出待ち":0,"振込報告済み":1,"最終確認中":2,"動画確認中":3,"申込受付":4,"入金待ち":5,"入金確認済み":6,"分析中":7,"動画提出待ち":8,"結果公開":9,"完成":10,"完了":10,"キャンセル":11};return order[status]??6;}
-      function renderAdminApplicationGroups_(applications){if(!applications.length)return'<p class="muted">申し込みはありません。</p>';const groups=new Map();applications.forEach((application)=>{const status=adminApplicationDisplayStatus_(application);if(!groups.has(status))groups.set(status,[]);groups.get(status).push(application);});return[...groups.entries()].sort((a,b)=>adminApplicationPriority_(a[0])-adminApplicationPriority_(b[0])).map(([status,items])=>{const priority=adminApplicationPriority_(status);return`<div class="admin-status-group ${priority<=3?'admin-priority-high':priority<=6?'admin-priority-medium':''}"><div class="admin-status-group-title"><span>${escapeHtml(status)}</span><span>${items.length}件</span></div>${items.map(renderAdminApplication_).join('')}</div>`;}).join('');}
+      function renderAdminApplicationGroups_(applications){
+ if(!applications.length)return '<p class="muted">申し込みはありません。</p>';
+ const groups=new Map(),openStates=STATE.adminStatusGroupOpen||(STATE.adminStatusGroupOpen={});
+ applications.forEach(application=>{const status=adminApplicationDisplayStatus_(application);if(!groups.has(status))groups.set(status,[]);groups.get(status).push(application);});
+ return [...groups.entries()].sort((a,b)=>adminApplicationPriority_(a[0])-adminApplicationPriority_(b[0])).map(([status,items])=>{
+  const priority=adminApplicationPriority_(status),open=Object.prototype.hasOwnProperty.call(openStates,status)?openStates[status]:!['完成','完了','キャンセル'].includes(status);
+  return `<details class="admin-status-group admin-status-fold ${priority<=3?'admin-priority-high':priority<=6?'admin-priority-medium':''}" data-admin-status="${escapeHtml(status)}" ${open?'open':''} ontoggle="(STATE.adminStatusGroupOpen||(STATE.adminStatusGroupOpen={}))[this.dataset.adminStatus]=this.open"><summary class="admin-status-group-title"><span>${escapeHtml(status)}</span><span class="admin-status-fold-controls"><span>${items.length}件</span><span class="admin-status-open-label">閉じる</span><span class="admin-status-closed-label">開く</span><span class="admin-status-fold-arrow" aria-hidden="true">▼</span></span></summary><div class="stack admin-status-fold-content">${items.map(renderAdminApplication_).join('')}</div></details>`;
+ }).join('');
+}
 
       function adminSummaryCard_(label, value) {
         return `<div class="admin-summary"><small>${escapeHtml(label)}</small><strong>${Number(value) || 0}</strong></div>`;

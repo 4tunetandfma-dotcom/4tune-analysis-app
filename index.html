@@ -887,53 +887,56 @@ body.analysis-help-modal-open {
       .coach-members-tab{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;min-height:44px;color:var(--coach-dark)}.coach-members-tab::-webkit-details-marker{display:none}.coach-members-tab strong{font-size:16px}.coach-members-caption{display:block;margin-top:4px;font-size:11px;color:var(--muted)}.coach-members-arrow{flex-shrink:0;transition:transform .15s ease}.coach-members[open] .coach-members-arrow{transform:rotate(180deg)}.coach-members-content{margin-top:16px}.coach-members-tab:focus-visible{outline:2px solid var(--coach);outline-offset:5px;border-radius:4px}
       .team-date-buttons{display:flex;flex-wrap:wrap;gap:8px}.team-date-buttons button{width:auto;min-height:38px;padding:8px 12px}.team-bar-name>span{display:block;overflow:hidden;text-overflow:ellipsis}.team-bar-name small{display:block;margin-top:3px;font-size:9px;font-weight:400;color:var(--muted)}
 /* Home menu: analysis-first cards with grouped application and sharing actions. */
-.app:has(.hm-home){padding-top:max(16px,env(safe-area-inset-top));background:#fff}
+.app:has(.hm-home){padding-top:max(10px,env(safe-area-inset-top));background:#fff}
 .app:has(.hm-home)>.brand{display:none}
-.hm-home{display:grid;gap:12px;padding:2px 0;color:#123c31}
+.hm-home{display:grid;gap:9px;padding:2px 0;color:#123c31}
 .hm-home .hm-icon{flex:0 0 auto;width:28px;height:28px;color:#14523f}
 .hm-profile{padding:5px 5px 0}
-.hm-profile-top{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.hm-wordmark{flex:0 0 auto;color:#104a36;font-size:clamp(29px,8vw,44px);font-style:italic;font-weight:950;letter-spacing:-.06em;line-height:1.15}
-.hm-user{display:flex;align-items:center;gap:8px;min-width:0}
-.hm-user>.hm-icon{width:34px;height:34px;padding:4px;border:1px solid #14523f;border-radius:50%}
-.hm-user h1{margin:0;font-size:15px;line-height:1.5;overflow-wrap:anywhere}
-.hm-user h1 small{font-size:11px;font-weight:500;margin-left:2px}
-.hm-user p{margin:1px 0 0;color:#4a625b;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
-.hm-user p.hm-affiliation{font-size:10px;color:var(--muted)}
-.hm-role-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:15px}
-.hm-role-actions button{min-height:44px;font-size:13px;font-weight:800}
-.hm-coach{display:flex;align-items:center;justify-content:center;gap:20px;width:52%;border:1px solid #2374c6;border-radius:10px;background:linear-gradient(135deg,#2588e8,#1265b1);color:#fff}
-.hm-admin{margin-left:auto;padding:0 8px;border:0;background:transparent;color:#344b44}
-.hm-role-actions span{margin-left:8px;font-size:23px;font-weight:400}
+.hm-profile-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hm-logo{flex:0 1 48%;min-width:0;overflow:hidden}
+.hm-logo .brand-logo-window{width:150px;max-width:100%;height:60px}
+.hm-logo .brand-logo-image{width:150px;top:-41px}
+.hm-logo .brand-tagline{font-size:8px;line-height:1.2}
+.hm-user{display:flex;align-items:center;justify-content:space-between;gap:7px;flex:0 1 50%;min-width:0;min-height:62px;padding:8px 10px;border:1px solid #91b9a9;border-radius:11px;background:#fff;color:#173c32;text-align:left}
+.hm-user-copy{display:block;min-width:0}
+.hm-user-copy>b{display:block;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.hm-user-copy>b small{font-size:11px;font-weight:500;margin-left:2px}
+.hm-user-copy>span{display:block;margin-top:1px;color:#4a625b;font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.hm-user-copy .hm-edit-hint{display:block;margin-top:2px;color:#587067;font-size:9px;line-height:1.4}
+.hm-role-actions{display:flex;align-items:stretch;gap:8px;margin-top:10px}
+.hm-role-actions button{display:flex;align-items:center;justify-content:center;gap:12px;flex:1;min-width:0;min-height:44px;padding:7px 10px;border:1px solid;border-radius:10px;color:#fff;font-size:13px;font-weight:800}
+.hm-role-actions .hm-coach{border-color:#2374c6;background:linear-gradient(135deg,#2588e8,#1265b1)}
+.hm-role-actions .hm-admin{border-color:#d66b14;background:linear-gradient(135deg,#f28a20,#c65a0b)}
+.hm-role-actions span{font-size:22px;font-weight:400;line-height:1}
 .hm-home .task-card{position:relative;padding:10px 10px 10px 36px;border:0;border-radius:9px;background:#f0f8f3}
 .hm-home .task-card::before{content:'•';position:absolute;left:13px;top:10px;color:#23764e;font-size:20px;line-height:20px}
 .hm-home .task-card strong{font-size:11px;line-height:1.7}
 .hm-home .task-card p{font-size:10px;line-height:1.5;margin-top:3px}
 .hm-home .task-card.hm-task-clear{background:transparent;padding-top:6px;padding-bottom:6px}
 .hm-home .task-card.hm-task-clear::before{content:'✓';top:6px;font-size:13px;font-weight:900}
-.hm-home .hm-section{display:grid;gap:9px;min-width:0;padding:12px 10px;border:1px solid;border-radius:14px;box-shadow:none}
+.hm-home .hm-section{display:grid;gap:7px;min-width:0;padding:10px 9px;border:1px solid;border-radius:14px;box-shadow:none}
 .hm-home .hm-analysis{background:#edf8fc;border-color:#cce9f1}
 .hm-home .hm-application{background:#f0f6ed;border-color:#dbe8d5}
 .hm-home .hm-settings{background:#fcf7ec;border-color:#efe4cf}
-.hm-heading{display:flex;align-items:center;gap:10px;padding:2px 3px 3px;min-width:0}
-.hm-heading>.hm-icon{width:31px;height:31px}
-.hm-heading h2{margin:0;font-size:18px;line-height:1.5;letter-spacing:.01em}
+.hm-heading{display:flex;align-items:center;gap:8px;padding:1px 3px 2px;min-width:0}
+.hm-heading>.hm-icon{width:27px;height:27px}
+.hm-heading h2{margin:0;font-size:17px;line-height:1.4;letter-spacing:.01em}
 .hm-heading p{margin:2px 0 0;color:#50665e;font-size:10px;line-height:1.6}
 .hm-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-width:0}
-.hm-home .hm-action{display:flex;align-items:center;gap:9px;width:100%;min-width:0;min-height:58px;padding:11px 10px;border:1px solid #dfebe6;border-radius:11px;background:#fff;color:#173c32;text-align:left;box-shadow:none}
+.hm-home .hm-action{display:flex;align-items:center;gap:9px;width:100%;min-width:0;min-height:52px;padding:8px 10px;border:1px solid #dfebe6;border-radius:11px;background:#fff;color:#173c32;text-align:left;box-shadow:none}
 .hm-action-copy{display:block;min-width:0;flex:1}
 .hm-action-copy b{display:block;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
 .hm-action-copy small{display:block;margin-top:4px;color:#587067;font-size:10px;line-height:1.65;overflow-wrap:anywhere}
 .hm-home .hm-chevron{flex:0 0 auto;font-size:23px;font-weight:400;line-height:1;color:inherit}
-.hm-home .hm-result{position:relative;display:grid;grid-template-columns:1fr auto;align-content:start;align-items:start;gap:8px;min-height:128px;padding:12px;border-color:#d8eaf0}
-.hm-result>.hm-icon{grid-column:1/-1;width:33px;height:33px}
+.hm-home .hm-result{position:relative;display:grid;grid-template-columns:1fr auto;align-content:start;align-items:start;gap:5px;min-height:104px;padding:10px;border-color:#d8eaf0}
+.hm-result>.hm-icon{grid-column:1/-1;width:27px;height:27px}
 .hm-result .hm-action-copy b{font-size:14px}
 .hm-result .hm-chevron{align-self:end}
 .hm-home .hm-compare{border-color:#d8eaf0}
-.hm-home .hm-apply{min-height:56px;background:linear-gradient(115deg,#17613f,#0d4f33);border-color:#135638;color:white}
+.hm-home .hm-apply{min-height:48px;background:linear-gradient(115deg,#17613f,#0d4f33);border-color:#135638;color:white}
 .hm-apply>.hm-icon{color:white}
-.hm-apply .hm-action-copy b{font-size:17px}
-.hm-ticket-row .hm-action{gap:6px;padding:10px 8px;min-height:54px}
+.hm-apply .hm-action-copy b{font-size:16px}
+.hm-ticket-row .hm-action{gap:6px;padding:8px;min-height:46px}
 .hm-ticket-row .hm-icon{width:23px;height:23px}
 .hm-ticket-row .hm-action-copy b{font-size:13px}
 .hm-ticket-row .hm-chevron{font-size:20px}
@@ -942,8 +945,8 @@ body.analysis-help-modal-open {
 .hm-settings-list .hm-action+.hm-action{border-top:1px solid #e7ebe8}
 .hm-settings-list .hm-icon{width:25px;height:25px}
 .hm-home button:focus-visible{outline:3px solid #2374c6;outline-offset:3px}
-@media(hover:hover){.hm-home .hm-action:hover{filter:brightness(.97)}.hm-admin:hover{text-decoration:underline}}
-@media(max-width:350px){.hm-home .hm-section{padding:10px 8px}.hm-user>.hm-icon{display:none}.hm-user h1{font-size:13px}.hm-home .hm-result{padding:10px 8px}.hm-result .hm-action-copy b{font-size:12px}.hm-ticket-row .hm-icon{width:19px;height:19px}.hm-ticket-row .hm-action-copy b{font-size:11px}.hm-heading h2{font-size:17px}}
+@media(hover:hover){.hm-home .hm-action:hover{filter:brightness(.97)}.hm-admin:hover{filter:brightness(.97)}}
+@media(max-width:350px){.hm-home .hm-section{padding:10px 8px}.hm-user{padding:6px 8px}.hm-user-copy>b{font-size:12px}.hm-logo .brand-logo-window{width:130px;height:52px}.hm-logo .brand-logo-image{width:130px;top:-35px}.hm-logo .brand-tagline{font-size:7px}.hm-home .hm-result{padding:10px 8px}.hm-result .hm-action-copy b{font-size:12px}.hm-ticket-row .hm-icon{width:19px;height:19px}.hm-ticket-row .hm-action-copy b{font-size:11px}.hm-heading h2{font-size:16px}}
 
     </style>
   </head>
@@ -1337,11 +1340,11 @@ function homeMenuAction_(label,description,icon,action,kind=''){
 function homeMenuHeading_(id,title,description,icon){return `<div class="hm-heading">${homeMenuIcon_(icon)}<div><h2 id="${id}">${title}</h2><p>${description}</p></div></div>`;}
 function renderHome(){
  document.body.classList.remove('analysis-detail-mode');
- const customer=STATE.data.customer||{},athletes=STATE.data.athletes||[],type=customer.userType||customer.applicantType||'選手',coach=['指導者','選手兼指導者'].includes(type);
+ const customer=STATE.data.customer||{},type=customer.userType||customer.applicantType||'選手',coach=['指導者','選手兼指導者'].includes(type);
  const adminHeaderButton=$('#adminHeaderButton');
  if(adminHeaderButton){adminHeaderButton.classList.toggle('hidden',!STATE.data.isAdmin);adminHeaderButton.classList.remove('normal-screen-button');adminHeaderButton.textContent='管理者画面';adminHeaderButton.onclick=openAdminDashboard;}
  $('#screen').innerHTML=`<div class="home-screen hm-home">
- <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><span class="hm-wordmark" aria-label="4-tune">4-tune</span><div class="hm-user">${homeMenuIcon_('user')}<div><h1>${escapeHtml(customer.applicantName||'')}<small>さん</small></h1><p>${escapeHtml(type)}</p>${athletes[0]?`<p class="hm-affiliation">${escapeHtml(athletes[0].name||'')}${athletes[0].affiliation?' · '+escapeHtml(athletes[0].affiliation):''}</p>`:''}</div></div></div>${coach||STATE.data.isAdmin?`<div class="hm-role-actions">${coach?'<button class="hm-coach" type="button" onclick="openTeamDashboard(\'coach\')">指導者画面 <span aria-hidden="true">›</span></button>':''}${STATE.data.isAdmin?'<button class="hm-admin" type="button" onclick="openAdminDashboard()">管理者画面 <span aria-hidden="true">›</span></button>':''}</div>`:''}</section>
+ <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><div class="hm-logo">${document.querySelector('.brand-logo-group')?.outerHTML||''}</div><button class="hm-user" type="button" onclick="openAthleteManagement()" aria-label="登録情報を編集"><span class="hm-user-copy"><b>${escapeHtml(customer.applicantName||'')}<small>さん</small></b><span>${escapeHtml(type)}</span><small class="hm-edit-hint">登録情報を編集</small></span><span class="hm-chevron" aria-hidden="true">›</span></button></div>${coach||STATE.data.isAdmin?`<div class="hm-role-actions">${coach?'<button class="hm-coach" type="button" onclick="openTeamDashboard(\'coach\')">指導者画面 <span aria-hidden="true">›</span></button>':''}${STATE.data.isAdmin?'<button class="hm-admin" type="button" onclick="openAdminDashboard()">管理者画面 <span aria-hidden="true">›</span></button>':''}</div>`:''}</section>
  <section id="homeTaskCard" class="task-card" aria-live="polite"><strong>申し込み状況を確認しています</strong><p>少しお待ちください。</p></section>
  <section class="hm-section hm-analysis" aria-labelledby="hmAnalysisTitle">${homeMenuHeading_('hmAnalysisTitle','分析結果・比較','走りの分析結果を確認し、比較できます。','chart')}<div class="hm-two">${homeMenuAction_('動作分析結果','スティック・数値・グラフ','run','openAnalysisResults()','hm-result')}${homeMenuAction_('レース分析結果','区間・ピッチ・ストライド','chart','openRaceGraphs()','hm-result')}</div>${homeMenuAction_('比較','自分・フレンドの動作分析を比較','compare','openComparison()','hm-compare')}</section>
  <section class="hm-section hm-application" aria-labelledby="hmApplicationTitle">${homeMenuHeading_('hmApplicationTitle','申込み・チケット','分析の申込みやチケットの管理を行います。','file')}${homeMenuAction_('新しく申し込む','','pen','openApplication()','hm-apply')}<div class="hm-two hm-ticket-row">${homeMenuAction_('チケット管理','','ticket','openRaceTicketDashboard()')}${homeMenuAction_('申し込み状況','','file','openApplications()')}</div></section>

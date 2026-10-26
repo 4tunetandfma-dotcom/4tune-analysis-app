@@ -1229,6 +1229,13 @@ body:has(.cr-screen){height:100dvh;min-height:0;overflow:hidden}
 .cr-lines .race-chart-canvas{width:100%;min-width:0;max-width:100%}
 .cr-section-select{min-width:0;grid-template-columns:auto minmax(0,1fr)}
 .cr-section-select select{min-width:0;max-width:100%}
+
+.cr-bar-scale-controls{display:flex;gap:4px;flex:0 0 auto}
+.cr-bar-scale-controls button{min-height:32px;padding:5px 10px;border:1px solid #c5daea;border-radius:7px;background:#fff;color:#426579;font-size:10px;font-weight:800}
+.cr-bar-scale-controls button[aria-pressed="true"]{border-color:#2374c6;background:#2374c6;color:#fff}
+.cr-bar-range{flex:0 0 auto;margin:0;color:#587067;font-size:9px;line-height:1.5}
+.cr-scaled-track{position:relative;background:repeating-linear-gradient(90deg,#e7efec 0,#e7efec calc(25% - 1px),#c9d9e2 calc(25% - 1px),#c9d9e2 25%)}
+.cr-bar-axis{display:flex;justify-content:space-between;gap:4px;flex:0 0 auto;margin-left:44%;margin-right:47px;color:#637b74;font-size:8px}
     </style>
   </head>
   <body>
@@ -2270,10 +2277,18 @@ function renderCoachRaceLegend_(entries){return `<div class="cr-legend-row"><div
 function coachRaceTime_(race){return String(race?.realTime??'').trim();}
 function coachRaceAthleteLabel_(entry){const time=coachRaceTime_(entry.race);return `選手${'①②③④⑤⑥⑦⑧⑨⑩'[entry.index]} ${entry.athlete.athleteName}${time?' '+time:''}`;}
 function coachRaceEntryName_(entry){return `${coachRaceAthleteLabel_(entry)}｜${entry.race.raceName}`;}
+function coachRaceBarScale_(values,zoom){
+ const numbers=values.filter(Number.isFinite);if(!numbers.length)return {min:0,max:1};
+ const low=Math.min(...numbers),high=Math.max(...numbers);
+ if(!zoom)return {min:Math.min(0,low),max:Math.max(0,high)||1};
+ const span=Math.max(high-low,Math.abs(high)*.005,.01),padding=span*.2;
+ return {min:low>=0?Math.max(0,low-padding):low-padding,max:high+padding};
+}
+function setCoachRaceBarScale_(scale){RACE_GRAPH_STATE.barScale=scale;renderCoachRaceGraphScreen_();}
 function renderCoachRaceBars_(entries,key,unit,label){
- const values=entries.map(e=>({e,value:coachRaceNumber_((e.race.charts?.[key]||[]).find(p=>p.label===label)?.value)}));
- const max=Math.max(0,...values.filter(v=>Number.isFinite(v.value)).map(v=>Math.abs(v.value)));
- return `<div class="team-metric-chart"><p class="muted">${escapeHtml(label)}・${escapeHtml(unit)}（棒の起点は0）</p>${values.map(({e,value})=>`<div class="team-bar-row"><span class="team-bar-name" title="${escapeHtml(coachRaceEntryName_(e))}"><span>${escapeHtml(coachRaceAthleteLabel_(e))}</span><small>${escapeHtml(e.race.raceName)}</small></span><div class="team-bar-track"><div class="team-bar-fill" style="min-width:0;width:${Number.isFinite(value)&&max?Math.abs(value)/max*100:0}%;background:${e.color}"></div></div><span class="team-bar-value">${Number.isFinite(value)?escapeHtml(String(value))+' '+escapeHtml(unit):'データなし'}</span></div>`).join('')}</div>`;
+ const values=entries.map(e=>({e,value:coachRaceNumber_((e.race.charts?.[key]||[]).find(p=>p.label===label)?.value)})),zoom=RACE_GRAPH_STATE.barScale!=='zero';
+ const scale=coachRaceBarScale_(values.map(x=>x.value),zoom),range=scale.max-scale.min||1,position=value=>(value-scale.min)/range*100,base=zoom?0:position(0),format=value=>Number(value.toFixed(3)).toString();
+ return `<div class="team-metric-chart"><div class="cr-bar-scale-controls" role="group" aria-label="棒グラフの表示範囲"><button type="button" aria-pressed="${zoom}" onclick="setCoachRaceBarScale_('zoom')">差を拡大</button><button type="button" aria-pressed="${!zoom}" onclick="setCoachRaceBarScale_('zero')">0基準</button></div><p class="cr-bar-range">${escapeHtml(label)}・${escapeHtml(unit)} ／ ${zoom?(scale.min===0?'拡大表示（起点0）':'拡大表示（起点は0ではありません）'):'棒の起点は0'}<br>表示範囲：${format(scale.min)} ～ ${format(scale.max)} ${escapeHtml(unit)}</p>${values.map(({e,value})=>{const end=Number.isFinite(value)?position(value):base;return `<div class="team-bar-row"><span class="team-bar-name" title="${escapeHtml(coachRaceEntryName_(e))}"><span>${escapeHtml(coachRaceAthleteLabel_(e))}</span><small>${escapeHtml(e.race.raceName)}</small></span><div class="team-bar-track cr-scaled-track"><div class="team-bar-fill" style="position:absolute;left:${Math.max(0,Math.min(base,end))}%;min-width:0;width:${Math.min(100,Math.abs(end-base))}%;background:${e.color}"></div></div><span class="team-bar-value">${Number.isFinite(value)?escapeHtml(String(value))+' '+escapeHtml(unit):'データなし'}</span></div>`;}).join('')}<div class="cr-bar-axis"><span>${format(scale.min)}</span><span>${format((scale.min+scale.max)/2)}</span><span>${format(scale.max)}</span></div></div>`;
 }
 let coachRaceChartObserver_=null;
 function setCoachRaceMetric_(key){if(COACH_RACE_METRICS.some(m=>m[0]===key)){RACE_GRAPH_STATE.coachMetric=key;renderCoachRaceGraphScreen_();}}

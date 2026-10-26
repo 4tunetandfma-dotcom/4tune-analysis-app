@@ -1185,6 +1185,29 @@ body:has(.cr-screen){height:100dvh;min-height:0;overflow:hidden}
 .cr-bars .team-bar-row{grid-template-columns:minmax(100px,44%) minmax(0,1fr) auto}
 .cr-bars .team-bar-name>span{white-space:normal;overflow-wrap:anywhere}
 @media(max-height:650px){.cr-metric-tabs button{min-height:34px;font-size:10px}.cr-legend{max-height:60px}}
+
+/* Compact horizontal selectors and expandable athlete overview. */
+.cr-scroll-hint{align-self:flex-end;color:#587067;font-size:9px;line-height:1;margin:0 0 -3px;flex:0 0 auto}
+.cr-scroll-shell{position:relative;min-width:0;flex:0 0 auto}
+.cr-scroll-shell::after{content:'';position:absolute;right:0;top:0;bottom:5px;width:20px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);pointer-events:none}
+.cr-metric-tabs{display:flex;flex-wrap:nowrap;gap:5px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#a4c8e4 #eef5fa;padding:1px 18px 5px 1px;scroll-snap-type:x proximity}
+.cr-metric-tabs button{flex:0 0 auto;min-height:36px;padding:6px 11px;white-space:nowrap;scroll-snap-align:start;font-size:11px}
+.cr-metric-tabs button small{display:inline;margin:0 0 0 2px;font-size:8px}
+.cr-legend-row{display:flex;align-items:flex-start;gap:5px;min-width:0;flex:0 0 auto}
+.cr-legend-row>.cr-scroll-shell{flex:1;min-width:0}
+.cr-legend{display:flex;flex-wrap:nowrap;gap:5px;max-height:none;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#b4c9d8 #f0f5f8;padding:1px 18px 5px 1px}
+.cr-legend>span{flex:0 0 auto;min-width:0;max-width:none;padding:5px 7px;border:1px solid #d3e1ec;border-radius:8px;background:#fff;scroll-snap-align:start}
+.cr-legend b{white-space:nowrap;font-size:10px;overflow:visible}
+.cr-legend small{display:none}
+.cr-legend-toggle{flex:0 0 auto;min-height:36px;padding:6px 8px;border:1px solid #9bbdd8;border-radius:8px;background:#fff;color:#245778;font-size:10px;font-weight:800}
+.cr-legend-expanded{display:grid;grid-template-columns:1fr;gap:4px;max-height:24dvh;overflow-y:auto;overflow-x:hidden;padding-right:2px}
+.cr-legend-expanded>span{min-width:0;padding:5px 7px}
+.cr-legend-expanded b{white-space:normal;overflow-wrap:anywhere}
+.cr-legend-expanded small{display:block}
+.cr-scroll-expanded::after{display:none}
+.cr-metric-tabs::-webkit-scrollbar,.cr-legend::-webkit-scrollbar{height:4px;width:4px}
+.cr-metric-tabs::-webkit-scrollbar-thumb,.cr-legend::-webkit-scrollbar-thumb{border-radius:9px;background:#b4c9d8}
+.cr-metric-tabs::-webkit-scrollbar-track,.cr-legend::-webkit-scrollbar-track{background:#f0f5f8}
     </style>
   </head>
   <body>
@@ -2218,7 +2241,11 @@ function coachRaceEntries_(){return (RACE_GRAPH_STATE.slots||[]).map((slot,index
 function setCoachRaceSlot_(index,key,value){const s=RACE_GRAPH_STATE.slots[index];if(!s||!['athleteId','raceId','visible'].includes(key))return;s[key]=value;if(key==='athleteId')s.raceId='';renderCoachRaceGraphScreen_();}
 function setCoachRaceView_(view){RACE_GRAPH_STATE.coachView=view;renderCoachRaceGraphScreen_();}
 function coachRaceNumber_(v){return v===null||v===undefined||String(v).trim()===''?NaN:Number(v);}
-function coachRaceLabels_(entries,key){return [...new Set(entries.flatMap(e=>(e.race.charts?.[key]||[]).map(p=>p.label)))].sort((a,b)=>String(a).localeCompare(String(b),'ja',{numeric:true}));}
+function coachRaceLabels_(entries,key,bars=false){return [...new Set(entries.flatMap(e=>(e.race.charts?.[key]||[]).map(p=>p.label)))].filter(label=>!bars||!['steps','passingTime'].includes(key)||!/^0(?:\.0+)?m?$/.test(normalizeCoachRaceDistance_(label))).sort((a,b)=>String(a).localeCompare(String(b),'ja',{numeric:true}));}
+function normalizeCoachRaceDistance_(label){return String(label??'').normalize('NFKC').toLowerCase().replace(/\s/g,'').replace(/[−–—ー－〜~]/g,'-');}
+function coachRaceDefaultSection_(labels){return labels.find(label=>/^30m?$/.test(normalizeCoachRaceDistance_(label)))||labels.find(label=>/^0m?-30m?$/.test(normalizeCoachRaceDistance_(label)))||labels[0];}
+function toggleCoachRaceLegend_(){RACE_GRAPH_STATE.legendOpen=!RACE_GRAPH_STATE.legendOpen;renderCoachRaceGraphScreen_();}
+function renderCoachRaceLegend_(entries){return `<div class="cr-legend-row"><div class="cr-scroll-shell ${RACE_GRAPH_STATE.legendOpen?'cr-scroll-expanded':''}"><div id="crLegendStrip" class="cr-legend ${RACE_GRAPH_STATE.legendOpen?'cr-legend-expanded':''}" tabindex="0" aria-label="選手一覧・左右にスクロール">${entries.map(e=>`<span title="${escapeHtml(coachRaceEntryName_(e))}" style="color:${e.color}"><b>● ${escapeHtml(coachRaceAthleteLabel_(e))}</b><small>${escapeHtml(e.race.raceName)}</small></span>`).join('')}</div></div><button class="cr-legend-toggle" type="button" aria-expanded="${!!RACE_GRAPH_STATE.legendOpen}" aria-controls="crLegendStrip" onclick="toggleCoachRaceLegend_()">${RACE_GRAPH_STATE.legendOpen?'閉じる ▴':'一覧 ▾'}</button></div>`;}
 function coachRaceTime_(race){return String(race?.realTime??'').trim();}
 function coachRaceAthleteLabel_(entry){const time=coachRaceTime_(entry.race);return `選手${'①②③④⑤⑥⑦⑧⑨⑩'[entry.index]} ${entry.athlete.athleteName}${time?' '+time:''}`;}
 function coachRaceEntryName_(entry){return `${coachRaceAthleteLabel_(entry)}｜${entry.race.raceName}`;}
@@ -2230,12 +2257,12 @@ function renderCoachRaceBars_(entries,key,unit,label){
 let coachRaceChartObserver_=null;
 function setCoachRaceMetric_(key){if(COACH_RACE_METRICS.some(m=>m[0]===key)){RACE_GRAPH_STATE.coachMetric=key;renderCoachRaceGraphScreen_();}}
 function renderCoachRaceGraphScreen_(){
- const previousScroll=$('#crSettings')?.scrollTop||0;
+ const previousScroll=$('#crSettings')?.scrollTop||0,metricScroll=$('#crMetricStrip')?.scrollLeft||0,legendScroll=$('#crLegendStrip')?.scrollLeft||0;
  if(coachRaceChartObserver_)coachRaceChartObserver_.disconnect();
  initializeCoachRaceSlots_();
  const athletes=RACE_GRAPH_STATE.athletes||[],entries=coachRaceEntries_(),bars=RACE_GRAPH_STATE.coachView==='bar',sections=RACE_GRAPH_STATE.coachSections||(RACE_GRAPH_STATE.coachSections={});
  const metric=COACH_RACE_METRICS.find(m=>m[0]===RACE_GRAPH_STATE.coachMetric)||COACH_RACE_METRICS[5];RACE_GRAPH_STATE.coachMetric=metric[0];
- const [key,title,unit]=metric,labels=coachRaceLabels_(entries,key);if(!labels.includes(sections[key]))sections[key]=labels[0];
+ const [key,title,unit]=metric,labels=coachRaceLabels_(entries,key,bars);if(!labels.includes(sections[key]))sections[key]=coachRaceDefaultSection_(labels);
  $('#screen').innerHTML=`<div class="cr-screen coach-screen"><div class="cr-title"><h2>レース分析の比較</h2><button class="secondary" type="button" onclick="openRaceGraphs('coach',true)">更新</button></div>
  <div id="crSettings" class="cr-settings">
  <details class="tc-options tc-athletes" ${RACE_GRAPH_STATE.athleteOptionsOpen?'open':''} ontoggle="RACE_GRAPH_STATE.athleteOptionsOpen=this.open"><summary><span><strong>選手・レースの選択</strong><small>表示${entries.length}枠 ／ 最大10枠</small></span><span class="tc-arrow" aria-hidden="true">▼</span></summary><div class="tc-options-body"><p class="tc-hint">同じ選手の別レースも比較できます。非表示にしても選択内容を保持します。</p>${!athletes.length?'<p class="tc-hint">表示できるレースデータがありません。</p>':''}<div class="cr-slot-list">${RACE_GRAPH_STATE.slots.map((s,i)=>{
@@ -2244,10 +2271,12 @@ function renderCoachRaceGraphScreen_(){
  }).join('')}</div></div></details>
  ${(RACE_GRAPH_STATE.warnings||[]).length?`<details class="tc-options"><summary><strong>確認事項 ${RACE_GRAPH_STATE.warnings.length}件</strong><span aria-hidden="true">▼</span></summary><div class="tc-options-body tc-hint">${RACE_GRAPH_STATE.warnings.map(escapeHtml).join('<br>')}</div></details>`:''}</div>
  <div class="cr-view-switch" role="group" aria-label="グラフの種類"><button type="button" aria-pressed="${!bars}" onclick="setCoachRaceView_('line')">折れ線グラフ</button><button type="button" aria-pressed="${bars}" onclick="setCoachRaceView_('bar')">棒グラフ</button></div>
- <section class="cr-chart-panel" aria-label="${escapeHtml(title)}のグラフ"><div class="cr-metric-tabs" role="group" aria-label="比較項目を切り替え">${COACH_RACE_METRICS.map(([value,label,metricUnit])=>`<button type="button" aria-pressed="${value===key}" onclick="setCoachRaceMetric_('${value}')">${label}<small>（${metricUnit}）</small></button>`).join('')}</div>${bars?`<div class="cr-section-select"><label for="crSection">区間・通過地点</label><select id="crSection" ${labels.length?'':'disabled'} onchange="RACE_GRAPH_STATE.coachSections['${key}']=this.value;renderCoachRaceGraphScreen_()">${labels.map(label=>`<option value="${escapeHtml(label)}" ${label===sections[key]?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div>`:`<div class="cr-legend">${entries.map(e=>`<span title="${escapeHtml(coachRaceEntryName_(e))}" style="color:${e.color}"><b>● ${escapeHtml(coachRaceAthleteLabel_(e))}</b><small>${escapeHtml(e.race.raceName)}</small></span>`).join('')}</div>`}
+ <section class="cr-chart-panel" aria-label="${escapeHtml(title)}のグラフ"><div class="cr-scroll-hint" aria-hidden="true">↔ 横にスワイプ</div><div class="cr-scroll-shell"><div id="crMetricStrip" class="cr-metric-tabs" role="group" aria-label="比較項目・左右にスクロール">${COACH_RACE_METRICS.map(([value,label,metricUnit])=>`<button type="button" aria-pressed="${value===key}" onclick="setCoachRaceMetric_('${value}')">${label}<small>（${metricUnit}）</small></button>`).join('')}</div></div>${bars?`<div class="cr-section-select"><label for="crSection">区間・通過地点</label><select id="crSection" ${labels.length?'':'disabled'} onchange="RACE_GRAPH_STATE.coachSections['${key}']=this.value;renderCoachRaceGraphScreen_()">${labels.map(label=>`<option value="${escapeHtml(label)}" ${label===sections[key]?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div>`:renderCoachRaceLegend_(entries)}
  <div id="crChartViewport" class="cr-chart-viewport ${bars?'cr-bars':'cr-lines'}" style="--cr-count:${Math.max(entries.length,1)}">${!entries.length?'<p class="cr-empty">選手とレースを選び、「表示」にチェックを入れてください。</p>':!labels.length?'<p class="cr-empty">この項目のデータがありません。</p>':bars?renderCoachRaceBars_(entries,key,unit,sections[key]):`<canvas class="race-chart-canvas" data-coach-race-chart="${key}" data-unit="${unit}" role="img" aria-label="${escapeHtml(title)}：${escapeHtml(entries.map(coachRaceEntryName_).join('、'))}"></canvas>`}</div></section></div>`;
  $$('[data-linked-analysis]').forEach(button=>button.addEventListener('click',()=>openRaceLinkedAnalysis_(button.dataset.linkedAnalysis)));
  const settings=$('#crSettings');if(settings)settings.scrollTop=previousScroll;
+ const strip=$('#crMetricStrip');if(strip){strip.scrollLeft=metricScroll;const active=strip.querySelector?.('[aria-pressed="true"]');if(active){if(active.offsetLeft<strip.scrollLeft)strip.scrollLeft=active.offsetLeft;else if(active.offsetLeft+active.offsetWidth>strip.scrollLeft+strip.clientWidth)strip.scrollLeft=active.offsetLeft+active.offsetWidth-strip.clientWidth;}}
+ const legend=$('#crLegendStrip');if(legend&&!RACE_GRAPH_STATE.legendOpen)legend.scrollLeft=legendScroll;
  const viewport=$('#crChartViewport');if(viewport&&typeof ResizeObserver!=='undefined'){coachRaceChartObserver_=new ResizeObserver(()=>{if(!viewport.isConnected){coachRaceChartObserver_?.disconnect();return;}drawCoachRaceCanvases_();});coachRaceChartObserver_.observe(viewport);}
  if(!bars)window.requestAnimationFrame(drawCoachRaceCanvases_);
 }

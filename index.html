@@ -1236,6 +1236,11 @@ body:has(.cr-screen){height:100dvh;min-height:0;overflow:hidden}
 .cr-bar-range{flex:0 0 auto;margin:0;color:#587067;font-size:9px;line-height:1.5}
 .cr-scaled-track{position:relative;background:repeating-linear-gradient(90deg,#e7efec 0,#e7efec calc(25% - 1px),#c9d9e2 calc(25% - 1px),#c9d9e2 25%)}
 .cr-bar-axis{display:flex;justify-content:space-between;gap:4px;flex:0 0 auto;margin-left:44%;margin-right:47px;color:#637b74;font-size:8px}
+
+/* Athlete results have three rows: heading, settings, and the full-height line chart. */
+.hr-screen{grid-template-rows:auto auto minmax(0,1fr)}
+.hr-screen .cr-chart-panel>h3{flex:0 0 auto;font-size:15px}
+.hr-screen .cr-legend-expanded{max-height:110px;overflow-y:auto}
     </style>
   </head>
   <body>
@@ -2340,117 +2345,45 @@ function initializeRaceSelection_() {
   }
 }
 
-function renderRaceGraphScreen() {
-  if(RACE_GRAPH_STATE.mode==="coach"){renderCoachRaceGraphScreen_();return;} 
-  const coachMode=RACE_GRAPH_STATE.mode==="coach";
-  const warningHtml=(RACE_GRAPH_STATE.warnings||[]).length?`<div class="notice">${RACE_GRAPH_STATE.warnings.map(escapeHtml).join("<br>")}</div>`:"";
-  const athletes = RACE_GRAPH_STATE.athletes || [];
-  const mainAthlete = getRaceAthleteById_(RACE_GRAPH_STATE.mainAthleteId);
-  const comparisonAthlete = getRaceAthleteById_(RACE_GRAPH_STATE.comparisonAthleteId);
-  const mainRaces = mainAthlete?.races || [];
-  const comparisonRaces = comparisonAthlete?.races || [];
-  const mainRace = mainRaces.find((race) => race.raceId === RACE_GRAPH_STATE.mainRaceId) || null;
-  const comparisonRace = comparisonRaces.find((race) => race.raceId === RACE_GRAPH_STATE.comparisonRaceId) || null;
-
-  if (!athletes.length) {
-    $("#screen").innerHTML = `
-      <div class="stack ${coachMode?"coach-screen":""}">
-        <section class="card"><div class="section-title"><h2>${coachMode?"レース分析の比較":"レースグラフ"}</h2><button class="secondary" style="width:auto;min-height:34px;padding:0 10px" onclick="backFromRaceGraphs_()">戻る</button></div></section>
-        <section class="card"><p class="muted">${coachMode?"現在所属する選手のレースデータがありません。選手のフォルダに「レースデータ」スプレッドシートがあるか確認してください。":"表示できるレースデータがありません。"}</p>${warningHtml}<button class="secondary" onclick="openRaceGraphs(RACE_GRAPH_STATE.mode||'home',true)">再読み込み</button></section>
-      </div>`;
-    return;
-  }
-
-  const chartDefinitions = [
-    ["steps", "歩数", "歩"],
-    ["passingTime", "通過タイム", "秒"],
-    ["intervalTime", "区間タイム", "秒"],
-    ["stride", "ストライド", "m"],
-    ["pitch", "ピッチ", "歩/s"],
-    ["speed", "疾走速度", "m/s"],
-  ];
-
-  $("#screen").innerHTML = `
-    <div class="race-graph-screen ${coachMode?"coach-screen":""}">
-      <section class="card race-graph-controls">
-        <div class="section-title">
-          <div><h2>${coachMode?"レース分析の比較":"レースグラフ"}</h2><p>${coachMode?"所属選手のレース間の推移を比較":"レース間の推移を比較"}</p></div>
-          <button class="secondary" style="width:auto;min-height:34px;padding:0 10px" type="button" onclick="backFromRaceGraphs_()">戻る</button>
-        </div>
-        ${warningHtml}
-        ${coachMode?'<button class="secondary" onclick="openRaceGraphs(RACE_GRAPH_STATE.mode,true)">最新のレースデータを読み込む</button>':""}
-        <div class="race-graph-select-grid">
-          <div class="race-graph-select-column">
-            <div class="field"><label>メイン選手</label><select id="raceMainAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === mainAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
-            <div class="field"><label>メインレース</label><select id="raceMainSelect">${mainRaces.map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === mainRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
-          </div>
-          <div class="race-graph-select-column">
-            <div class="field"><label>比較選手</label><select id="raceComparisonAthleteSelect">${athletes.map((item) => `<option value="${escapeHtml(item.athleteId)}" ${item.athleteId === comparisonAthlete?.athleteId ? "selected" : ""}>${escapeHtml(item.athleteName)}${item.isFriend ? "（フレンド）" : ""}</option>`).join("")}</select></div>
-            <div class="field"><label>比較レース</label><select id="raceComparisonSelect"><option value="">比較なし</option>${comparisonRaces.filter((race) => mainAthlete?.athleteId !== comparisonAthlete?.athleteId || race.raceId !== mainRace?.raceId).map((race) => `<option value="${escapeHtml(race.raceId)}" ${race.raceId === comparisonRace?.raceId ? "selected" : ""}>${escapeHtml(race.raceName)}</option>`).join("")}</select></div>
-          </div>
-        </div>
-        ${(mainRace?.linkedAnalysisId || comparisonRace?.linkedAnalysisId) ? `
-          <div class="race-graph-link-row">
-            ${mainRace?.linkedAnalysisId ? `<button class="secondary race-analysis-link" type="button" data-linked-analysis="${escapeHtml(mainRace.linkedAnalysisId)}">メインの動作分析を見る</button>` : ""}
-            ${comparisonRace?.linkedAnalysisId ? `<button class="secondary race-analysis-link" type="button" data-linked-analysis="${escapeHtml(comparisonRace.linkedAnalysisId)}">比較の動作分析を見る</button>` : ""}
-          </div>
-        ` : ""}
-      </section>
-
-      ${chartDefinitions.map(([key, title, unit]) => `
-        <section class="race-graph-card">
-          <h3>${escapeHtml(title)}</h3>
-          <div class="race-graph-legend">
-            <span>${escapeHtml(mainAthlete?.athleteName || "メイン")}｜${escapeHtml(mainRace?.raceName || "メイン")}</span>
-            ${comparisonRace ? `<span class="comparison">${escapeHtml(comparisonAthlete?.athleteName || "比較")}｜${escapeHtml(comparisonRace.raceName)}</span>` : ""}
-          </div>
-          <canvas class="race-chart-canvas" data-race-chart="${key}" data-unit="${escapeHtml(unit)}"></canvas>
-        </section>
-      `).join("")}
-    </div>`;
-
-  $("#raceMainAthleteSelect").addEventListener("change", (event) => {
-    RACE_GRAPH_STATE.mainAthleteId = event.target.value;
-    RACE_GRAPH_STATE.mainRaceId = "";
-    initializeRaceSelection_();
-    renderRaceGraphScreen();
-  });
-
-  $("#raceComparisonAthleteSelect").addEventListener("change", (event) => {
-    RACE_GRAPH_STATE.comparisonAthleteId = event.target.value;
-    RACE_GRAPH_STATE.comparisonRaceId = "";
-    initializeRaceSelection_();
-    renderRaceGraphScreen();
-  });
-
-  $("#raceMainSelect").addEventListener("change", (event) => {
-    RACE_GRAPH_STATE.mainRaceId = event.target.value;
-    initializeRaceSelection_();
-    renderRaceGraphScreen();
-  });
-
-  $("#raceComparisonSelect").addEventListener("change", (event) => {
-    RACE_GRAPH_STATE.comparisonRaceId = event.target.value;
-    renderRaceGraphScreen();
-  });
-
-  $$('[data-linked-analysis]').forEach((button) => {
-    button.addEventListener("click", () => openRaceLinkedAnalysis_(button.dataset.linkedAnalysis));
-  });
-
-  window.requestAnimationFrame(() => drawRaceGraphCanvases_(mainRace, comparisonRace));
+// Athlete result screen: five independent datasets; coach comparison keeps its ten slots.
+function initializeHomeRaceSlots_(){
+ const athletes=RACE_GRAPH_STATE.athletes||[], available=athletes.flatMap(a=>(a.races||[]).map(r=>({athleteId:a.athleteId,raceId:r.raceId})));
+ if(!RACE_GRAPH_STATE.homeSlots)RACE_GRAPH_STATE.homeSlots=Array.from({length:5},(_,i)=>({...available[i],athleteId:available[i]?.athleteId||'',raceId:available[i]?.raceId||'',visible:i<2&&!!available[i]}));
+ RACE_GRAPH_STATE.homeSlots=RACE_GRAPH_STATE.homeSlots.slice(0,5);
+ RACE_GRAPH_STATE.homeSlots.forEach(s=>{const a=athletes.find(a=>a.athleteId===s.athleteId);if(!a){s.athleteId='';s.raceId='';return;}if(!(a.races||[]).some(r=>r.raceId===s.raceId))s.raceId=a.races?.[0]?.raceId||'';});
 }
-
-function drawRaceGraphCanvases_(mainRace, comparisonRace) {
-  $$('[data-race-chart]').forEach((canvas) => {
-    drawRaceLineChart_(
-      canvas,
-      mainRace?.charts?.[canvas.dataset.raceChart] || [],
-      comparisonRace?.charts?.[canvas.dataset.raceChart] || [],
-      canvas.dataset.unit || "",
-    );
-  });
+function homeRaceEntries_(){return (RACE_GRAPH_STATE.homeSlots||[]).map((slot,index)=>{const athlete=(RACE_GRAPH_STATE.athletes||[]).find(a=>a.athleteId===slot.athleteId);return {slot,index,athlete,race:athlete?.races?.find(r=>r.raceId===slot.raceId),color:COACH_RACE_COLORS[index]};}).filter(e=>e.slot.visible&&e.race);}
+function homeRaceEntryName_(e){return `データ${'①②③④⑤'[e.index]} ${e.athlete.athleteName}${coachRaceTime_(e.race)?' '+coachRaceTime_(e.race):''}`;}
+function setHomeRaceSlot_(index,key,value){const slot=RACE_GRAPH_STATE.homeSlots?.[index];if(!slot||!['athleteId','raceId','visible'].includes(key))return;slot[key]=value;if(key==='athleteId')slot.raceId='';renderRaceGraphScreen();}
+function setHomeRaceMetric_(key){if(COACH_RACE_METRICS.some(m=>m[0]===key)){RACE_GRAPH_STATE.homeMetric=key;renderRaceGraphScreen();}}
+function toggleHomeRaceLegend_(){RACE_GRAPH_STATE.homeLegendOpen=!RACE_GRAPH_STATE.homeLegendOpen;renderRaceGraphScreen();}
+let homeRaceChartObserver_=null;
+function renderRaceGraphScreen(){
+ if(homeRaceChartObserver_){homeRaceChartObserver_.disconnect();homeRaceChartObserver_=null;}
+ if(RACE_GRAPH_STATE.mode==='coach'){renderCoachRaceGraphScreen_();return;}
+ if(coachRaceChartObserver_)coachRaceChartObserver_.disconnect();
+ const settingsScroll=$('#hrSettings')?.scrollTop||0,metricScroll=$('#hrMetricStrip')?.scrollLeft||0,legendScroll=$('#hrLegendStrip')?.scrollLeft||0;
+ initializeHomeRaceSlots_();
+ const athletes=RACE_GRAPH_STATE.athletes||[],entries=homeRaceEntries_(),metric=COACH_RACE_METRICS.find(m=>m[0]===RACE_GRAPH_STATE.homeMetric)||COACH_RACE_METRICS[5], [key,title,unit]=metric;
+ RACE_GRAPH_STATE.homeMetric=key;
+ const labels=coachRaceLabels_(entries,key);
+ $('#screen').innerHTML=`<div class="cr-screen hr-screen"><div class="cr-title"><h2>レース分析結果</h2><button class="secondary" type="button" onclick="openRaceGraphs('home',true)">更新</button></div>
+ <div id="hrSettings" class="cr-settings"><details class="tc-options tc-athletes" ${RACE_GRAPH_STATE.homeOptionsOpen?'open':''} ontoggle="RACE_GRAPH_STATE.homeOptionsOpen=this.open"><summary><span><strong>レースデータの選択</strong><small>表示${entries.length}件 ／ 最大5件</small></span><span class="tc-arrow" aria-hidden="true">▼</span></summary><div class="tc-options-body"><p class="tc-hint">自分・フレンドのレースを最大5件比較できます。同じ選手の別レースも選べます。非表示にしても選択内容は保持します。</p>${!athletes.length?'<p class="tc-hint">表示できるレースデータがありません。</p>':''}<div class="cr-slot-list">${RACE_GRAPH_STATE.homeSlots.map((s,i)=>{
+ const athlete=athletes.find(a=>a.athleteId===s.athleteId),races=athlete?.races||[],race=races.find(r=>r.raceId===s.raceId);
+ return `<div class="race-graph-select-column"><div class="section-title"><strong style="color:${COACH_RACE_COLORS[i]}">● データ${'①②③④⑤'[i]}</strong><label style="display:flex;align-items:center;gap:6px"><input style="width:auto;min-height:auto" type="checkbox" ${s.visible?'checked':''} onchange="setHomeRaceSlot_(${i},'visible',this.checked)">表示</label></div><div class="field"><label for="homeRaceAthlete${i}">選手</label><select id="homeRaceAthlete${i}" onchange="setHomeRaceSlot_(${i},'athleteId',this.value)"><option value="">選手を選択</option>${athletes.map(a=>`<option value="${escapeHtml(a.athleteId)}" ${a.athleteId===s.athleteId?'selected':''}>${escapeHtml(a.athleteName)}${a.isFriend?'（フレンド）':''}</option>`).join('')}</select></div><div class="field"><label for="homeRace${i}">レース</label><select id="homeRace${i}" ${races.length?'':'disabled'} onchange="setHomeRaceSlot_(${i},'raceId',this.value)">${races.length?races.map(r=>`<option value="${escapeHtml(r.raceId)}" ${r.raceId===s.raceId?'selected':''}>${escapeHtml(r.raceName)}${coachRaceTime_(r)?' '+escapeHtml(coachRaceTime_(r)):''}</option>`).join(''):'<option value="">レースなし</option>'}</select></div>${race?.linkedAnalysisId?`<button type="button" class="secondary" data-linked-analysis="${escapeHtml(race.linkedAnalysisId)}">データ${'①②③④⑤'[i]}の動作分析を見る</button>`:''}</div>`;
+ }).join('')}</div></div></details>${(RACE_GRAPH_STATE.warnings||[]).length?`<details class="tc-options"><summary><strong>確認事項 ${RACE_GRAPH_STATE.warnings.length}件</strong><span aria-hidden="true">▼</span></summary><div class="tc-options-body tc-hint">${RACE_GRAPH_STATE.warnings.map(escapeHtml).join('<br>')}</div></details>`:''}</div>
+ <section class="cr-chart-panel" aria-label="${title}のグラフ"><div class="cr-scroll-hint" aria-hidden="true">↔ スワイプで切替</div><div class="cr-scroll-shell"><div id="hrMetricStrip" class="cr-metric-tabs" role="group" aria-label="比較項目・左右にスクロール">${COACH_RACE_METRICS.map(([value,label])=>`<button type="button" aria-pressed="${value===key}" onclick="setHomeRaceMetric_('${value}')">${label}</button>`).join('')}</div></div><h3>${title} <small>（${unit}）</small></h3>
+ <div class="cr-legend-row"><div class="cr-scroll-shell ${RACE_GRAPH_STATE.homeLegendOpen?'cr-scroll-expanded':''}"><div id="hrLegendStrip" class="cr-legend ${RACE_GRAPH_STATE.homeLegendOpen?'cr-legend-expanded':''}" tabindex="0" aria-label="比較データ一覧・左右にスクロール">${entries.map(e=>`<span title="${escapeHtml(homeRaceEntryName_(e)+'｜'+e.race.raceName)}" style="color:${e.color}"><b>● ${escapeHtml(homeRaceEntryName_(e))}</b><small>${escapeHtml(e.race.raceName)}</small></span>`).join('')}</div></div><button class="cr-legend-toggle" type="button" aria-expanded="${!!RACE_GRAPH_STATE.homeLegendOpen}" aria-controls="hrLegendStrip" onclick="toggleHomeRaceLegend_()">${RACE_GRAPH_STATE.homeLegendOpen?'閉じる ▴':'一覧 ▾'}</button></div>
+ <div id="hrChartViewport" class="cr-chart-viewport cr-lines">${!entries.length?'<p class="cr-empty">レースデータを選び、「表示」にチェックを入れてください。</p>':!labels.length?'<p class="cr-empty">この項目のデータがありません。</p>':`<canvas class="race-chart-canvas" data-home-race-chart="${key}" data-unit="${unit}" role="img" aria-label="${title}：${escapeHtml(entries.map(e=>homeRaceEntryName_(e)+'｜'+e.race.raceName).join('、'))}"></canvas>`}</div></section></div>`;
+ $$('[data-linked-analysis]').forEach(button=>button.addEventListener('click',()=>openRaceLinkedAnalysis_(button.dataset.linkedAnalysis)));
+ const settings=$('#hrSettings');if(settings)settings.scrollTop=settingsScroll;
+ const strip=$('#hrMetricStrip');if(strip){strip.scrollLeft=metricScroll;const active=strip.querySelector?.('[aria-pressed="true"]');if(active){if(active.offsetLeft<strip.scrollLeft)strip.scrollLeft=active.offsetLeft;else if(active.offsetLeft+active.offsetWidth>strip.scrollLeft+strip.clientWidth)strip.scrollLeft=active.offsetLeft+active.offsetWidth-strip.clientWidth;}}
+ const legend=$('#hrLegendStrip');if(legend&&!RACE_GRAPH_STATE.homeLegendOpen)legend.scrollLeft=legendScroll;
+ const viewport=$('#hrChartViewport');if(viewport&&typeof ResizeObserver!=='undefined'){homeRaceChartObserver_=new ResizeObserver(()=>{if(!viewport.isConnected){homeRaceChartObserver_?.disconnect();return;}drawHomeRaceCanvases_();});homeRaceChartObserver_.observe(viewport);}
+ window.requestAnimationFrame(drawHomeRaceCanvases_);
 }
+function drawHomeRaceCanvases_(){const entries=homeRaceEntries_();$$('[data-home-race-chart]').forEach(canvas=>drawRaceLineChart_(canvas,[],[],canvas.dataset.unit,entries.map(e=>({series:e.race.charts?.[canvas.dataset.homeRaceChart]||[],color:e.color}))));}
+window.addEventListener('resize',()=>{if(RACE_GRAPH_STATE.mode!=='coach'&&$('[data-home-race-chart]'))drawHomeRaceCanvases_();});
 
 function drawRaceLineChart_(canvas, mainSeries, comparisonSeries, unit, extraSeries) {
   const chartSeries=extraSeries||[{series:mainSeries,color:"#246b58"},{series:comparisonSeries,color:"#e8751a"}];

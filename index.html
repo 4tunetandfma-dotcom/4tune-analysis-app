@@ -583,30 +583,6 @@ body.analysis-help-modal-open {
   gap: 7px;
 }
 
-.analysis-graph-order-buttons {
-  display: flex;
-  gap: 4px;
-}
-
-.analysis-graph-order-button {
-  display: grid;
-  width: 28px;
-  min-height: 28px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #f5f8fa;
-  color: var(--navy);
-  font-size: 13px;
-  font-weight: 900;
-}
-
-.analysis-graph-order-button:disabled {
-  opacity: 0.3;
-  cursor: default;
-}
-
 .analysis-graph-header h4 {
   margin: 0;
   color: var(--navy);
@@ -1244,7 +1220,7 @@ body:has(.cr-screen){height:100dvh;min-height:0;overflow:hidden}
 .manual-menu-entry{display:flex;align-items:center;gap:9px;width:100%;min-height:42px;padding:8px 12px;border:1px solid #d6dedc;border-radius:9px;background:#fff;color:var(--navy);text-align:left}
 .manual-menu-entry svg{width:21px;height:21px;flex:none}.manual-menu-entry b{font-size:12px}.manual-menu-entry small{font-size:10px;color:#677b78;font-weight:400}.manual-menu-entry>span{margin-left:auto;font-size:22px}
 .manual-screen{display:grid;gap:12px;padding-bottom:24px;min-width:0}.manual-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.manual-heading h2{display:flex;align-items:center;gap:10px;margin:0;color:#123d2d;font-size:23px}.manual-heading svg{width:30px;height:30px}.manual-heading .secondary{width:auto;min-height:38px;padding:6px 13px}.manual-subtitle{margin:0;color:#647970;font-size:12px}.manual-role{display:flex;border:1px solid #aecbe9;border-radius:9px;overflow:hidden}.manual-role button{flex:1;min-height:42px;background:#fff;color:var(--navy);border:0;border-radius:0;font-size:13px}.manual-role button[aria-pressed="true"]{background:var(--blue);color:#fff}.manual-search-label{font-size:12px;font-weight:700;margin-bottom:-7px}.manual-sections{display:grid;gap:8px}.manual-section{border:1px solid #cbdfe8;border-radius:10px;overflow:hidden;background:#fff}.manual-section summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;padding:13px 14px;list-style:none;font-size:14px;font-weight:800;color:#173d30}.manual-section summary::-webkit-details-marker{display:none}.manual-section[open]>summary{background:#fff8e7}.manual-section[open]>summary span{transform:rotate(180deg)}.manual-section-body{padding:14px}.manual-section ol{list-style:none;counter-reset:manual;margin:15px 0 0;padding:0;display:grid;gap:13px}.manual-section li{counter-increment:manual;position:relative;padding-left:32px;font-size:12px;line-height:1.8}.manual-section li:before{content:counter(manual);position:absolute;left:0;top:1px;display:grid;place-items:center;width:23px;height:23px;background:var(--blue);border-radius:50%;color:#fff;font-weight:800}.manual-tip{font-size:11px;line-height:1.8;color:#557065;margin:14px 0 0}.manual-faq+.manual-faq{border-top:1px solid #e4ece9;padding-top:12px;margin-top:12px}.manual-faq h3{font-size:13px;margin:0 0 6px}.manual-faq p,.manual-empty{font-size:12px;line-height:1.8;margin:0;color:#526b63}.manual-graph-art{background:#f7fbff;border:1px solid #e3edf3;border-radius:9px;padding:8px;max-width:100%}.manual-art-tabs{display:flex;gap:5px;font-size:10px}.manual-art-tabs>*{flex:1;text-align:center;padding:6px 2px;background:#fff;border:1px solid #d5e2ef;border-radius:5px}.manual-art-tabs b{background:var(--blue);color:#fff}.manual-graph-art svg{display:block;width:100%;max-height:190px}.manual-graph-art>small{display:block;text-align:right;color:#6c7e86;font-size:9px}.manual-flow{display:flex;align-items:center;gap:5px;padding:12px 3px;background:#f5faff;border-radius:8px}.manual-flow div{display:grid;justify-items:center;gap:12px;flex:1;min-width:0;font-size:11px}.manual-flow span{display:grid;place-items:center;width:30px;height:30px;background:var(--blue);color:#fff;border-radius:50%;font-size:15px;font-weight:800}.manual-flow i{color:#91a6b5;font-size:22px}.manual-team-art{display:grid;gap:6px;background:#f4f9fc;padding:10px;border-radius:9px}.manual-team-art>div{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #d9e5ed;padding:9px;font-size:12px;border-radius:6px}.manual-team-art span{color:var(--blue)}.manual-team-art small{margin-left:auto;color:#658078;font-size:10px}
-.loading{overflow-y:auto;background:rgba(248,251,252,.98)}.loading-box{width:min(100%,430px);margin:auto}.loading-box>p{line-height:1.7;font-size:15px;overflow-wrap:anywhere}.loading-hint{margin-top:22px;padding:16px;text-align:left;border:1px solid #d2e5ee;border-radius:13px;background:linear-gradient(130deg,#fff9e9,#fff)}.loading-tip-label{color:#446681;font-size:11px;font-weight:700}.loading-hint h3{margin:8px 0 12px;font-size:17px;color:#123d2d}.loading-hint p{margin:12px 0 0;font-size:12px;font-weight:400;line-height:1.8;color:#526b63}.loading-tip-dots{display:flex;justify-content:center;gap:7px;margin-top:14px}.loading-tip-dots span{width:7px;height:7px;border-radius:50%;background:#d5e1ed}.loading-tip-dots .active{background:var(--blue)}.loading-auto-note{display:block;margin-top:13px;font-size:11px;color:#647b85;line-height:1.6}.manual-menu-entry:focus-visible,.manual-section summary:focus-visible,.manual-role button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}@media(max-height:600px){.loading-hint{margin-top:12px;padding:12px}.loading-hint .manual-graph-art svg{max-height:105px}.loading .spinner{width:32px;height:32px;margin-bottom:8px}}@media(prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
+.loading{overflow-y:auto;background:rgba(248,251,252,.98)}.loading-box{width:min(100%,430px);margin:auto}.loading-box>p{line-height:1.7;font-size:15px;overflow-wrap:anywhere}.loading-hint{margin-top:22px;padding:16px;text-align:left;border:1px solid #d2e5ee;border-radius:13px;background:linear-gradient(130deg,#fff9e9,#fff)}.loading-tip-label{color:#446681;font-size:11px;font-weight:700}.loading-hint h3{margin:8px 0 12px;font-size:17px;color:#123d2d}.loading-hint p{margin:12px 0 0;font-size:12px;font-weight:400;line-height:1.8;color:#526b63}.loading-auto-note{display:block;margin-top:13px;font-size:11px;color:#647b85;line-height:1.6}.manual-menu-entry:focus-visible,.manual-section summary:focus-visible,.manual-role button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}@media(max-height:600px){.loading-hint{margin-top:12px;padding:12px}.loading-hint .manual-graph-art svg{max-height:105px}.loading .spinner{width:32px;height:32px;margin-bottom:8px}}@media(prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
 
 
 .manual-real-preview{padding:8px;border:1px solid #dbe7ee;border-radius:9px;background:#f7faf9;min-width:0}.manual-stick-example{border:1px solid #dce8e4;border-radius:7px;background:white}.manual-stick-example svg{display:block;width:100%;height:105px}.manual-preview-controls,.manual-preview-tabs{display:flex;gap:5px;margin:7px 0;font-size:10px}.manual-preview-controls>*{flex:1;text-align:center;padding:5px 2px;border:1px solid #cadbd6;border-radius:5px;background:white}.manual-preview-controls b{color:white;background:#246b58}.manual-preview-tabs>*{flex:1;text-align:center;padding:6px 2px;background:#e7efeb;border-radius:5px}.manual-preview-tabs b{color:white;background:#246b58}.manual-joint-example{font-size:10px;margin:7px 0}.manual-joint-example strong{display:block;margin-top:3px;padding:6px;border:1px solid #cbded6;border-radius:5px;background:white}.manual-preview-card{padding:7px;margin-top:7px}.manual-preview-graph-title{display:flex;align-items:center;gap:8px;font-size:11px}.manual-preview-graph-title>span{font-size:10px;color:#607b70}.manual-preview-card canvas{display:block;width:100%;height:90px}.manual-example-note{display:block;margin-top:5px;text-align:right;color:#667e74;font-size:9px}.manual-race-settings{display:flex;align-items:center;gap:7px;background:#fff8e7;border:1px solid #e9dfc2;padding:8px;margin-bottom:8px;border-radius:6px;font-size:11px;font-weight:700}.manual-race-settings small{font-size:9px}.manual-race-settings>span{margin-left:auto}.manual-real-preview .manual-art-tabs{overflow-x:auto;white-space:nowrap;scrollbar-width:thin}.manual-real-preview .manual-art-tabs>*{flex:0 0 auto;padding:6px}.manual-race-unit{display:block;margin:9px 0;font-size:12px}.manual-preview-legend{display:flex;gap:8px;overflow-x:auto;white-space:nowrap;font-size:9px;padding-bottom:6px}.manual-race-canvas{display:block;width:100%;height:185px}.loading-hint .manual-stick-example,.loading-hint .manual-preview-controls{display:none}.loading-hint .manual-preview-card canvas{height:65px}.loading-hint .manual-race-canvas{height:155px}@media(max-height:650px){.loading-hint .manual-preview-card:nth-of-type(n+5){display:none}.loading-hint .manual-race-canvas{height:110px}}
@@ -1435,7 +1411,6 @@ const ANALYSIS_VIEW_STATE = {
   showCenterOfMass: true,
   showToeTrajectory: true,
   showJointHighlight: true,
-  graphOrder: ["center", "angle", "velocity"],
   activeMetricSection: "",
 };
 
@@ -1458,7 +1433,7 @@ const COMPARISON_VIEW_STATE = {
   candidates: [], plan: "Pro", phase: "最高速", dataA: null, dataB: null,
   layout: "overlay", activeTab: "controls", selectedJoint: 0,
   scale: 100, speed: 1, showCenterOfMass: true, showToeTrajectory: true,
-  showJointHighlight: true, graphOrder: ["center", "angle", "velocity"],
+  showJointHighlight: true,
   activeMetricSection: "", frameA: null, frameB: null,
   playing: false, animationId: null, startedAt: 0, elapsed: 0,
 };
@@ -1498,7 +1473,7 @@ const ANALYSIS_CONNECTIONS = {
   ],
 };
       const CONFIG=Object.freeze({
-        BUILD_VERSION:"20260822-BUGFIX-06",
+        BUILD_VERSION:"20261028-AUDIT-01",
         LIFF_ID:"2011019778-43fXNNSl",
         GAS_URL:"https://script.google.com/macros/s/AKfycbyJ4ymLEm7orQhn3EcN4uAj7bFZaHQiGGEN-HcYSEcyjICs9bB7OC5GVsKH6lx8eBiiqw/exec",
 
@@ -1514,6 +1489,7 @@ const ANALYSIS_CONNECTIONS = {
       const $=(selector,root=document)=>root.querySelector(selector);
       const $$=(selector,root=document)=>Array.from(root.querySelectorAll(selector));
       const escapeHtml=(value)=>String(value??"").replace(/[&<>'"]/g,(char)=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+      function jsStringAttribute_(value){return escapeHtml(JSON.stringify(String(value??'')));}
       let LOADING_TIMER=null;
       function lock(message="処理中..."){ startLoadingHints_(); $("#loadingText").textContent=message;if(LOADING_TIMER!==null)clearTimeout(LOADING_TIMER);const overlay=$("#loading");if(overlay.classList.contains("hidden")){overlay.style.opacity="0";overlay.classList.remove("hidden");}LOADING_TIMER=setTimeout(()=>{LOADING_TIMER=null;overlay.style.opacity="";},150); }
       function unlock(){stopLoadingHints_();if(LOADING_TIMER!==null){clearTimeout(LOADING_TIMER);LOADING_TIMER=null;}const overlay=$("#loading");overlay.classList.add("hidden");overlay.style.opacity="";}
@@ -1559,12 +1535,15 @@ const ANALYSIS_CONNECTIONS = {
         if(ttl&&!force&&cached&&Date.now()-cached.at<ttl)return cached.data;
         if(ttl&&!force&&API_INFLIGHT.has(key))return API_INFLIGHT.get(key);
         const run=(async()=>{
-          const response=await fetch(CONFIG.GAS_URL,{method:"POST",redirect:"follow",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:STATE.idToken,payload})});
+          const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),120000);
+          try{
+          const response=await fetch(CONFIG.GAS_URL,{method:"POST",redirect:"follow",signal:controller.signal,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:STATE.idToken,payload})});
           if(!response.ok)throw new Error(`通信エラー: HTTP ${response.status}`);
           const data=await response.json();if(!data.success)throw new Error(data.message||"処理に失敗しました");
           if(!isRead&&epoch===API_CACHE_EPOCH)seedMutationResponse_(action,data);
           if(ttl&&epoch===API_CACHE_EPOCH){API_READ_CACHE.set(key,{data,at:Date.now()});while(API_READ_CACHE.size>20)API_READ_CACHE.delete(API_READ_CACHE.keys().next().value);}
           return data;
+          }catch(error){if(error?.name==='AbortError')throw new Error(isRead?'通信が時間内に完了しませんでした。接続を確認して、もう一度お試しください。':'通信結果を確認できませんでした。操作が反映されている可能性があるため、再送する前に履歴を確認してください。');throw error;}finally{clearTimeout(timeout);}
         })();
         if(ttl)API_INFLIGHT.set(key,run);
         try{return await run;}finally{if(API_INFLIGHT.get(key)===run)API_INFLIGHT.delete(key);}
@@ -1628,7 +1607,7 @@ const ANALYSIS_CONNECTIONS = {
           STATE.data=await apiPost("bootstrap");
           const restoredAthleteRegistrationToken=athleteRegistrationToken||getAthleteRegistrationToken_();
           if(restoredAthleteRegistrationToken){await openAthleteRegistration_(restoredAthleteRegistrationToken);}
-          else if(STATE.data.registered){renderHome();handleFriendInviteFromUrl_();}
+          else if(STATE.data.registered){await openInitialHome_();handleFriendInviteFromUrl_();}
           else{renderRegistration();}
         }catch(error){console.error(error);renderFatal(error.message||"アプリを起動できませんでした");}
         finally{unlock();}
@@ -1790,7 +1769,7 @@ const ANALYSIS_CONNECTIONS = {
         if(!STATE.termsViewed||!$("#termsAccepted")?.checked){showError("利用規約・個人情報取扱方針を確認し、同意欄にチェックしてください");return;}
         const payload={applicantName:$("#applicantName").value.trim(),applicantType:getApplicantType(),guardianName:$("#guardianName").value.trim(),athletes:collectAthletes(),termsAccepted:true,termsVersion:TERMS_VERSION};
         STATE.submitting=true;$("#submitButton").disabled=true;lock("登録しています...");
-        try{STATE.data=await apiPost("registerCustomer",payload);renderHome();}
+        try{STATE.data=await apiPost("registerCustomer",payload);await openInitialHome_();}
         catch(err){console.error(err);showError(err.message);}
         finally{STATE.submitting=false;unlock();const button=$("#submitButton");if(button)button.disabled=false;}
       }
@@ -2201,7 +2180,7 @@ function filterCoachMembers_(value){
  filterCoachMembers_(STATE.coachMemberQuery||'');
 }
 
-      function renderTeamMember_(member){const invite=member.registrationInvite||null;const link=invite?`https://liff.line.me/${CONFIG.LIFF_ID}?athleteRegister=${encodeURIComponent(invite.token)}`:"";return`<div class="team-member-card stack" data-member-status="${coachMemberStatus_(member)}" data-member-search="${escapeHtml((member.name+' '+(member.affiliation||'')).toLowerCase())}"><div class="section-title"><div><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.affiliation||"")}・${member.age==null?"年齢未設定":member.age+"歳"}</p></div><span class="pill">${coachMemberStatus_(member)==="unregistered"?"本人未登録":"登録済み"}</span></div><div class="summary-row"><span>身長・体重</span><b>${escapeHtml(member.height||"-")}cm${member.weight?`・${escapeHtml(member.weight)}kg`:""}</b></div>${invite?`<div class="team-id-box"><small>本人登録コード</small><strong>${escapeHtml(invite.code)}</strong><span class="muted">有効期限 ${escapeHtml(invite.expiresAt||"")}</span></div><div class="friend-link"><b>本人登録リンク</b><br>${escapeHtml(link)}</div><div class="team-action-grid"><button class="secondary" onclick="copyAthleteRegistrationCode_('${escapeHtml(member.athleteId)}')">コードをコピー</button><button class="secondary" onclick="copyAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">リンクをコピー</button></div><button class="primary" onclick="copyAthleteRegistrationShare_('${escapeHtml(member.athleteId)}')">リンク＋コードをまとめてコピー</button><button class="secondary" onclick="createAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">登録情報を再発行</button>`:""}<button class="primary" onclick="openCoachAthleteAnalyses_('${escapeHtml(member.athleteId)}')">この選手の分析を見る</button><div class="team-action-grid"><button class="secondary" onclick="openTeamAthleteEdit_('${escapeHtml(member.athleteId)}')">編集</button><button class="athlete-delete-button" onclick="removeTeamMember_('${escapeHtml(member.membershipId)}','${escapeHtml(member.name)}')">チームから外す</button></div></div>`;}
+      function renderTeamMember_(member){const invite=member.registrationInvite||null;const link=invite?`https://liff.line.me/${CONFIG.LIFF_ID}?athleteRegister=${encodeURIComponent(invite.token)}`:"";return`<div class="team-member-card stack" data-member-status="${coachMemberStatus_(member)}" data-member-search="${escapeHtml((member.name+' '+(member.affiliation||'')).toLowerCase())}"><div class="section-title"><div><h3>${escapeHtml(member.name)}</h3><p>${escapeHtml(member.affiliation||"")}・${member.age==null?"年齢未設定":member.age+"歳"}</p></div><span class="pill">${coachMemberStatus_(member)==="unregistered"?"本人未登録":"登録済み"}</span></div><div class="summary-row"><span>身長・体重</span><b>${escapeHtml(member.height||"-")}cm${member.weight?`・${escapeHtml(member.weight)}kg`:""}</b></div>${invite?`<div class="team-id-box"><small>本人登録コード</small><strong>${escapeHtml(invite.code)}</strong><span class="muted">有効期限 ${escapeHtml(invite.expiresAt||"")}</span></div><div class="friend-link"><b>本人登録リンク</b><br>${escapeHtml(link)}</div><div class="team-action-grid"><button class="secondary" onclick="copyAthleteRegistrationCode_('${escapeHtml(member.athleteId)}')">コードをコピー</button><button class="secondary" onclick="copyAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">リンクをコピー</button></div><button class="primary" onclick="copyAthleteRegistrationShare_('${escapeHtml(member.athleteId)}')">リンク＋コードをまとめてコピー</button><button class="secondary" onclick="createAthleteRegistrationLink_('${escapeHtml(member.athleteId)}')">登録情報を再発行</button>`:""}<button class="primary" onclick="openCoachAthleteAnalyses_('${escapeHtml(member.athleteId)}')">この選手の分析を見る</button><div class="team-action-grid"><button class="secondary" onclick="openTeamAthleteEdit_('${escapeHtml(member.athleteId)}')">編集</button><button class="athlete-delete-button" onclick="removeTeamMember_(${jsStringAttribute_(member.membershipId)},${jsStringAttribute_(member.name)})">チームから外す</button></div></div>`;}
 
       function getAthleteRegistrationShare_(athleteId){const member=(STATE.teamDashboard?.members||[]).find((item)=>item.athleteId===athleteId);const invite=member?.registrationInvite;if(!invite)return null;const link=`https://liff.line.me/${CONFIG.LIFF_ID}?athleteRegister=${encodeURIComponent(invite.token)}`;return{member,invite,link,text:`4TUNE本人登録\n\n選手名：${member.name}\n登録リンク：\n${link}\n\n登録コード：${invite.code}\n有効期限：${invite.expiresAt||"7日間"}`};}
       async function copyText_(text,message){try{await navigator.clipboard.writeText(text);alert(message);}catch(error){prompt("この内容をコピーしてください",text);}}
@@ -2310,12 +2289,7 @@ function drawTeamComparisonChart_(){
  values.forEach((v,index)=>{const cy=layout.row*(index+.5),font=Math.max(7,Math.min(12,layout.row*.29)),twoLines=layout.row>=25;c.fillStyle='#173c32';c.textAlign='left';c.font=`bold ${font}px sans-serif`;c.fillText(fit(v.name,left-8),2,cy-(twoLines?6:0));if(twoLines){c.font=`${Math.max(7,font-2)}px sans-serif`;c.fillStyle='#637b74';c.fillText(teamComparisonDate_(v.date),2,cy+8);}const bar=Math.max(2,Math.min(23,layout.row*.4));c.fillStyle='#2374c6';c.fillRect(Math.min(x(0),x(v.number)),cy-bar/2,Math.abs(x(v.number)-x(0)),bar);c.fillStyle='#173c32';c.font=`bold ${font}px sans-serif`;c.fillText(fit(v.value,right-5),left+plot+6,cy);});
 }
 
-      function renderTeamMetricChart_(label,records){
-        const values=records.map(r=>{const item=(r.items||[]).find(i=>i.label===label);return item?{name:r.athleteName,date:r.date,value:item.value,number:Number(item.number)}:null;}).filter(x=>x&&Number.isFinite(x.number)).sort((a,b)=>STATE.teamSort==="asc"?a.number-b.number:b.number-a.number);
-        if(!values.length)return"";
-        const max=Math.max(...values.map(x=>Math.abs(x.number)),1);
-        return `<section class="team-metric-chart"><h4>${escapeHtml(label)}</h4>${values.map(x=>`<div class="team-bar-row"><span class="team-bar-name" title="${escapeHtml(x.name)}"><span>${escapeHtml(x.name)}</span><small>${teamComparisonDate_(x.date)}</small></span><div class="team-bar-track"><div class="team-bar-fill" style="width:${Math.max(2,Math.abs(x.number)/max*100)}%"></div></div><span class="team-bar-value">${escapeHtml(x.value)}</span></div>`).join("")}</section>`;
-      }
+      
 
 
 
@@ -2821,7 +2795,6 @@ function renderAnalysisDetail(analysis) {
   ANALYSIS_VIEW_STATE.showCenterOfMass = true;
   ANALYSIS_VIEW_STATE.showToeTrajectory = true;
   ANALYSIS_VIEW_STATE.showJointHighlight = true;
-  ANALYSIS_VIEW_STATE.graphOrder = ["center", "angle", "velocity"];
   ANALYSIS_VIEW_STATE.graphMetric="center";
   ANALYSIS_VIEW_STATE.activeMetricSection =
     analysis.displaySections?.[0]?.key || "";
@@ -3060,7 +3033,7 @@ function selectAnalysisGraphA_(key){if(!ANALYSIS_GRAPH_METRICS_A.some(m=>m[0]===
 function seekAnalysisFrameA_(value){const count=ANALYSIS_VIEW_STATE.data?.frames?.length||0;if(!count)return;stopAnalysisPlayback();const frame=Number(value);ANALYSIS_VIEW_STATE.currentFrame=Math.min(count-1,Math.max(0,Number.isFinite(frame)?Math.round(frame):0));drawCurrentAnalysisView();}
 function syncAnalysisFramePosition_(){const slider=$('#analysisFramePosition');if(slider){slider.value=String(ANALYSIS_VIEW_STATE.currentFrame);const last=Math.max(0,(ANALYSIS_VIEW_STATE.data?.frames?.length||0)-1);slider.style?.setProperty('--seek-progress',(last?Math.min(100,Math.max(0,ANALYSIS_VIEW_STATE.currentFrame/last*100)):0)+'%');}}
 let ANALYSIS_LAYOUT_OBSERVER_A=null,ANALYSIS_LAYOUT_FRAME_A=null;
-function observeAnalysisLayoutA_(){if(ANALYSIS_LAYOUT_OBSERVER_A)ANALYSIS_LAYOUT_OBSERVER_A.disconnect();if(ANALYSIS_LAYOUT_FRAME_A!==null){window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=null;}const viewer=$('.ad-viewer');if(!viewer||typeof ResizeObserver==='undefined')return;ANALYSIS_LAYOUT_OBSERVER_A=new ResizeObserver(()=>{if(!viewer.isConnected){ANALYSIS_LAYOUT_OBSERVER_A.disconnect();return;}if(ANALYSIS_LAYOUT_FRAME_A!==null)window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=window.requestAnimationFrame(()=>{ANALYSIS_LAYOUT_FRAME_A=null;handleAnalysisResize();});});ANALYSIS_LAYOUT_OBSERVER_A.observe(viewer);const animation=$('.ad-screen .analysis-canvas-wrap');if(animation)ANALYSIS_LAYOUT_OBSERVER_A.observe(animation);}
+function observeAnalysisLayoutA_(){if(ANALYSIS_LAYOUT_OBSERVER_A)ANALYSIS_LAYOUT_OBSERVER_A.disconnect();if(ANALYSIS_LAYOUT_FRAME_A!==null){window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=null;}const viewer=$('.ad-viewer');if(!viewer||typeof ResizeObserver==='undefined')return;ANALYSIS_LAYOUT_OBSERVER_A=new ResizeObserver(()=>{if(!viewer.isConnected){ANALYSIS_LAYOUT_OBSERVER_A.disconnect();return;}if(ANALYSIS_LAYOUT_FRAME_A!==null)window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=window.requestAnimationFrame(()=>{ANALYSIS_LAYOUT_FRAME_A=null;if(viewer.isConnected)handleAnalysisResize();});});ANALYSIS_LAYOUT_OBSERVER_A.observe(viewer);const animation=$('.ad-screen .analysis-canvas-wrap');if(animation)ANALYSIS_LAYOUT_OBSERVER_A.observe(animation);}
 
 function renderAnalysisMetrics(metrics) {
   return `
@@ -3517,17 +3490,6 @@ function bindAnalysisViewerEvents() {
   bindAnalysisToggle_("analysisToeToggle", "showToeTrajectory");
   bindAnalysisToggle_("analysisJointToggle", "showJointHighlight");
 
-  $$('[data-graph-move]').forEach((button) => {
-    button.addEventListener("click", () => {
-      const card = button.closest('[data-analysis-graph]');
-      if (!card) return;
-      moveAnalysisGraph_(
-        card.dataset.analysisGraph,
-        button.dataset.graphMove,
-      );
-    });
-  });
-
   const sectionSelect = $("#analysisSectionSelect");
   if (sectionSelect) {
     sectionSelect.addEventListener("change", () => {
@@ -3535,52 +3497,12 @@ function bindAnalysisViewerEvents() {
     });
   }
 
-  applyAnalysisGraphOrder_();
+
 }
 
-function moveAnalysisGraph_(graphKey, direction) {
-  const order = [...ANALYSIS_VIEW_STATE.graphOrder];
-  const currentIndex = order.indexOf(graphKey);
-  const nextIndex = direction === "up"
-    ? currentIndex - 1
-    : currentIndex + 1;
 
-  if (
-    currentIndex < 0 ||
-    nextIndex < 0 ||
-    nextIndex >= order.length
-  ) return;
 
-  [order[currentIndex], order[nextIndex]] =
-    [order[nextIndex], order[currentIndex]];
 
-  ANALYSIS_VIEW_STATE.graphOrder = order;
-  applyAnalysisGraphOrder_();
-  resizeAnalysisGraphCanvases();
-  drawAnalysisGraphs();
-}
-
-function applyAnalysisGraphOrder_() {
-  const container = document.getElementById("analysisGraphCards");
-  if (!container) return;
-
-  ANALYSIS_VIEW_STATE.graphOrder.forEach((graphKey) => {
-    const card = container.querySelector(
-      `[data-analysis-graph="${graphKey}"]`,
-    );
-    if (card) container.appendChild(card);
-  });
-
-  const cards = Array.from(
-    container.querySelectorAll('[data-analysis-graph]'),
-  );
-  cards.forEach((card, index) => {
-    const up = card.querySelector('[data-graph-move="up"]');
-    const down = card.querySelector('[data-graph-move="down"]');
-    if (up) up.disabled = index === 0;
-    if (down) down.disabled = index === cards.length - 1;
-  });
-}
 
 function bindAnalysisToggle_(elementId, stateKey) {
   const element = document.getElementById(elementId);
@@ -3809,6 +3731,8 @@ function resetAnalysisView() {
 }
 
 function leaveAnalysisDetail() {
+  if(ANALYSIS_LAYOUT_OBSERVER_A){ANALYSIS_LAYOUT_OBSERVER_A.disconnect();ANALYSIS_LAYOUT_OBSERVER_A=null;}
+  if(ANALYSIS_LAYOUT_FRAME_A!==null){window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=null;}
   stopAnalysisPlayback();
   document.body.classList.remove("analysis-detail-mode");
 
@@ -3824,16 +3748,9 @@ function leaveAnalysisDetail() {
 
 function handleAnalysisResize() {
   resizeAnalysisCanvas();
+  if(ANALYSIS_VIEW_STATE.activeTab==="graphs")resizeAnalysisGraphCanvases();
   drawCurrentAnalysisView();
-
-  if (
-    ANALYSIS_VIEW_STATE.activeTab ===
-    "graphs"
-  ) {
-    resizeAnalysisGraphCanvases();
-    drawAnalysisGraphs();
-  }
-}   
+}
 
 function resizeAnalysisCanvas() {
   const canvas =
@@ -4527,58 +4444,7 @@ function drawNoAnalysisData(
   );
 }
       
-function analysisMetricCard(
-  label,
-  value,
-  unit,
-  digits,
-) {
-  return `
-    <div
-      style="
-        padding:15px 10px;
-        border:1px solid var(--line);
-        border-radius:17px;
-        background:#fff;
-        text-align:center;
-      "
-    >
-      <small
-        style="
-          display:block;
-          margin-bottom:6px;
-          color:var(--muted);
-          font-weight:800;
-        "
-      >
-        ${escapeHtml(label)}
-      </small>
 
-      <strong
-        style="
-          display:block;
-          color:var(--navy);
-          font-size:23px;
-          line-height:1.2;
-        "
-      >
-        ${formatAnalysisValue(
-          value,
-          digits,
-        )}
-
-        <span
-          style="
-            font-size:12px;
-            font-weight:700;
-          "
-        >
-          ${escapeHtml(unit)}
-        </span>
-      </strong>
-    </div>
-  `;
-}
 
 function renderAnalysisJointOptions(
   labels,
@@ -4609,7 +4475,7 @@ function formatAnalysisValue(
   value,
   digits = 2,
 ) {
-  const number = Number(value);
+  const number = analysisNumericValue_(value);
 
   if (!Number.isFinite(number)) {
     return "-";
@@ -4621,7 +4487,7 @@ function formatAnalysisValue(
       function comparisonOption(result){return `${result.isFriend?`【${escapeHtml(result.ownerName)}】`:""}${escapeHtml(result.athleteName)}｜${escapeHtml(result.publishedAt||"公開日未設定")}`;}
       function comparisonFiltered_(){return COMPARISON_VIEW_STATE.candidates.filter((item)=>String(item.plan).toLowerCase()===COMPARISON_VIEW_STATE.plan.toLowerCase()&&String(item.phase)===COMPARISON_VIEW_STATE.phase);}
       function setComparisonFilter_(type,value){COMPARISON_VIEW_STATE[type]=value;renderComparisonSelection();}
-      function comparisonBigTabs_(type,values){return `<div class="comparison-segmented">${values.map((value)=>`<button type="button" class="${COMPARISON_VIEW_STATE[type]===value?"active":""}" onclick="setComparisonFilter_('${type}','${value}')">${value}</button>`).join("")}</div>`;}
+      
       function renderComparisonSelection(){
  const results=comparisonFiltered_();
  $('#screen').innerHTML=`<div class="cs-screen ${STATE.comparisonOrigin==='coach'?'coach-screen':''}"><div class="cs-title">${homeMenuIcon_('compare')}<h2>分析結果を比較</h2></div>
@@ -4632,7 +4498,7 @@ function formatAnalysisValue(
 }
 
       function comparisonBack_(){STATE.comparisonOrigin==="coach"?renderTeamDashboard():renderHome();}
-      async function showComparison(event){event.preventDefault();const idA=$("#comparisonA").value,idB=$("#comparisonB").value,error=$("#formError");error.classList.remove("visible");if(idA===idB){error.textContent="異なる2件の分析を選択してください";error.classList.add("visible");return;}lock("比較データを読み込み中...");try{const mode=STATE.comparisonOrigin;const [ra,rb]=await Promise.all([apiPost("getComparisonAnalysisData",{analysisId:idA,mode}),apiPost("getComparisonAnalysisData",{analysisId:idB,mode})]);COMPARISON_VIEW_STATE.dataA=ra.analysis;COMPARISON_VIEW_STATE.dataB=rb.analysis;COMPARISON_VIEW_STATE.layout="overlay";COMPARISON_VIEW_STATE.activeTab="metrics";COMPARISON_VIEW_STATE.elapsed=0;renderComparison();}catch(e){error.textContent=e.message||"比較データを読み込めませんでした";error.classList.add("visible");}finally{unlock();}}
+      async function showComparison(event){event.preventDefault();const idA=$("#comparisonA").value,idB=$("#comparisonB").value,error=$("#formError");error.classList.remove("visible");if(idA===idB){error.textContent="異なる2件の分析を選択してください";error.classList.add("visible");return;}lock("比較データを読み込み中...");try{const mode=STATE.comparisonOrigin;const [ra,rb]=await Promise.all([apiPost("getComparisonAnalysisData",{analysisId:idA,mode}),apiPost("getComparisonAnalysisData",{analysisId:idB,mode})]);COMPARISON_VIEW_STATE.dataA=ra.analysis;COMPARISON_VIEW_STATE.dataB=rb.analysis;COMPARISON_VIEW_STATE.layout="overlay";COMPARISON_VIEW_STATE.activeTab="metrics";COMPARISON_VIEW_STATE.elapsed=0;COMPARISON_VIEW_STATE.frameA=null;COMPARISON_VIEW_STATE.frameB=null;COMPARISON_VIEW_STATE.selectedJoint=0;renderComparison();}catch(e){error.textContent=e.message||"比較データを読み込めませんでした";error.classList.add("visible");}finally{unlock();}}
       function comparisonDate_(data){return String(data?.publishedAt||"日付なし").split(" ")[0];}
 function renderComparison(){
  stopComparisonPlayback_();window.removeEventListener('resize',handleComparisonResize_);document.body.classList.add('analysis-detail-mode');
@@ -4649,24 +4515,24 @@ function renderComparison(){
       function selectComparisonMetricSection_(key){const a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB,sections=comparisonSections_(a,b),pair=sections.find(x=>x.a.key===key);if(!pair)return;COMPARISON_VIEW_STATE.activeMetricSection=key;const content=$("#comparisonMetricContent");if(content){content.scrollTop=0;content.innerHTML=renderComparisonMetricSection_(pair,a,b);}const select=$("#comparisonMetricSelect");if(select)select.value=key;}
       function setComparisonLayout_(layout){COMPARISON_VIEW_STATE.layout=layout;renderComparison();}
       function setComparisonTab_(tab){COMPARISON_VIEW_STATE.activeTab=tab;renderComparison();}
-      function leaveComparison_(){stopComparisonPlayback_();window.removeEventListener("resize",handleComparisonResize_);document.body.classList.remove("analysis-detail-mode");renderComparisonSelection();}
+      function leaveComparison_(){if(COMPARISON_LAYOUT_OBSERVER){COMPARISON_LAYOUT_OBSERVER.disconnect();COMPARISON_LAYOUT_OBSERVER=null;}if(COMPARISON_LAYOUT_FRAME!==null){cancelAnimationFrame(COMPARISON_LAYOUT_FRAME);COMPARISON_LAYOUT_FRAME=null;}stopComparisonPlayback_();window.removeEventListener("resize",handleComparisonResize_);document.body.classList.remove("analysis-detail-mode");renderComparisonSelection();}
       function comparisonSections_(a,b){const mapA=new Map((a.displaySections||[]).map(s=>[s.key,s]));return (b.displaySections||[]).filter(s=>mapA.has(s.key)).map(s=>({a:mapA.get(s.key),b:s}));}
-      function renderComparisonMetrics_(a,b){return comparisonSections_(a,b).map((pair,index)=>`<details ${index===0?"open":""}><summary><b>${escapeHtml(pair.a.title)}</b></summary><div class="analysis-result-list"><div class="analysis-comparison-head"><span></span><span>${escapeHtml(comparisonDate_(a))}</span><span>${escapeHtml(comparisonDate_(b))}</span></div>${pair.a.items.map(item=>{const other=pair.b.items.find(x=>x.label===item.label)||{};const va=item.value||item.right||"-",vb=other.value||other.right||"-";return`<div class="analysis-comparison-row">${renderAnalysisResultLabel(item.label)}<span class="analysis-result-value">${escapeHtml(va)}</span><span class="analysis-result-value">${escapeHtml(vb)}</span></div>`;}).join("")}</div></details>`).join("");}
+      
 const COMPARISON_GRAPH_TABS=[['center','身体重心','comparisonCenterGraph'],['angle','関節角度','comparisonAngleGraph'],['velocity','関節の収縮速度','comparisonVelocityGraph']];
-function renderComparisonGraphs_(a){const key=COMPARISON_VIEW_STATE.graphMetric||'center';return `<div class="analysis-setting ad-joint-setting"><label for="comparisonJointSelect">表示する関節</label><select id="comparisonJointSelect" onchange="COMPARISON_VIEW_STATE.selectedJoint=Number(this.value);drawComparisonFrame_();drawComparisonGraphs_()">${(a.jointAngles?.labels||[]).map((label,i)=>`<option value="${i}" ${i===COMPARISON_VIEW_STATE.selectedJoint?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div><div class="ad-graph-tabs" role="group" aria-label="比較するグラフ">${COMPARISON_GRAPH_TABS.map(([value,title])=>`<button type="button" data-cp-graph="${value}" aria-pressed="${value===key}" onclick="selectComparisonGraph_('${value}')">${title}</button>`).join('')}</div><div id="comparisonGraphCards" class="ad-graph-cards">${COMPARISON_GRAPH_TABS.map(([value,title,id])=>`<section class="analysis-graph-card ad-graph-card" data-comparison-graph="${value}" ${value===key?'':'hidden'}><div class="analysis-graph-header"><h4>${title}</h4></div><div class="analysis-graph-canvas-wrap"><canvas id="${id}" class="analysis-graph-canvas" role="img" aria-label="${title}の2件比較"></canvas></div></section>`).join('')}</div>`;}
+function renderComparisonGraphs_(a){const key=COMPARISON_VIEW_STATE.graphMetric||'center';return `<div class="analysis-setting ad-joint-setting"><label for="comparisonJointSelect">表示する関節</label><select id="comparisonJointSelect" onchange="COMPARISON_VIEW_STATE.selectedJoint=Number(this.value);drawComparisonFrame_()">${(a.jointAngles?.labels||[]).map((label,i)=>`<option value="${i}" ${i===COMPARISON_VIEW_STATE.selectedJoint?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></div><div class="ad-graph-tabs" role="group" aria-label="比較するグラフ">${COMPARISON_GRAPH_TABS.map(([value,title])=>`<button type="button" data-cp-graph="${value}" aria-pressed="${value===key}" onclick="selectComparisonGraph_('${value}')">${title}</button>`).join('')}</div><div id="comparisonGraphCards" class="ad-graph-cards">${COMPARISON_GRAPH_TABS.map(([value,title,id])=>`<section class="analysis-graph-card ad-graph-card" data-comparison-graph="${value}" ${value===key?'':'hidden'}><div class="analysis-graph-header"><h4>${title}</h4></div><div class="analysis-graph-canvas-wrap"><canvas id="${id}" class="analysis-graph-canvas" role="img" aria-label="${title}の2件比較"></canvas></div></section>`).join('')}</div>`;}
 function selectComparisonGraph_(key){if(!COMPARISON_GRAPH_TABS.some(m=>m[0]===key))return;COMPARISON_VIEW_STATE.graphMetric=key;$$('[data-cp-graph]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.cpGraph===key)));$$('.cp-screen [data-comparison-graph]').forEach(card=>card.hidden=card.dataset.comparisonGraph!==key);requestAnimationFrame(drawComparisonGraphs_);}
 function comparisonSeekTime_(data,frame){if(frame===null||frame===undefined)return 0;if(String(data?.plan).toLowerCase()==='light'){const i=(data.lightFrames||[]).findIndex(ref=>Math.max(0,Number(ref.frame||1)-1)===frame);return Math.max(0,i)*.4;}return frame/Math.max(1,Number(data?.fps)||30);}
 function syncComparisonPosition_(){const slider=$('#comparisonFramePosition');if(!slider)return;const state=COMPARISON_VIEW_STATE,duration=Math.max(comparisonDuration_(state.dataA),comparisonDuration_(state.dataB)),elapsed=state.frameA!==null&&state.frameA!==undefined||state.frameB!==null&&state.frameB!==undefined?Math.max(comparisonSeekTime_(state.dataA,state.frameA),comparisonSeekTime_(state.dataB,state.frameB)):state.elapsed||0,progress=Math.min(1,Math.max(0,elapsed/duration));slider.value=String(Math.round(progress*1000));slider.style?.setProperty('--seek-progress',progress*100+'%');}
 function seekComparisonPosition_(value){if(!COMPARISON_VIEW_STATE.dataA||!COMPARISON_VIEW_STATE.dataB)return;stopComparisonPlayback_();const n=Number(value),fraction=Math.min(1,Math.max(0,Number.isFinite(n)?n/1000:0));COMPARISON_VIEW_STATE.elapsed=fraction*Math.max(comparisonDuration_(COMPARISON_VIEW_STATE.dataA),comparisonDuration_(COMPARISON_VIEW_STATE.dataB));COMPARISON_VIEW_STATE.frameA=null;COMPARISON_VIEW_STATE.frameB=null;drawComparisonFrame_();}
 let COMPARISON_LAYOUT_OBSERVER=null,COMPARISON_LAYOUT_FRAME=null;
-function observeComparisonLayout_(){if(COMPARISON_LAYOUT_OBSERVER)COMPARISON_LAYOUT_OBSERVER.disconnect();const viewer=$('.cp-screen .ad-viewer');if(!viewer||typeof ResizeObserver==='undefined')return;COMPARISON_LAYOUT_OBSERVER=new ResizeObserver(()=>{if(!viewer.isConnected){COMPARISON_LAYOUT_OBSERVER.disconnect();return;}if(COMPARISON_LAYOUT_FRAME!==null)cancelAnimationFrame(COMPARISON_LAYOUT_FRAME);COMPARISON_LAYOUT_FRAME=requestAnimationFrame(()=>{COMPARISON_LAYOUT_FRAME=null;handleComparisonResize_();});});COMPARISON_LAYOUT_OBSERVER.observe(viewer);const canvas=$('#comparisonCanvas');if(canvas)COMPARISON_LAYOUT_OBSERVER.observe(canvas);}
-      function moveComparisonGraph_(key,direction){const order=[...COMPARISON_VIEW_STATE.graphOrder],i=order.indexOf(key),j=direction==="up"?i-1:i+1;if(i<0||j<0||j>=order.length)return;[order[i],order[j]]=[order[j],order[i]];COMPARISON_VIEW_STATE.graphOrder=order;applyComparisonGraphOrder_();drawComparisonGraphs_();}
-      function applyComparisonGraphOrder_(){const container=$("#comparisonGraphCards");if(!container)return;COMPARISON_VIEW_STATE.graphOrder.forEach(key=>{const card=container.querySelector(`[data-comparison-graph="${key}"]`);if(card)container.appendChild(card);});const cards=[...container.querySelectorAll("[data-comparison-graph]")];cards.forEach((card,i)=>{const buttons=card.querySelectorAll(".analysis-graph-order-button");if(buttons[0])buttons[0].disabled=i===0;if(buttons[1])buttons[1].disabled=i===cards.length-1;});}
+function observeComparisonLayout_(){if(COMPARISON_LAYOUT_OBSERVER)COMPARISON_LAYOUT_OBSERVER.disconnect();const viewer=$('.cp-screen .ad-viewer');if(!viewer||typeof ResizeObserver==='undefined')return;COMPARISON_LAYOUT_OBSERVER=new ResizeObserver(()=>{if(!viewer.isConnected){COMPARISON_LAYOUT_OBSERVER.disconnect();return;}if(COMPARISON_LAYOUT_FRAME!==null)cancelAnimationFrame(COMPARISON_LAYOUT_FRAME);COMPARISON_LAYOUT_FRAME=requestAnimationFrame(()=>{COMPARISON_LAYOUT_FRAME=null;if(viewer.isConnected)handleComparisonResize_();});});COMPARISON_LAYOUT_OBSERVER.observe(viewer);const canvas=$('#comparisonCanvas');if(canvas)COMPARISON_LAYOUT_OBSERVER.observe(canvas);}
+      
+      
       function comparisonDuration_(data){if(String(data?.plan).toLowerCase()==="light")return Math.max(1,(data.lightFrames||[]).length*.4);return Math.max(.1,(data.frames||[]).length/Math.max(1,Number(data.fps)||30));}
-      function comparisonFrameIndex_(data,elapsed){const frames=data?.frames||[];if(!frames.length)return 0;if(String(data.plan).toLowerCase()==="light"){const refs=data.lightFrames||[];const step=Math.min(refs.length-1,Math.floor(elapsed/.4));return Math.max(0,Number(refs[step]?.frame||1)-1);}return Math.min(frames.length-1,Math.floor(elapsed*Math.max(1,Number(data.fps)||30)));}
+      function comparisonFrameIndex_(data,elapsed){const frames=data?.frames||[];if(!frames.length)return 0;if(String(data.plan).toLowerCase()==="light"){const refs=data.lightFrames||[];const step=Math.min(refs.length-1,Math.floor(elapsed/.4));return Math.min(frames.length-1,Math.max(0,Number(refs[step]?.frame||1)-1));}return Math.min(frames.length-1,Math.floor(elapsed*Math.max(1,Number(data.fps)||30)));}
       function resizeComparisonCanvas_(){const canvas=$("#comparisonCanvas");if(!canvas)return;const rect=canvas.getBoundingClientRect(),ratio=window.devicePixelRatio||1;canvas.width=Math.max(1,Math.round(rect.width*ratio));canvas.height=Math.max(1,Math.round(rect.height*ratio));canvas.getContext("2d").setTransform(ratio,0,0,ratio,0,0);}
-      function handleComparisonResize_(){resizeComparisonCanvas_();drawComparisonFrame_();if(COMPARISON_VIEW_STATE.activeTab==="graphs")drawComparisonGraphs_();}
-      function drawComparisonFrame_(){syncComparisonPosition_();const canvas=$("#comparisonCanvas"),a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;if(!canvas||!a||!b)return;const ctx=canvas.getContext("2d"),w=canvas.getBoundingClientRect().width,h=canvas.getBoundingClientRect().height;ctx.clearRect(0,0,w,h);ctx.fillStyle="#eef3f6";ctx.fillRect(0,0,w,h);const ia=comparisonFrameIndex_(a,COMPARISON_VIEW_STATE.elapsed),ib=comparisonFrameIndex_(b,COMPARISON_VIEW_STATE.elapsed),side=COMPARISON_VIEW_STATE.layout==="side";const areaA={left:side?8:20,top:10,width:side?w/2-12:w-40,height:h-22,scale:side?.82:1,referenceFrames:a.frames.map(f=>f.points),stickColor:"#1565c0"};const areaB={left:side?w/2+4:20,top:10,width:side?w/2-12:w-40,height:h-22,scale:side?.82:1,referenceFrames:b.frames.map(f=>f.points),stickColor:"#e8751a"};ctx.save();ctx.globalAlpha=.88;drawStickFrame(ctx,a.frames[ia]?.points||[],areaA);ctx.restore();ctx.save();ctx.globalAlpha=.78;drawStickFrame(ctx,b.frames[ib]?.points||[],areaB);ctx.restore();const overlay=$("#comparisonOverlay");if(overlay)overlay.textContent=`${comparisonDate_(a)}：${ia+1}/${a.frames.length}　${comparisonDate_(b)}：${ib+1}/${b.frames.length}`;if(COMPARISON_VIEW_STATE.activeTab==="graphs")drawComparisonGraphs_();}
+      function handleComparisonResize_(){resizeComparisonCanvas_();drawComparisonFrame_();}
+      
       function drawComparisonFrame_(){syncComparisonPosition_();const canvas=$("#comparisonCanvas"),a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;if(!canvas||!a||!b)return;const ctx=canvas.getContext("2d"),w=canvas.getBoundingClientRect().width,h=canvas.getBoundingClientRect().height;ctx.clearRect(0,0,w,h);ctx.fillStyle="#eef3f6";ctx.fillRect(0,0,w,h);const ia=COMPARISON_VIEW_STATE.frameA??comparisonFrameIndex_(a,COMPARISON_VIEW_STATE.elapsed),ib=COMPARISON_VIEW_STATE.frameB??comparisonFrameIndex_(b,COMPARISON_VIEW_STATE.elapsed),side=COMPARISON_VIEW_STATE.layout==="side",scale=(COMPARISON_VIEW_STATE.scale||100)/100;const areaA={left:side?8:20,top:10,width:side?w/2-12:w-40,height:h-22,scale:(side?($('.cp-screen')?.dataset.viewerMode==='graph'?1:.82):1)*scale,referenceFrames:a.frames.map(f=>f.points),stickColor:"#1565c0"};const areaB={left:side?w/2+4:20,top:10,width:side?w/2-12:w-40,height:h-22,scale:(side?($('.cp-screen')?.dataset.viewerMode==='graph'?1:.82):1)*scale,referenceFrames:b.frames.map(f=>f.points),stickColor:"#e8751a"};ctx.save();ctx.globalAlpha=.88;const convertA=drawStickFrame(ctx,a.frames[ia]?.points||[],areaA);ctx.restore();ctx.save();ctx.globalAlpha=.78;const convertB=drawStickFrame(ctx,b.frames[ib]?.points||[],areaB);ctx.restore();drawComparisonAuxiliary_(ctx,a,ia,convertA,"#1565c0");drawComparisonAuxiliary_(ctx,b,ib,convertB,"#e8751a");const overlay=$("#comparisonOverlay");if(overlay)overlay.textContent=`${comparisonDate_(a)}：${ia+1}/${a.frames.length}　${comparisonDate_(b)}：${ib+1}/${b.frames.length}`;if(COMPARISON_VIEW_STATE.activeTab==="graphs")drawComparisonGraphs_();}
       function drawComparisonAuxiliary_(ctx,data,index,convert,color){if(!convert)return;if(COMPARISON_VIEW_STATE.showToeTrajectory)drawComparisonToe_(ctx,data,convert,color);if(COMPARISON_VIEW_STATE.showCenterOfMass){const p=data.centerOfMass?.[index];if(p&&Number.isFinite(Number(p.x))&&Number.isFinite(Number(p.y))){const q=convert({x:Number(p.x),y:Number(p.y)});ctx.beginPath();ctx.arc(q.x,q.y,4.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();}}if(COMPARISON_VIEW_STATE.showJointHighlight){const ids=[2,3,6,7,13,12,11,19,18,17],p=data.frames?.[index]?.points?.[ids[COMPARISON_VIEW_STATE.selectedJoint]];if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)){const q=convert(p);ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.stroke();}}}
 function drawComparisonToe_(ctx,data,convert,color){
@@ -4676,10 +4542,10 @@ function drawComparisonToe_(ctx,data,convert,color){
  ctx.strokeStyle=color+'66';ctx.lineWidth=1.4;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
 }
       function stepComparisonFrame_(direction){stopComparisonPlayback_();const a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;const ia=COMPARISON_VIEW_STATE.frameA??comparisonFrameIndex_(a,COMPARISON_VIEW_STATE.elapsed),ib=COMPARISON_VIEW_STATE.frameB??comparisonFrameIndex_(b,COMPARISON_VIEW_STATE.elapsed);COMPARISON_VIEW_STATE.frameA=Math.max(0,Math.min(a.frames.length-1,ia+direction));COMPARISON_VIEW_STATE.frameB=Math.max(0,Math.min(b.frames.length-1,ib+direction));drawComparisonFrame_();}
-      function toggleComparisonPlayback_(){if(COMPARISON_VIEW_STATE.playing){stopComparisonPlayback_();return;}if(COMPARISON_VIEW_STATE.frameA!==null||COMPARISON_VIEW_STATE.frameB!==null){const ta=(COMPARISON_VIEW_STATE.frameA||0)/Math.max(1,Number(COMPARISON_VIEW_STATE.dataA?.fps)||30),tb=(COMPARISON_VIEW_STATE.frameB||0)/Math.max(1,Number(COMPARISON_VIEW_STATE.dataB?.fps)||30);COMPARISON_VIEW_STATE.elapsed=Math.max(ta,tb);COMPARISON_VIEW_STATE.frameA=null;COMPARISON_VIEW_STATE.frameB=null;}COMPARISON_VIEW_STATE.playing=true;COMPARISON_VIEW_STATE.startedAt=performance.now()-COMPARISON_VIEW_STATE.elapsed*1000/(COMPARISON_VIEW_STATE.speed||1);const button=$("#comparisonPlayButton");if(button)button.textContent="停止";const tick=(now)=>{if(!COMPARISON_VIEW_STATE.playing)return;const duration=Math.max(comparisonDuration_(COMPARISON_VIEW_STATE.dataA),comparisonDuration_(COMPARISON_VIEW_STATE.dataB));COMPARISON_VIEW_STATE.elapsed=(now-COMPARISON_VIEW_STATE.startedAt)/1000*(COMPARISON_VIEW_STATE.speed||1);if(COMPARISON_VIEW_STATE.elapsed>=duration){COMPARISON_VIEW_STATE.elapsed=0;COMPARISON_VIEW_STATE.startedAt=now;}drawComparisonFrame_();COMPARISON_VIEW_STATE.animationId=requestAnimationFrame(tick);};COMPARISON_VIEW_STATE.animationId=requestAnimationFrame(tick);}
+      function toggleComparisonPlayback_(){if(COMPARISON_VIEW_STATE.playing){stopComparisonPlayback_();return;}if(COMPARISON_VIEW_STATE.frameA!==null||COMPARISON_VIEW_STATE.frameB!==null){const ta=comparisonSeekTime_(COMPARISON_VIEW_STATE.dataA,COMPARISON_VIEW_STATE.frameA),tb=comparisonSeekTime_(COMPARISON_VIEW_STATE.dataB,COMPARISON_VIEW_STATE.frameB);COMPARISON_VIEW_STATE.elapsed=Math.max(ta,tb);COMPARISON_VIEW_STATE.frameA=null;COMPARISON_VIEW_STATE.frameB=null;}COMPARISON_VIEW_STATE.playing=true;COMPARISON_VIEW_STATE.startedAt=performance.now()-COMPARISON_VIEW_STATE.elapsed*1000/(COMPARISON_VIEW_STATE.speed||1);const button=$("#comparisonPlayButton");if(button)button.textContent="停止";const tick=(now)=>{if(!COMPARISON_VIEW_STATE.playing)return;const duration=Math.max(comparisonDuration_(COMPARISON_VIEW_STATE.dataA),comparisonDuration_(COMPARISON_VIEW_STATE.dataB));COMPARISON_VIEW_STATE.elapsed=(now-COMPARISON_VIEW_STATE.startedAt)/1000*(COMPARISON_VIEW_STATE.speed||1);if(COMPARISON_VIEW_STATE.elapsed>=duration){COMPARISON_VIEW_STATE.elapsed=0;COMPARISON_VIEW_STATE.startedAt=now;}drawComparisonFrame_();COMPARISON_VIEW_STATE.animationId=requestAnimationFrame(tick);};COMPARISON_VIEW_STATE.animationId=requestAnimationFrame(tick);}
       function stopComparisonPlayback_(){COMPARISON_VIEW_STATE.playing=false;if(COMPARISON_VIEW_STATE.animationId)cancelAnimationFrame(COMPARISON_VIEW_STATE.animationId);COMPARISON_VIEW_STATE.animationId=null;const button=$("#comparisonPlayButton");if(button)button.textContent="再生";}
       function resetComparisonPlayback_(){stopComparisonPlayback_();COMPARISON_VIEW_STATE.elapsed=0;COMPARISON_VIEW_STATE.frameA=null;COMPARISON_VIEW_STATE.frameB=null;drawComparisonFrame_();}
-      function drawComparisonGraphs_(){const a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;if(!a||!b)return;const j=COMPARISON_VIEW_STATE.selectedJoint;drawComparisonLineGraph_("comparisonCenterGraph",(a.centerOfMass||[]).map(x=>Number(x.y)),(b.centerOfMass||[]).map(x=>Number(x.y)));drawComparisonLineGraph_("comparisonAngleGraph",getAnalysisGraphSeries(a.jointAngles,j),getAnalysisGraphSeries(b.jointAngles,j));drawComparisonLineGraph_("comparisonVelocityGraph",getAnalysisGraphSeries(a.angularVelocities,j),getAnalysisGraphSeries(b.angularVelocities,j),true);}
+      function drawComparisonGraphs_(){const a=COMPARISON_VIEW_STATE.dataA,b=COMPARISON_VIEW_STATE.dataB;if(!a||!b)return;const j=COMPARISON_VIEW_STATE.selectedJoint;drawComparisonLineGraph_("comparisonCenterGraph",(a.centerOfMass||[]).map(x=>analysisNumericValue_(x?.y)),(b.centerOfMass||[]).map(x=>analysisNumericValue_(x?.y)));drawComparisonLineGraph_("comparisonAngleGraph",getAnalysisGraphSeries(a.jointAngles,j),getAnalysisGraphSeries(b.jointAngles,j));drawComparisonLineGraph_("comparisonVelocityGraph",getAnalysisGraphSeries(a.angularVelocities,j),getAnalysisGraphSeries(b.angularVelocities,j),true);}
 function comparisonGraphFrame_(data,manualFrame,elapsed){const count=data?.frames?.length||0,value=manualFrame??comparisonFrameIndex_(data,elapsed),index=Math.max(0,Math.min(Math.max(0,count-1),Number.isFinite(Number(value))?Math.round(Number(value)):0));return {index,count};}
       function drawComparisonLineGraph_(id,seriesA,seriesB,zeroLine=false){
         const canvas=document.getElementById(id);if(!canvas)return;
@@ -4713,14 +4579,14 @@ function comparisonGraphFrame_(data,manualFrame,elapsed){const count=data?.frame
           ctx.fillStyle="#60766f";ctx.textAlign="center";ctx.textBaseline="top";ctx.fillText(String(index+1),x,h-bottom+6);
         });
         if(zeroLine&&min<0&&max>0){const y=yOf(0);ctx.strokeStyle="#9aaba5";ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.setLineDash([]);}
-        const draw=(values,color)=>{ctx.beginPath();let active=false;values.forEach((value,index)=>{if(!Number.isFinite(value)){active=false;return;}const x=xOf(index,values.length),y=yOf(value);active?ctx.lineTo(x,y):ctx.moveTo(x,y);active=true;});ctx.strokeStyle=color;ctx.lineWidth=2.2;ctx.stroke();};
+        const draw=(values,color)=>{ctx.beginPath();let active=false;values.forEach((value,index)=>{if(!Number.isFinite(value)){active=false;return;}const x=xOf(index),y=yOf(value);active?ctx.lineTo(x,y):ctx.moveTo(x,y);active=true;});ctx.strokeStyle=color;ctx.lineWidth=2.2;ctx.stroke();};
         draw(seriesA,"#1565c0");draw(seriesB,"#e8751a");
         const state=COMPARISON_VIEW_STATE;
         const markers=[{data:state.dataA,frame:state.frameA,values:seriesA,color:'#1565c0',label:'①',dash:[],radius:5},{data:state.dataB,frame:state.frameB,values:seriesB,color:'#e8751a',label:'②',dash:[4,3],radius:3.5}];
         markers.forEach((marker,i)=>{
           if(!marker.data?.frames?.length||!marker.values.length)return;
           const current=comparisonGraphFrame_(marker.data,marker.frame,state.elapsed),index=current.index;
-          const x=xOf(Math.min(index,marker.values.length-1),marker.values.length),value=marker.values[index];
+          const x=xOf(index),value=marker.values[index];
           ctx.save();ctx.strokeStyle=marker.color;ctx.lineWidth=i===0?2:1.5;ctx.setLineDash(marker.dash);ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,h-bottom);ctx.stroke();ctx.setLineDash([]);
           if(Number.isFinite(value)){ctx.beginPath();ctx.arc(x,yOf(value),marker.radius,0,Math.PI*2);ctx.fillStyle=marker.color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();}
           ctx.font='bold 10px sans-serif';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle=marker.color;
@@ -4969,9 +4835,9 @@ async function refreshAdminDashboard_(){
 
       async function saveAdminProduct_(button){const card=button.closest(".admin-application"),productId=button.dataset.adminProductSave,normalPrice=Number(card?.querySelector("[data-product-price]")?.value),receptionStatus=card?.querySelector("[data-product-reception]")?.value||"",displayStatus=card?.querySelector("[data-product-display]")?.value||"";lock("商品設定を保存中...");try{STATE.adminDashboard=await apiPost("updateAdminProduct",{productId,normalPrice,receptionStatus,displayStatus});STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.adminSection="products";renderAdminDashboard();}catch(error){alert(error.message||"商品設定を保存できませんでした");}finally{unlock();}}
 
-      async function reloadHome(){clearApiReadCache_();lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
+      async function reloadHome(){clearApiReadCache_();lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");await openInitialHome_();}catch(error){alert(error.message);}finally{unlock();}}
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
-      function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
+      
       function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".manual-screen")){closeUserManual_();return;}if($(".cr-screen")){backFromRaceGraphs_();return;}if($(".tc-screen")){renderTeamDashboard();return;}if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome&&currentHomeAccess_().admin?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
       installHeaderNavigation_();
       window.addEventListener("DOMContentLoaded",startApp);
@@ -5042,9 +4908,9 @@ function drawAnalysisGraphs() {
     (data.centerOfMass || []).map(
       (item) =>
         Number.isFinite(
-          Number(item.y),
+          analysisNumericValue_(item?.y),
         )
-          ? Number(item.y)
+          ? analysisNumericValue_(item?.y)
           : null,
     );
 
@@ -5104,6 +4970,8 @@ function drawAnalysisGraphs() {
   );
 }
 
+function analysisNumericValue_(value){return value===null||value===undefined||String(value).trim()===''?NaN:Number(value);}
+
 function getAnalysisGraphSeries(
   graphData,
   jointIndex,
@@ -5121,9 +4989,9 @@ function getAnalysisGraphSeries(
         frame.values?.[jointIndex];
 
       return Number.isFinite(
-        Number(value),
+        analysisNumericValue_(value),
       )
-        ? Number(value)
+        ? analysisNumericValue_(value)
         : null;
     },
   );

@@ -1321,6 +1321,14 @@ body:has(.ad-screen) #screen{height:100%;min-height:0;min-width:0;overflow:hidde
 .ad-screen .analysis-tab-panel input,.ad-screen .analysis-tab-panel select{max-width:100%}
 @media(max-height:650px){.ad-screen .ad-viewer{padding:7px;gap:5px}.ad-heading h2{font-size:16px}.ad-heading .secondary{min-height:30px}.ad-screen .analysis-control-button,.ad-screen .analysis-tab-button{min-height:30px}.ad-screen .analysis-canvas-wrap{flex:1.1 1 0%}.ad-graph-tabs button{min-height:28px;padding:4px 7px}.ad-screen .ad-joint-setting select{min-height:28px}}
 @media(max-height:420px){.ad-screen .ad-viewer{gap:3px;padding:5px}.ad-heading p{display:none}.ad-heading h2{font-size:14px}.ad-heading .secondary,.ad-screen .analysis-control-button,.ad-screen .analysis-tab-button{min-height:26px;padding-top:2px;padding-bottom:2px}.ad-screen .analysis-canvas-wrap{flex:1 1 0%}.ad-screen #analysisTabGraphs.active{overflow-y:auto}.ad-screen .ad-graph-cards{flex:1 0 90px}.ad-frame-position input{height:14px;min-height:14px}}
+
+/* Repeated frame-control taps are button operations, not double-tap zoom gestures. */
+.analysis-controls,.analysis-control-button{
+ touch-action:manipulation;
+ -webkit-user-select:none;
+ user-select:none;
+ -webkit-touch-callout:none;
+}
     </style>
   </head>
   <body>

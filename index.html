@@ -1329,6 +1329,25 @@ body:has(.ad-screen) #screen{height:100%;min-height:0;min-width:0;overflow:hidde
  user-select:none;
  -webkit-touch-callout:none;
 }
+
+/* Equal halves: player/header/transport above, tabs and chart/results below. */
+.ad-screen .ad-viewer{display:grid;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.ad-player,.ad-content{display:flex;flex-direction:column;gap:7px;min-height:0;min-width:0;max-width:100%;overflow:hidden}
+.ad-player>* , .ad-content>*{min-width:0;max-width:100%}
+.ad-player>.analysis-canvas-wrap{flex:1 1 0%;min-height:0;isolation:isolate}
+.ad-player>.analysis-controls{flex:0 0 auto}
+.ad-content>.analysis-tabs{flex:0 0 auto;margin:0}
+.ad-content>.analysis-tab-panel.active{flex:1 1 0%;min-height:0}
+.ad-screen .ad-frame-position{position:absolute;z-index:4;bottom:0;left:0;right:0;height:26px;padding:0;margin:0;background:linear-gradient(to bottom,rgba(238,243,246,0),rgba(211,225,220,.9));border-radius:0 0 12px 12px}
+.ad-screen .ad-frame-position input{appearance:none;-webkit-appearance:none;position:absolute;bottom:0;left:0;width:100%;height:24px;min-height:24px;margin:0;padding:0;background:transparent;border:0;border-radius:0;cursor:pointer;touch-action:pan-x;--seek-progress:0%}
+.ad-frame-position input::-webkit-slider-runnable-track{height:4px;border-radius:0;background:linear-gradient(to right,#246b58 0%,#246b58 var(--seek-progress),#bed5cb var(--seek-progress),#bed5cb 100%)}
+.ad-frame-position input::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:12px;height:12px;margin-top:-4px;border:0;border-radius:50%;background:#246b58}
+.ad-frame-position input::-moz-range-track{height:4px;background:#bed5cb;border:0}
+.ad-frame-position input::-moz-range-progress{height:4px;background:#246b58}
+.ad-frame-position input::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#246b58}
+.ad-frame-position input:focus-visible{outline:2px solid var(--navy);outline-offset:-2px}
+@media(max-height:650px){.ad-screen .ad-viewer{gap:5px}.ad-player,.ad-content{gap:5px}}
+@media(max-height:420px){.ad-screen .ad-viewer{gap:4px}.ad-player,.ad-content{gap:3px}}
     </style>
   </head>
   <body>
@@ -2736,7 +2755,7 @@ function renderAnalysisDetail(analysis) {
   $("#screen").innerHTML = `
     <div class="analysis-detail-shell ad-screen">
       <section class="card analysis-viewer ad-viewer">
-        <header class="ad-heading"><div><h2>動作分析結果</h2><p>${escapeHtml(analysis.plan||'')} ／ ${escapeHtml(analysis.phase||'')}</p></div><button class="secondary" type="button" onclick="leaveAnalysisDetail()">戻る</button></header>
+        <div class="ad-player"><header class="ad-heading"><div><h2>動作分析結果</h2><p>${escapeHtml(analysis.plan||'')} ／ ${escapeHtml(analysis.phase||'')}</p></div><button class="secondary" type="button" onclick="leaveAnalysisDetail()">戻る</button></header>
         <div class="analysis-canvas-wrap">
 
           <canvas
@@ -2744,6 +2763,7 @@ function renderAnalysisDetail(analysis) {
             class="analysis-canvas"
           ></canvas>
 
+          ${!isLight?`<div class="ad-frame-position"><input id="analysisFramePosition" type="range" min="0" max="${Math.max(0,(analysis.frames||[]).length-1)}" value="0" step="1" aria-label="表示するコマ" oninput="seekAnalysisFrameA_(this.value)"></div>`:''}
           <div
             id="analysisOverlay"
             class="analysis-overlay"
@@ -2791,7 +2811,7 @@ function renderAnalysisDetail(analysis) {
             `
         }
 
-        ${!isLight?`<div class="ad-frame-position"><input id="analysisFramePosition" type="range" min="0" max="${Math.max(0,(analysis.frames||[]).length-1)}" value="0" step="1" aria-label="表示するコマ" oninput="seekAnalysisFrameA_(this.value)"></div>`:''}
+        </div><div class="ad-content">
         <div class="analysis-tabs">
           <button
             class="analysis-tab-button active"
@@ -2901,6 +2921,7 @@ function renderAnalysisDetail(analysis) {
         </div>
 
 ${renderAnalysisGraphPanelA_(analysis)}
+</div>
 
       </section>
     </div>
@@ -2922,7 +2943,7 @@ const ANALYSIS_GRAPH_METRICS_A=[['center','身体重心','centerOfMassGraphCanva
 function renderAnalysisGraphPanelA_(analysis){return `<div id="analysisTabGraphs" class="analysis-tab-panel ad-graphs"><div class="analysis-setting ad-joint-setting"><label for="analysisJointSelect">表示する関節</label><select id="analysisJointSelect" class="analysis-joint-select">${renderAnalysisJointOptions(analysis.jointAngles?.labels||[])}</select></div><div class="ad-graph-tabs" role="group" aria-label="表示するグラフ">${ANALYSIS_GRAPH_METRICS_A.map(([key,title])=>`<button type="button" data-ad-graph="${key}" aria-pressed="${key==='center'}" onclick="selectAnalysisGraphA_('${key}')">${title}</button>`).join('')}</div><div id="analysisGraphCards" class="ad-graph-cards">${ANALYSIS_GRAPH_METRICS_A.map(([key,title,id,valueId])=>`<section class="analysis-graph-card ad-graph-card" data-analysis-graph="${key}" ${key==='center'?'':'hidden'} aria-label="${title}"><div class="analysis-graph-header"><h4>${title}</h4><span id="${valueId}" class="analysis-graph-value">-</span></div><div class="analysis-graph-canvas-wrap"><canvas id="${id}" class="analysis-graph-canvas" role="img" aria-label="${title}の推移"></canvas></div></section>`).join('')}</div></div>`;}
 function selectAnalysisGraphA_(key){if(!ANALYSIS_GRAPH_METRICS_A.some(m=>m[0]===key))return;ANALYSIS_VIEW_STATE.graphMetric=key;$$('.ad-screen [data-ad-graph]').forEach(button=>{button.setAttribute('aria-pressed',String(button.dataset.adGraph===key));});$$('.ad-screen [data-analysis-graph]').forEach(card=>{card.hidden=card.dataset.analysisGraph!==key;});window.requestAnimationFrame(()=>{resizeAnalysisGraphCanvases();drawAnalysisGraphs();});}
 function seekAnalysisFrameA_(value){const count=ANALYSIS_VIEW_STATE.data?.frames?.length||0;if(!count)return;stopAnalysisPlayback();const frame=Number(value);ANALYSIS_VIEW_STATE.currentFrame=Math.min(count-1,Math.max(0,Number.isFinite(frame)?Math.round(frame):0));drawCurrentAnalysisView();}
-function syncAnalysisFramePosition_(){const slider=$('#analysisFramePosition');if(slider)slider.value=String(ANALYSIS_VIEW_STATE.currentFrame);}
+function syncAnalysisFramePosition_(){const slider=$('#analysisFramePosition');if(slider){slider.value=String(ANALYSIS_VIEW_STATE.currentFrame);const last=Math.max(0,(ANALYSIS_VIEW_STATE.data?.frames?.length||0)-1);slider.style?.setProperty('--seek-progress',(last?Math.min(100,Math.max(0,ANALYSIS_VIEW_STATE.currentFrame/last*100)):0)+'%');}}
 let ANALYSIS_LAYOUT_OBSERVER_A=null,ANALYSIS_LAYOUT_FRAME_A=null;
 function observeAnalysisLayoutA_(){if(ANALYSIS_LAYOUT_OBSERVER_A)ANALYSIS_LAYOUT_OBSERVER_A.disconnect();if(ANALYSIS_LAYOUT_FRAME_A!==null){window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=null;}const viewer=$('.ad-viewer');if(!viewer||typeof ResizeObserver==='undefined')return;ANALYSIS_LAYOUT_OBSERVER_A=new ResizeObserver(()=>{if(!viewer.isConnected){ANALYSIS_LAYOUT_OBSERVER_A.disconnect();return;}if(ANALYSIS_LAYOUT_FRAME_A!==null)window.cancelAnimationFrame(ANALYSIS_LAYOUT_FRAME_A);ANALYSIS_LAYOUT_FRAME_A=window.requestAnimationFrame(()=>{ANALYSIS_LAYOUT_FRAME_A=null;handleAnalysisResize();});});ANALYSIS_LAYOUT_OBSERVER_A.observe(viewer);const animation=$('.ad-screen .analysis-canvas-wrap');if(animation)ANALYSIS_LAYOUT_OBSERVER_A.observe(animation);}
 

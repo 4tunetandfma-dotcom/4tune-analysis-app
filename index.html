@@ -1885,9 +1885,16 @@ function startLoadingHints_(){
 }
 function stopLoadingHints_(){if(MANUAL_HINT_TIMER!==null){clearInterval(MANUAL_HINT_TIMER);MANUAL_HINT_TIMER=null;}}
 
+
+function homeAccess_(type,isAdmin){return {athlete:!!isAdmin||type==='選手'||type==='選手兼指導者',coach:!!isAdmin||type==='指導者'||type==='選手兼指導者',admin:!!isAdmin};}
+function currentHomeAccess_(){const c=STATE.data?.customer||{};return homeAccess_(c.userType||c.applicantType||'選手',STATE.data?.isAdmin);}
+function openInitialHome_(){const access=currentHomeAccess_();return access.athlete?renderHome():openTeamDashboard('coach');}
+function userTypeChangeMessage_(before,after,isAdmin){const old=homeAccess_(before,isAdmin),next=homeAccess_(after,isAdmin),lost=[];if(old.athlete&&!next.athlete)lost.push('選手ホーム（本人の分析結果・比較、個人申込み・チケット、フレンド・チーム参加）');if(old.coach&&!next.coach)lost.push('指導者ホーム（選手・チーム管理、チーム・個別・レース比較、団体申込み）');const available=[next.athlete?'選手ホーム':'',next.coach?'指導者ホーム':'',next.admin?'管理者ホーム':''].filter(Boolean).join('・');return '利用者種別を「'+after+'」に変更します。\n\n'+(lost.length?'変更後は次が利用できなくなります。\n'+lost.join('\n'):'利用できなくなるホームはありません。')+'\n\n利用できるホーム：'+available+'\n保存済みデータは削除しません。\n変更しますか？';}
+
 function renderHome(){
+ if(!currentHomeAccess_().athlete)return openTeamDashboard('coach');
  document.body.classList.remove('analysis-detail-mode');
- const customer=STATE.data.customer||{},type=customer.userType||customer.applicantType||'選手',coach=['指導者','選手兼指導者'].includes(type);
+ const customer=STATE.data.customer||{},type=customer.userType||customer.applicantType||'選手',coach=currentHomeAccess_().coach;
  const adminHeaderButton=$('#adminHeaderButton');
  if(adminHeaderButton){adminHeaderButton.classList.toggle('hidden',!STATE.data.isAdmin);adminHeaderButton.classList.remove('normal-screen-button');adminHeaderButton.textContent='管理者画面';adminHeaderButton.onclick=openAdminDashboard;}
  $('#screen').innerHTML=`<div class="home-screen hm-home">
@@ -1998,16 +2005,14 @@ function renderHome(){
       }
 
       async function saveAccountUserType(){
-        if(STATE.submitting)return;
-        STATE.submitting=true;lock("利用者種別を更新中...");
-        try{
-          STATE.athleteManagement=await apiPost("updateUserType",{userType:$("#accountUserType").value});
-          STATE.data=await apiPost("bootstrap");
-          renderAthleteManagement();
-          alert("利用者種別を更新しました");
-        }catch(error){console.error(error);alert(error.message||"利用者種別を更新できませんでした");}
-        finally{STATE.submitting=false;unlock();}
-      }
+ if(STATE.submitting)return;const customer=STATE.data?.customer||{},before=customer.userType||customer.applicantType||'選手',after=$('#accountUserType').value;
+ if(before===after)return;
+ if(!confirm(userTypeChangeMessage_(before,after,STATE.data?.isAdmin)))return;
+ STATE.submitting=true;lock('利用者種別を更新中...');
+ try{await apiPost('updateUserType',{userType:after});clearApiReadCache_();STATE.teamDashboard=null;STATE.adminDashboard=null;STATE.athleteManagement=null;STATE.data=await apiPost('bootstrap',{}, {force:true});await openInitialHome_();alert('利用者種別を更新しました');}
+ catch(error){console.error(error);alert(error.message||'利用者種別を更新できませんでした');}
+ finally{STATE.submitting=false;unlock();}
+}
 
       function renderAthleteManagementCard_(athlete, analyses) {
         return `
@@ -2174,16 +2179,17 @@ function filterCoachMembers_(value){
         catch(error){alert(error.message||"分析を読み込めませんでした");}finally{unlock();}
       }
 
-      async function openTeamDashboard(mode="coach",force=false){document.body.classList.remove("analysis-detail-mode");lock(mode==="join"?"参加チームを読み込み中...":"指導者画面を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard",{mode},{force});renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
+      async function openTeamDashboard(mode="coach",force=false){if(mode!=="join"&&!currentHomeAccess_().coach)return renderHome();document.body.classList.remove("analysis-detail-mode");lock(mode==="join"?"参加チームを読み込み中...":"指導者画面を読み込み中...");try{STATE.teamDashboard=await apiPost("getTeamDashboard",{mode},{force});renderTeamDashboard();}catch(error){console.error(error);alert(error.message||"チーム情報を読み込めませんでした");}finally{unlock();}}
 
       function renderTeamDashboard(){
+ if(STATE.teamDashboard?.isCoach&&!currentHomeAccess_().coach)return renderHome();
  STATE.coachRaceDetail=false;STATE.coachAnalysisAthleteId='';STATE.teamEditing=false;
  document.body.classList.remove('analysis-detail-mode');
  const data=STATE.teamDashboard||{};
  if(!data.isCoach){renderTeamJoinPage_(data);return;}
  const members=data.members||[],team=data.team||{},customer=STATE.data?.customer||{},type=customer.userType||customer.applicantType||'指導者';
  $('#screen').innerHTML=`<div class="hm-home hm-coach-home coach-screen">
- <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><div class="hm-logo">${document.querySelector('.brand-logo-group')?.outerHTML||''}</div><button class="hm-user" type="button" onclick="openAthleteManagement()" aria-label="登録情報を編集"><span class="hm-user-copy"><b>${escapeHtml(customer.applicantName||'')}<small>さん</small></b><span>${escapeHtml(type)}</span><small class="hm-edit-hint">登録情報を編集</small></span><span class="hm-chevron" aria-hidden="true">›</span></button></div><div class="hm-role-actions"><button class="hm-normal" type="button" onclick="renderHome()">通常画面 <span aria-hidden="true">›</span></button>${STATE.data?.isAdmin?'<button class="hm-admin" type="button" onclick="openAdminDashboard()">管理者画面 <span aria-hidden="true">›</span></button>':''}</div></section>
+ <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><div class="hm-logo">${document.querySelector('.brand-logo-group')?.outerHTML||''}</div><button class="hm-user" type="button" onclick="openAthleteManagement()" aria-label="登録情報を編集"><span class="hm-user-copy"><b>${escapeHtml(customer.applicantName||'')}<small>さん</small></b><span>${escapeHtml(type)}</span><small class="hm-edit-hint">登録情報を編集</small></span><span class="hm-chevron" aria-hidden="true">›</span></button></div><div class="hm-role-actions">${currentHomeAccess_().athlete?'<button class="hm-normal" type="button" onclick="renderHome()">選手ホーム <span aria-hidden="true">›</span></button>':''}${STATE.data?.isAdmin?'<button class="hm-admin" type="button" onclick="openAdminDashboard()">管理者画面 <span aria-hidden="true">›</span></button>':''}</div></section>
  ${manualMenuEntry_('coach')}
  <div class="hm-coach-title"><h1>指導者画面</h1><p>${escapeHtml(team.name||'')}<span>所属選手 ${members.length}名</span></p></div>
  <section class="hm-section hm-analysis" aria-labelledby="hmCoachAnalysisTitle">${homeMenuHeading_('hmCoachAnalysisTitle','分析・比較','所属選手の分析データを比較できます。','chart')}<div class="hm-two">${homeMenuAction_('チーム比較','最新・過去のPro分析','run','openTeamComparison_()','hm-coach-result')}${homeMenuAction_('個別比較','2件の動作分析を比較','compare',"openComparison('coach')",'hm-coach-result')}</div>${homeMenuAction_('レース分析の比較','最大10データ・折れ線／棒グラフ','chart',"openRaceGraphs('coach')",'hm-coach-race')}</section>
@@ -4725,6 +4731,7 @@ function comparisonGraphFrame_(data,manualFrame,elapsed){const count=data?.frame
       }
       function formatGraphTick_(value){const absolute=Math.abs(value);return absolute>=100?String(Math.round(value)):absolute>=10?value.toFixed(1):value.toFixed(2);}
       async function openAdminDashboard() {
+        if(!currentHomeAccess_().admin)return openInitialHome_();
         lock("管理データを読み込み中...");
         try {
           const result = await apiPost("getAdminDashboard");
@@ -4740,8 +4747,9 @@ function comparisonGraphFrame_(data,manualFrame,elapsed){const count=data?.frame
       }
 
       function renderAdminDashboard(){
+ if(!currentHomeAccess_().admin)return openInitialHome_();
  document.body.classList.remove('analysis-detail-mode');
- const data=STATE.adminDashboard||{},summary=data.summary||{},customer=STATE.data?.customer||{},coach=['指導者','選手兼指導者'].includes(customer.userType||customer.applicantType||'');
+ const data=STATE.adminDashboard||{},summary=data.summary||{},customer=STATE.data?.customer||{},coach=currentHomeAccess_().coach;
  if(!['applications','analyses','registrants','products'].includes(STATE.adminSection))STATE.adminSection='applications';
  $('#screen').innerHTML=`<div class="hm-home hm-admin-home admin-screen">
  <section class="hm-profile" aria-label="アカウント"><div class="hm-profile-top"><div class="hm-logo">${document.querySelector('.brand-logo-group')?.outerHTML||''}</div><button class="hm-user" type="button" onclick="openAthleteManagement()" aria-label="登録情報を編集"><span class="hm-user-copy"><b>${escapeHtml(data.admin?.name||customer.applicantName||'管理者')}<small>さん</small></b><span>管理者</span><small class="hm-edit-hint">登録情報を編集</small></span><span class="hm-chevron" aria-hidden="true">›</span></button></div><div class="hm-role-actions"><button class="hm-normal" type="button" onclick="renderHome()">通常画面 <span aria-hidden="true">›</span></button>${coach?'<button class="hm-coach" type="button" onclick="openTeamDashboard(\'coach\')">指導者画面 <span aria-hidden="true">›</span></button>':''}</div></section>
@@ -4964,7 +4972,7 @@ async function refreshAdminDashboard_(){
       async function reloadHome(){clearApiReadCache_();lock("ホームを更新中...");try{STATE.products=[];STATE.applicationProducts=[];STATE.productsCachedAt=0;STATE.applicationsCache=null;STATE.applicationsCachedAt=0;STATE.analysisResults=[];STATE.analysisResultsCachedAt=0;STATE.data=await apiPost("bootstrap");renderHome();}catch(error){alert(error.message);}finally{unlock();}}
       function formatYen(value){return `${Math.round(Number(value)||0).toLocaleString("ja-JP")}円`;}
       function showComingSoon(name){alert(`${name}は次の工程で実装します`);}
-      function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".manual-screen")){closeUserManual_();return;}if($(".cr-screen")){backFromRaceGraphs_();return;}if($(".tc-screen")){renderTeamDashboard();return;}if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
+      function installHeaderNavigation_(){const brand=document.querySelector(".brand"),screen=$("#screen"),adminButton=$("#adminHeaderButton");if(!brand||!screen||!adminButton)return;let homeButton=$("#homeHeaderButton");if(!homeButton){homeButton=document.createElement("button");homeButton.id="homeHeaderButton";homeButton.className="home-header-button";homeButton.type="button";homeButton.textContent="戻る";homeButton.addEventListener("click",()=>{if($(".manual-screen")){closeUserManual_();return;}if($(".cr-screen")){backFromRaceGraphs_();return;}if($(".tc-screen")){renderTeamDashboard();return;}if($(".cs-screen")){comparisonBack_();return;}renderHome();});brand.appendChild(homeButton);}const sync=()=>{const onHome=!!screen.querySelector(".home-screen"),registered=!!STATE.data?.customer;adminButton.style.display=onHome&&currentHomeAccess_().admin?"":"none";homeButton.style.display=!onHome&&registered?"block":"none";};new MutationObserver(sync).observe(screen,{childList:true,subtree:false});sync();}
       installHeaderNavigation_();
       window.addEventListener("DOMContentLoaded",startApp);
       function resizeAnalysisGraphCanvases() {

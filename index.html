@@ -1350,12 +1350,13 @@ body:has(.ad-screen) #screen{height:100%;min-height:0;min-width:0;overflow:hidde
 .ad-screen[data-viewer-mode="stick"].vm-settings-open .ad-content>.analysis-tabs{display:none}
 .ad-screen[data-viewer-mode="stick"].vm-settings-open .ad-content>.analysis-tab-panel{display:none}
 .ad-screen[data-viewer-mode="stick"].vm-settings-open .ad-content>.analysis-tabs+.analysis-tab-panel{display:grid;flex:1 1 auto;min-height:0;overflow:auto}
-.ad-screen[data-viewer-mode="graph"] .ad-viewer{grid-template-rows:auto auto minmax(0,1fr) auto;gap:6px}
+.ad-screen[data-viewer-mode="graph"] .ad-viewer{grid-template-rows:auto auto auto minmax(0,1fr) auto;gap:6px}
 .ad-screen[data-viewer-mode="graph"] .ad-player{display:contents}
 .ad-screen[data-viewer-mode="graph"] .ad-heading{grid-row:1}
-.ad-screen[data-viewer-mode="graph"] .vm-mode-bar{grid-row:2}
-.ad-screen[data-viewer-mode="graph"] .ad-content{grid-row:3}
-.ad-screen[data-viewer-mode="graph"] .vm-transport{grid-row:4}
+.ad-screen[data-viewer-mode="graph"] .tn-mode{grid-row:2}
+.ad-screen[data-viewer-mode="graph"] .vm-mode-bar{grid-row:3}
+.ad-screen[data-viewer-mode="graph"] .ad-content{grid-row:4}
+.ad-screen[data-viewer-mode="graph"] .vm-transport{grid-row:5}
 .ad-screen[data-viewer-mode="graph"] .ad-content>.analysis-tabs{display:none}
 .ad-screen[data-viewer-mode="graph"] .analysis-canvas-wrap:has(>.analysis-canvas){position:absolute;z-index:5;width:clamp(115px,30vw,175px);height:clamp(130px,28dvh,215px);max-width:42%;max-height:42%;right:12px;top:140px;border-radius:10px;box-shadow:0 4px 16px #174f4326;flex:none;padding-top:24px;background:#eef3f6}
 .ad-screen[data-viewer-mode="graph"] .vm-pip-handle{display:block;position:absolute;top:0;left:0;width:100%;min-height:24px;height:24px;border:0;border-radius:0;background:#fff;color:var(--navy);font-size:9px;padding:2px 5px;text-align:left;cursor:move;touch-action:none;user-select:none}
@@ -3057,7 +3058,7 @@ function installTimeMode_(kind) {
   const active=!!data[0]?.timeNormalization, row=document.createElement('div');
   row.className='tn-mode'; row.setAttribute('role','group'); row.setAttribute('aria-label','時間軸');
   row.innerHTML=`<div class="tn-buttons"><button type="button" data-time-mode="normal" aria-pressed="${!active}">通常表示</button><button type="button" data-time-mode="aligned" aria-pressed="${active}" ${reason?'disabled':''}>接地タイミングを揃える</button></div><p class="tn-note">${escapeHtml(reason || (active ? '時間の正規化：0＝1歩目接地 ／ 100＝逆足接地 ／ 200＝3歩目接地・1周期2秒で再生' : '元の時間軸で表示'))}</p>`;
-  bar.after(row);
+  bar.before(row);
   row.querySelectorAll('[data-time-mode]').forEach(button => button.addEventListener('click',()=>setTimeMode_(kind,button.dataset.timeMode)));
 }
 function setTimeMode_(kind,mode) {
